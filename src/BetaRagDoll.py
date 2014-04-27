@@ -65,7 +65,7 @@ class BetaBody:
                     self.joints[static].position_m,
                     self.joints[connection.end_2].position_m,
                     connection.length_m))
-                if new_joint.position_m != self.joints[connection.end_2]:
+                if new_joint != self.joints[connection.end_2]:
                     self.joints[connection.end_2] = new_joint
                     self.fix_lengths(connection.end_2)
 
