@@ -58,19 +58,3 @@ class BetaBody:
                         recursive_calculation(connection.end_1)
 
         recursive_calculation(static)
-
-pygame.init()
-
-screen = pygame.display.set_mode((500, 500))
-
-clock = pygame.time.Clock()
-
-while True:
-
-    screen.fill((55, 155, 255))
-    pygame.display.update()
-    clock.tick(60)
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
