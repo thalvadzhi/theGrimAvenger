@@ -1,6 +1,3 @@
-# This is just basic template just to find out what is needed for the ragdoll
-# This will be split into multiple modules and files
-
 import math
 import sys
 import pygame
@@ -9,11 +6,14 @@ from VectorMath import seperate_point
 
 from pygame.math import Vector2 as Vector
 
+from _collections import defaultdict
+
 pygame.init()
 
 screen = pygame.display.set_mode((500, 500))
 
 clock = pygame.time.Clock()
+
 
 
 class Joint:
@@ -33,7 +33,7 @@ class SolidConnection:
     def __init__(self, length_m, end_1, end_2):
         # this should not change
         self.length_m = math.ceil(length_m * 100) / 100
-        self.end_1 = end_1  # those are intergersi
+        self.end_1 = end_1  # those are intergers
         self.end_2 = end_2
 
 
@@ -42,14 +42,18 @@ class BetaBody:
     def __init__(self):
         self.joints = []
         self.levers = []
+        self.fixes = 0
 
     def update_connections(self):
-        self.connections = {_: [] for _ in range(len(self.joints))}
+        self.connections = defaultdict(list)
         for index, lever in enumerate(self.levers):
             self.connections[lever.end_1].append(index)
             self.connections[lever.end_2].append(index)
 
     def fix_lengths(self, static):
+        self.fixes += 1
+        if self.fixes % len(self.connections) * 2 == 0:
+             return
         for connection in self.connections[static]:
             connection = self.levers[connection]
             if connection.end_1 != static:
@@ -70,6 +74,7 @@ class BetaBody:
                     self.fix_lengths(connection.end_2)
 
     def move_joint(self, joint, position_m):
+        self.fixes = 0
         self.joints[joint].position_m = position_m
         self.fix_lengths(joint)
 
