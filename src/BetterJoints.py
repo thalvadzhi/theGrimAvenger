@@ -22,7 +22,7 @@ class Joint:
         self.position_m = position_m
         self.bodies = []
 
-    def add_object(self, new_body):
+    def add_body(self, new_body):
         self.bodies.append(new_body)
         new_body.add_joint(self)
 
@@ -31,7 +31,7 @@ class Rectangle:
 
     def __init__(self, width_m, heigth_m, position_m):
         """
-        position_m Is the position of the center of mass
+        position_m is the position of the center of mass
         """
         self.width_m = width_m
         self.heigth_m = heigth_m
@@ -44,20 +44,34 @@ class Rectangle:
         self.diraction = self.diraction.rotate(rotation)
         self.joints = [(joint, position_on_body.rotate(rotation))
                        for joint, position_on_body in self.joints]
+        for joint, _ in self.joints:
+            joint.update(self)
 
     def move(self, movement_m):
         self.position_m = self.position_m + movement_m
-        for joint in self.joints:
+        for joint, _ in self.joints:
             joint.update(self)
 
-    def move_to_joint(self, joint):
-        position_on_body = sum(
-            [vec for _, vec in self.joints if _ is joint], Vector((0, 0)))
-        new_position = joint.position_m - position_on_body
+    def move_to_joint(self, current_joint):
+        print("FUCK")
+        joint_position_on_body = sum([vec for _, vec in self.joints
+                                      if _ is current_joint], Vector((0, 0)))
+        new_position = current_joint.position_m - joint_position_on_body
         translation = new_position - self.position_m
+        rotation = (joint_position_on_body).angle_to(
+            translation + joint_position_on_body)
         if translation.x > 0.27 or translation.x < -0.27 or \
-           translation.y > 0.27 or translation.y < -0.27:
-            self.move(translation)
+           translation.y > 0.27 or translation.y < -0.27 or \
+           rotation < -0.07 or rotation > 0.07:
+            self.diraction = self.diraction.rotate(rotation)
+            self.joints = [(joint, position_on_body.rotate(rotation))
+                           for joint, position_on_body in self.joints]
+            joint_position_on_body = joint_position_on_body.rotate(rotation)
+            new_position = current_joint.position_m - joint_position_on_body
+            translation = new_position - self.position_m
+            self.position_m = self.position_m + translation
+            for joint, _ in self.joints:
+                joint.update(self)
 
     def add_joint(self, new_joint):
         position_on_body = (new_joint.position_m - self.position_m) +\
@@ -86,16 +100,157 @@ class BallJoint (Joint):
             pass  # Todo: add functionality
 
     def update(self, stationary):
-        position_on_body = sum(
-            [_ for joint, _ in stationary.joints if _ is self], Vector((0, 0)))
+        position_on_body = sum([_ for joint, _ in stationary.joints
+                                if joint is self], Vector((0, 0)))
+
         self.position_m = position_on_body + stationary.position_m
         for body in self.bodies:
             if body is not stationary:
                 body.move_to_joint(self)
 
-rectangle = Rectangle(20, 50, Vector((250, 250)))
-rectangles = [Rectangle(20, 50, Vector((23, 250))),
-              Rectangle(20, 50, Vector((250, 23)))]
+
+class BodyPart:
+
+    proportions = {"Forearm": (10, 6.3), "Arm": (15, 5.2), "Neck": (15, 13),
+                   "Head": 8, "Torso": (15, 2.2), "Thigh": (15, 4),
+                   "Calf": (10, 4.2)}
+
+#    def __init__(self, heigth_m, part, previous_joint):
+#        self.upper_joint = previous
+#        self.lower_joint = Joint(previous_joint + Vector(
+#            0, heigth_m / BodyPart.proportions[part]))
+#        self.length_m = FixedLengthConnection(
+#            heigth_m / BodyPart.proportions, shoulder, self.elbow)
+
+
+class Torso(BodyPart):
+
+    def __init__(self, heigth_m):
+        self.shape = Rectangle(BodyPart.proportions["Torso"][0], (
+            heigth_m / BodyPart.proportions["Torso"][1]), Vector((0, 0)))
+
+
+class Arm(BodyPart):
+
+    def __init__(self, heigth_m):
+        arm_heigth = heigth_m / BodyPart.proportions["Arm"][1]
+        arm_position_y = (
+            arm_heigth - heigth_m / BodyPart.proportions["Torso"][1]) / 2
+        self.shape = Rectangle(BodyPart.proportions["Arm"][0], arm_heigth,
+                               Vector((0, arm_position_y)))
+
+
+class Forearm(BodyPart):
+
+    def __init__(self, heigth_m):
+        torso_heigth = heigth_m / BodyPart.proportions["Torso"][1]
+        arm_heigth = heigth_m / BodyPart.proportions["Arm"][1]
+        forearm_heigth = heigth_m / BodyPart.proportions["Forearm"][1]
+        forearm_position_y = (forearm_heigth - torso_heigth) / 2 + arm_heigth
+        self.shape = Rectangle(BodyPart.proportions["Forearm"][0],
+                               forearm_heigth, Vector((0, forearm_position_y)))
+
+
+class Thigh(BodyPart):
+
+    def __init__(self, heigth_m):
+        torso_heigth = heigth_m / BodyPart.proportions["Torso"][1]
+        thigh_heigth = heigth_m / BodyPart.proportions["Thigh"][1]
+        thigh_position_y = (torso_heigth + thigh_heigth) / 2
+        self.shape = Rectangle(BodyPart.proportions["Thigh"][0], thigh_heigth,
+                               Vector((0, thigh_position_y)))
+
+
+class Neck(BodyPart):
+
+    def __init__(self, heigth_m):
+        torso_heigth = heigth_m / BodyPart.proportions["Torso"][1]
+        neck_heigth = heigth_m / BodyPart.proportions["Neck"][1]
+        neck_position_y = (neck_heigth - torso_heigth) / 2
+        self.shape = Rectangle(BodyPart.proportions["Thigh"][0], neck_heigth,
+                               Vector((0, neck_position_y)))
+
+
+class Calf(BodyPart):
+
+    def __init__(self, heigth_m):
+        torso_heigth = heigth_m / BodyPart.proportions["Torso"][1]
+        thigh_heigth = heigth_m / BodyPart.proportions["Thigh"][1]
+        calf_heigth = heigth_m / BodyPart.proportions["Forearm"][1]
+        calf_position_y = (calf_heigth + torso_heigth) / 2 + thigh_heigth
+        self.shape = Rectangle(BodyPart.proportions["Forearm"][0], calf_heigth,
+                               Vector((0, calf_position_y)))
+
+
+class HumanRagdoll:
+
+    def __init__(self, heigth_m, position_m=Vector(0, 0)):
+        self.neck = Neck(heigth_m)
+        self.torso = Torso(heigth_m)
+        self.left_arm = Arm(heigth_m)
+        self.right_arm = Arm(heigth_m)
+        self.left_forearm = Forearm(heigth_m)
+        self.right_forearm = Forearm(heigth_m)
+        self.left_thigh = Thigh(heigth_m)
+        self.right_thigh = Thigh(heigth_m)
+        self.left_calf = Calf(heigth_m)
+        self.right_calf = Calf(heigth_m)
+
+        self.body_parts = [self.torso, self.neck, self.left_arm,
+                           self.right_arm, self.left_forearm,
+                           self.right_forearm, self.left_thigh,
+                           self.right_thigh, self.left_calf, self.right_calf]
+
+        self.shoulders = BallJoint(Vector((0, self.torso.shape.heigth_m / -2)))
+        self.hips = BallJoint(Vector((0, self.torso.shape.heigth_m / 2)))
+        self.left_elbow = BallJoint(Vector((
+            0, self.torso.shape.heigth_m / -2 + self.left_arm.shape.heigth_m)))
+        self.right_elbow = BallJoint(Vector((
+            0, self.torso.shape.heigth_m / -2 + self.right_arm.shape.heigth_m)))
+        self.left_knee = BallJoint(Vector((
+            0, self.torso.shape.heigth_m / 2 + self.left_thigh.shape.heigth_m)))
+        self.right_knee = BallJoint(Vector((0, self.torso.shape.heigth_m / 2 +
+                                            self.right_thigh.shape.heigth_m)))
+
+        self.joints = [self.shoulders, self.hips, self.left_elbow,
+                       self.right_elbow, self.left_knee, self.right_knee]
+
+        self.shoulders.add_body(self.neck.shape)
+        self.shoulders.add_body(self.torso.shape)
+        self.shoulders.add_body(self.left_arm.shape)
+        self.shoulders.add_body(self.right_arm.shape)
+        self.hips.add_body(self.torso.shape)
+        self.hips.add_body(self.left_thigh.shape)
+        self.hips.add_body(self.right_thigh.shape)
+        self.left_elbow.add_body(self.left_arm.shape)
+        self.left_elbow.add_body(self.left_forearm.shape)
+        self.right_elbow.add_body(self.right_arm.shape)
+        self.right_elbow.add_body(self.right_forearm.shape)
+        self.left_knee.add_body(self.left_thigh.shape)
+        self.left_knee.add_body(self.left_calf.shape)
+        self.right_knee.add_body(self.right_thigh.shape)
+        self.right_knee.add_body(self.right_calf.shape)
+
+        self.torso.shape.move(position_m)
+
+    def draw(self):
+        for body_part in self.body_parts:
+            body_part.shape.draw()
+
+ragdoll = HumanRagdoll(170, Vector((250, 250)))
+
+# rectangle = Rectangle(10, 50, Vector((250, 250)))
+# rectangles = [Rectangle(10, 50, Vector((250, 200))),
+#               Rectangle(10, 50, Vector((250, 300)))]
+#
+#
+# joints = [BallJoint(Vector((250, 275))), BallJoint(Vector((250, 225)))]
+#
+# joints[0].add_body(rectangle)
+# joints[0].add_body(rectangles[1])
+# joints[1].add_body(rectangle)
+# joints[1].add_body(rectangles[0])
+#
 
 # joints = [Joint((50, 50)), Joint((60, 60)), Joint((10, 60)), Joint((70, 0))]
 
@@ -113,28 +268,23 @@ while True:
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_LEFT]:
-        rectangle.move(Vector((-1, 0)))
-        screen.fill((55, 155, 255))
-        rectangle.draw()
+        ragdoll.left_forearm.shape.move(Vector((-1, 0)))
 
     elif keys[pygame.K_RIGHT]:
-        rectangle.move(Vector((1, 0)))
-        screen.fill((55, 155, 255))
-        rectangle.draw()
+        ragdoll.right_forearm.shape.move(Vector((1, 0)))
 
     elif keys[pygame.K_UP]:
-        rectangle.rotate(1)
-        screen.fill((55, 155, 255))
-        rectangle.draw()
+        ragdoll.torso.shape.rotate(1)
 
     elif keys[pygame.K_DOWN]:
-        rectangle.rotate(-1)
-        screen.fill((55, 155, 255))
-        rectangle.draw()
+        ragdoll.torso.shape.rotate(-1)
 
-    else:
-        screen.fill((55, 155, 255))
-        rectangle.draw()
+    screen.fill((55, 155, 255))
+    ragdoll.draw()
+
+#    else:
+#        screen.fill((55, 155, 255))
+#        rectangle.draw()
 
     # pygame.draw.polygon(screen, (255, 255, 255),
     #                    [(0, 0), (0, 50), (50, 50), (50, 0)])
