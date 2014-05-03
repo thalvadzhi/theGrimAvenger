@@ -3,11 +3,14 @@ import sys
 import pygame
 
 from VectorMath import seperate_point
+from Events import Events
 
 from pygame.math import Vector2 as Vector
 
 from collections import OrderedDict
 from _collections import defaultdict
+
+from BasicShapes import Rectangle
 
 pygame.init()
 
@@ -25,72 +28,6 @@ class Joint:
     def add_body(self, new_body):
         self.bodies.append(new_body)
         new_body.add_joint(self)
-
-
-class Rectangle:
-
-    def __init__(self, width_m, heigth_m, position_m):
-        """
-        position_m is the position of the center of mass
-        """
-        self.width_m = width_m
-        self.heigth_m = heigth_m
-        self.position_m = Vector(position_m)
-        self.joints = []
-
-        self.diraction = Vector((1, 0))
-
-    def rotate(self, rotation):
-        self.diraction = self.diraction.rotate(rotation)
-        self.joints = [(joint, position_on_body.rotate(rotation))
-                       for joint, position_on_body in self.joints]
-        for joint, _ in self.joints:
-            joint.update(self)
-
-    def move(self, movement_m):
-        self.position_m = self.position_m + movement_m
-        for joint, _ in self.joints:
-            joint.update(self)
-
-    def move_to_joint(self, current_joint):
-        print("FUCK")
-        joint_position_on_body = sum([vec for _, vec in self.joints
-                                      if _ is current_joint], Vector((0, 0)))
-        new_position = current_joint.position_m - joint_position_on_body
-        translation = new_position - self.position_m
-        rotation = (joint_position_on_body).angle_to(
-            translation + joint_position_on_body)
-        if translation.x > 0.27 or translation.x < -0.27 or \
-           translation.y > 0.27 or translation.y < -0.27 or \
-           rotation < -0.07 or rotation > 0.07:
-            self.diraction = self.diraction.rotate(rotation)
-            self.joints = [(joint, position_on_body.rotate(rotation))
-                           for joint, position_on_body in self.joints]
-            joint_position_on_body = joint_position_on_body.rotate(rotation)
-            new_position = current_joint.position_m - joint_position_on_body
-            translation = new_position - self.position_m
-            self.position_m = self.position_m + translation
-            for joint, _ in self.joints:
-                joint.update(self)
-
-    def add_joint(self, new_joint):
-        position_on_body = (new_joint.position_m - self.position_m) +\
-            (Vector((1, 0)) - self.diraction)
-        self.joints.append((new_joint, position_on_body))
-
-    def draw(self):
-        perpendicular = self.diraction.rotate(90)
-        vertices = []
-        vertices.append(perpendicular * self.heigth_m / 2 +
-                        self.diraction * self.width_m / 2 + self.position_m)
-        vertices.append(perpendicular * self.heigth_m / -2 +
-                        self.diraction * self.width_m / 2 + self.position_m)
-        vertices.append(perpendicular * self.heigth_m / -2 +
-                        self.diraction * self.width_m / -2 + self.position_m)
-        vertices.append(perpendicular * self.heigth_m / 2 +
-                        self.diraction * self.width_m / -2 + self.position_m)
-
-        pygame.draw.polygon(screen, (0, 0, 0), vertices)
 
 
 class BallJoint (Joint):
@@ -201,6 +138,9 @@ class HumanRagdoll:
                            self.right_forearm, self.left_thigh,
                            self.right_thigh, self.left_calf, self.right_calf]
 
+        for body_part in self.body_parts:
+            events.right_button_selectable.append(body_part.shape)
+
         self.shoulders = BallJoint(Vector((0, self.torso.shape.heigth_m / -2)))
         self.hips = BallJoint(Vector((0, self.torso.shape.heigth_m / 2)))
         self.left_elbow = BallJoint(Vector((
@@ -231,12 +171,13 @@ class HumanRagdoll:
         self.right_knee.add_body(self.right_thigh.shape)
         self.right_knee.add_body(self.right_calf.shape)
 
-        self.torso.shape.move(position_m)
+        self.left_arm.shape.pull_on_anchor(Vector((0, 0)), position_m)
 
-    def draw(self):
+    def draw(self, surface):
         for body_part in self.body_parts:
-            body_part.shape.draw()
+            body_part.shape.draw(surface)
 
+events = Events(2)
 ragdoll = HumanRagdoll(170, Vector((250, 250)))
 
 # rectangle = Rectangle(10, 50, Vector((250, 250)))
@@ -274,13 +215,13 @@ while True:
         ragdoll.right_forearm.shape.move(Vector((1, 0)))
 
     elif keys[pygame.K_UP]:
-        ragdoll.torso.shape.rotate(1)
+        ragdoll.right_forearm.shape.rotate(1)
 
     elif keys[pygame.K_DOWN]:
-        ragdoll.torso.shape.rotate(-1)
+        ragdoll.right_forearm.shape.rotate(-1)
 
     screen.fill((55, 155, 255))
-    ragdoll.draw()
+    ragdoll.draw(screen)
 
 #    else:
 #        screen.fill((55, 155, 255))
