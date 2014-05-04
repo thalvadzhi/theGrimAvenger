@@ -4,6 +4,7 @@ import pygame
 
 from VectorMath import seperate_point
 from Events import Events
+from Control import Control
 
 from pygame.math import Vector2 as Vector
 
@@ -139,7 +140,7 @@ class HumanRagdoll:
                            self.right_thigh, self.left_calf, self.right_calf]
 
         for body_part in self.body_parts:
-            events.right_button_selectable.append(body_part.shape)
+            control.left_button_selectable.append(body_part.shape)
 
         self.shoulders = BallJoint(Vector((0, self.torso.shape.heigth_m / -2)))
         self.hips = BallJoint(Vector((0, self.torso.shape.heigth_m / 2)))
@@ -177,8 +178,9 @@ class HumanRagdoll:
         for body_part in self.body_parts:
             body_part.shape.draw(surface)
 
-events = Events(2)
+control = Control(2)
 ragdoll = HumanRagdoll(170, Vector((250, 250)))
+counter = 0
 
 # rectangle = Rectangle(10, 50, Vector((250, 250)))
 # rectangles = [Rectangle(10, 50, Vector((250, 200))),
@@ -232,10 +234,8 @@ while True:
     pygame.display.update()
     clock.tick(60)
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
-#
+    control.handle_user_input()
+
 # class BodyPart:
 #
 #     proportions = {"Forearm": 6.3, "Arm": 5.2, "Neck": 13, "Head": 8,

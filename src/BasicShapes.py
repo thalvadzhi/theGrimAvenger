@@ -162,7 +162,7 @@ class Rectangle:
         rotation = (anchor).angle_to(
             movement_m + anchor)
         # work around a pygame bug
-        rotation = int(rotation * 100000) / 100000.0
+        rotation = int(rotation * 100000) / 100000
         self.diraction = self.diraction.rotate(rotation)
         self.joints = [(joint, position_on_body.rotate(rotation))
                        for joint, position_on_body in self.joints]
@@ -177,8 +177,7 @@ class Rectangle:
                                       if _ is current_joint], Vector((0, 0)))
         new_position = current_joint.position_m - joint_position_on_body
         movement = new_position - self.position_m
-        if movement.x > 0.27 or movement.x < -0.27 or \
-           movement.y > 0.27 or movement.y < -0.27:
+        if abs(movement.x) > 0.27 or abs(movement.y) > 0.27:
             # The is statement stops the recursion
             self.pull_on_anchor(joint_position_on_body, movement)
 
@@ -188,12 +187,13 @@ class Rectangle:
         self.joints.append((new_joint, position_on_body))
 
     def is_under_cursor(self, cursor_location_px):
-        cursor_location_m = Vector(
-            px_to_m(cursor_location_px.x), px_to_m(cursor_location_px))
-        vertices_c = self.diraction.rotate(90) * self.heigth_m / -2 + \
-            self.diraction * self.width_m / 2 + self.position_m
-        c_to_cursor = cursor_location_m - vertices_c
-        return c_to_cursor.x <= 0 and c_to_cursor.y <= 0
+        cursor_location_m = Vector((
+            px_to_m(cursor_location_px.x), px_to_m(cursor_location_px.y)))
+        centroid_to_cursor = cursor_location_m - self.position_m
+        centroid_to_cursor = centroid_to_cursor.rotate(
+            Vector(1, 0).angle_to(self.diraction))
+        return abs(centroid_to_cursor.x) <= self.width_m / 2 and \
+            abs(centroid_to_cursor.y) <= self.heigth_m / 2
 
     def draw(self, surface):
         pygame.draw.polygon(surface, (0, 0, 0), self.calculate_vertices())
