@@ -49,109 +49,111 @@ class BallJoint (Joint):
 
 class BodyPart:
 
-    proportions = {"Forearm": (10, 6.3), "Arm": (15, 5.2), "Neck": (15, 13),
-                   "Head": 8, "Torso": (15, 2.2), "Thigh": (15, 4),
-                   "Calf": (10, 4.2)}
+    proportions = {"Forearm": (10, 4.3), "Arm": (15, 3.2), "Neck": (15, 13),
+                   "Head": 8, "Torso": (20, 2.2), "Thigh": (15, 3.2),
+                   "Calf": (10, 4.3)}
 
-#    def __init__(self, heigth_m, part, previous_joint):
+#    def __init__(self, height_m, part, previous_joint):
 #        self.upper_joint = previous
 #        self.lower_joint = Joint(previous_joint + Vector(
-#            0, heigth_m / BodyPart.proportions[part]))
+#            0, height_m / BodyPart.proportions[part]))
 #        self.length_m = FixedLengthConnection(
-#            heigth_m / BodyPart.proportions, shoulder, self.elbow)
+#            height_m / BodyPart.proportions, shoulder, self.elbow)
 
 
 class Torso(BodyPart):
 
-    def __init__(self, heigth_m):
+    def __init__(self, height_m):
         self.shape = Rectangle(BodyPart.proportions["Torso"][0], (
-            heigth_m / BodyPart.proportions["Torso"][1]), Vector((0, 0)))
+            height_m / BodyPart.proportions["Torso"][1]), Vector((0, 0)))
 
 
 class Arm(BodyPart):
 
-    def __init__(self, heigth_m):
-        arm_heigth = heigth_m / BodyPart.proportions["Arm"][1]
+    def __init__(self, height_m):
+        arm_height = height_m / BodyPart.proportions["Arm"][1]
         arm_position_y = (
-            arm_heigth - heigth_m / BodyPart.proportions["Torso"][1]) / 2
-        self.shape = Rectangle(BodyPart.proportions["Arm"][0], arm_heigth,
+            arm_height - height_m / BodyPart.proportions["Torso"][1]) / 2
+        self.shape = Rectangle(BodyPart.proportions["Arm"][0], arm_height,
                                Vector((0, arm_position_y)))
 
 
 class Forearm(BodyPart):
 
-    def __init__(self, heigth_m):
-        torso_heigth = heigth_m / BodyPart.proportions["Torso"][1]
-        arm_heigth = heigth_m / BodyPart.proportions["Arm"][1]
-        forearm_heigth = heigth_m / BodyPart.proportions["Forearm"][1]
-        forearm_position_y = (forearm_heigth - torso_heigth) / 2 + arm_heigth
+    def __init__(self, height_m):
+        torso_height = height_m / BodyPart.proportions["Torso"][1]
+        arm_height = height_m / BodyPart.proportions["Arm"][1]
+        forearm_height = height_m / BodyPart.proportions["Forearm"][1]
+        forearm_position_y = (forearm_height - torso_height) / 2 + arm_height
         self.shape = Rectangle(BodyPart.proportions["Forearm"][0],
-                               forearm_heigth, Vector((0, forearm_position_y)))
+                               forearm_height, Vector((0, forearm_position_y)))
 
 
 class Thigh(BodyPart):
 
-    def __init__(self, heigth_m):
-        torso_heigth = heigth_m / BodyPart.proportions["Torso"][1]
-        thigh_heigth = heigth_m / BodyPart.proportions["Thigh"][1]
-        thigh_position_y = (torso_heigth + thigh_heigth) / 2
-        self.shape = Rectangle(BodyPart.proportions["Thigh"][0], thigh_heigth,
+    def __init__(self, height_m):
+        torso_height = height_m / BodyPart.proportions["Torso"][1]
+        thigh_height = height_m / BodyPart.proportions["Thigh"][1]
+        thigh_position_y = (torso_height + thigh_height) / 2
+        self.shape = Rectangle(BodyPart.proportions["Thigh"][0], thigh_height,
                                Vector((0, thigh_position_y)))
 
 
 class Neck(BodyPart):
 
-    def __init__(self, heigth_m):
-        torso_heigth = heigth_m / BodyPart.proportions["Torso"][1]
-        neck_heigth = heigth_m / BodyPart.proportions["Neck"][1]
-        neck_position_y = (neck_heigth - torso_heigth) / 2
-        self.shape = Rectangle(BodyPart.proportions["Thigh"][0], neck_heigth,
+    def __init__(self, height_m):
+        torso_height = height_m / BodyPart.proportions["Torso"][1]
+        neck_height = height_m / BodyPart.proportions["Neck"][1]
+        neck_position_y = (neck_height - torso_height) / 2
+        self.shape = Rectangle(BodyPart.proportions["Thigh"][0], neck_height,
                                Vector((0, neck_position_y)))
 
 
 class Calf(BodyPart):
 
-    def __init__(self, heigth_m):
-        torso_heigth = heigth_m / BodyPart.proportions["Torso"][1]
-        thigh_heigth = heigth_m / BodyPart.proportions["Thigh"][1]
-        calf_heigth = heigth_m / BodyPart.proportions["Forearm"][1]
-        calf_position_y = (calf_heigth + torso_heigth) / 2 + thigh_heigth
-        self.shape = Rectangle(BodyPart.proportions["Forearm"][0], calf_heigth,
+    def __init__(self, height_m):
+        torso_height = height_m / BodyPart.proportions["Torso"][1]
+        thigh_height = height_m / BodyPart.proportions["Thigh"][1]
+        calf_height = height_m / BodyPart.proportions["Calf"][1]
+        calf_position_y = (calf_height + torso_height) / 2 + thigh_height
+        self.shape = Rectangle(BodyPart.proportions["Calf"][0], calf_height,
                                Vector((0, calf_position_y)))
 
 
 class HumanRagdoll:
 
-    def __init__(self, heigth_m, position_m=Vector(0, 0)):
-        self.neck = Neck(heigth_m)
-        self.torso = Torso(heigth_m)
-        self.left_arm = Arm(heigth_m)
-        self.right_arm = Arm(heigth_m)
-        self.left_forearm = Forearm(heigth_m)
-        self.right_forearm = Forearm(heigth_m)
-        self.left_thigh = Thigh(heigth_m)
-        self.right_thigh = Thigh(heigth_m)
-        self.left_calf = Calf(heigth_m)
-        self.right_calf = Calf(heigth_m)
-
+    def __init__(self, height_m, position_m=Vector(0, 0)):
+        self.neck = Neck(height_m)
+        self.torso = Torso(height_m)
+        self.left_arm = Arm(height_m)
+        self.right_arm = Arm(height_m)
+        self.left_forearm = Forearm(height_m)
+        self.right_forearm = Forearm(height_m)
+        self.left_thigh = Thigh(height_m)
+        self.right_thigh = Thigh(height_m)
+        self.left_calf = Calf(height_m)
+        self.right_calf = Calf(height_m)
+        
         self.body_parts = [self.torso, self.neck, self.left_arm,
                            self.right_arm, self.left_forearm,
                            self.right_forearm, self.left_thigh,
                            self.right_thigh, self.left_calf, self.right_calf]
-
+        
         for body_part in self.body_parts:
             control.left_button_selectable.append(body_part.shape)
-
-        self.shoulders = BallJoint(Vector((0, self.torso.shape.heigth_m / -2)))
-        self.hips = BallJoint(Vector((0, self.torso.shape.heigth_m / 2)))
+            body_part.shape.imageMaster = pygame.image.load("batarang.png").convert_alpha()
+            body_part.shape.scale_avatar()
+            
+        self.shoulders = BallJoint(Vector((0, self.torso.shape.height_m / -2)))
+        self.hips = BallJoint(Vector((0, self.torso.shape.height_m / 2)))
         self.left_elbow = BallJoint(Vector((
-            0, self.torso.shape.heigth_m / -2 + self.left_arm.shape.heigth_m)))
+            0, self.torso.shape.height_m / -2 + self.left_arm.shape.height_m)))
         self.right_elbow = BallJoint(Vector((
-            0, self.torso.shape.heigth_m / -2 + self.right_arm.shape.heigth_m)))
+            0, self.torso.shape.height_m / -2 + self.right_arm.shape.height_m)))
         self.left_knee = BallJoint(Vector((
-            0, self.torso.shape.heigth_m / 2 + self.left_thigh.shape.heigth_m)))
-        self.right_knee = BallJoint(Vector((0, self.torso.shape.heigth_m / 2 +
-                                            self.right_thigh.shape.heigth_m)))
+            0, self.torso.shape.height_m / 2 + self.left_thigh.shape.height_m)))
+        self.right_knee = BallJoint(Vector((0, self.torso.shape.height_m / 2 +
+                                            self.right_thigh.shape.height_m)))
 
         self.joints = [self.shoulders, self.hips, self.left_elbow,
                        self.right_elbow, self.left_knee, self.right_knee]
@@ -177,6 +179,10 @@ class HumanRagdoll:
     def draw(self, surface):
         for body_part in self.body_parts:
             body_part.shape.draw(surface)
+    
+    def display_avatar(self, surface):
+        for body_part in self.body_parts:
+            body_part.shape.display_avatar(surface)
 
 control = Control(2)
 ragdoll = HumanRagdoll(170, Vector((250, 250)))
@@ -241,19 +247,19 @@ while True:
 #     proportions = {"Forearm": 6.3, "Arm": 5.2, "Neck": 13, "Head": 8,
 #                    "Torso": 2.2, "Thigh": 4, "Calf": 4.2}
 #
-#     def __init__(self, heigth_m, part, previous_joint):
+#     def __init__(self, height_m, part, previous_joint):
 #         self.upper_joint = previous
 #         self.lower_joint = Joint(previous_joint + Vector(
-#             0, heigth_m / BodyPart.proportions[part]))
+#             0, height_m / BodyPart.proportions[part]))
 #         self.length_m = FixedLengthConnection(
-#             heigth_m / BodyPart.proportions, shoulder, self.elbow)
+#             height_m / BodyPart.proportions, shoulder, self.elbow)
 #
 #
 # class HumanRagdoll(FixedLengthJointSystem):
 #
-#     def __init__(self, heigth_m, position_m=Vector(0, 0)):
+#     def __init__(self, height_m, position_m=Vector(0, 0)):
 #         self.joints = {"Head": Joint(position_m)}
 #         self.body_parts = {
-#             "Head": BodyPart(heigth_m, "Head", self.joints["Head"])}
+#             "Head": BodyPart(height_m, "Head", self.joints["Head"])}
 #         self.joints.append(self.body_parts["Head"].lower_joint)
-#         self.body_parts["Neck"] = BodyPart(heigth_m, "Neck"
+#         self.body_parts["Neck"] = BodyPart(height_m, "Neck"
