@@ -1,7 +1,7 @@
 theGrimAvenger
 ==============
 
-Idea: ragdoll motions in development
+Idea:
 -----
 - Character will move sideways, will be able to jump over obstacles, will be able to hide in shadows. Also deal damage with utilities. Main goal will be to reach the end of the level without being detected. The levels themselves will just be a brief demo of the engine. 
 
