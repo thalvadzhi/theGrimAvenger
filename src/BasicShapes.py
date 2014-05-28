@@ -22,10 +22,10 @@ class Circle:
         self.position_m = Vector(position_m)
         self.joints = []
 
-        self.diraction = Vector((1, 0))
+        self.direction = Vector((1, 0))
 
     def rotate(self, rotation):
-        self.diraction = self.diraction.rotate(rotation)
+        self.direction = self.direction.rotate(rotation)
         self.joints = [(joint, position_on_body.rotate(rotation))
                        for joint, position_on_body in self.joints]
         for joint, _ in self.joints:
@@ -46,7 +46,7 @@ class Circle:
         if translation.x > 0.27 or translation.x < -0.27 or \
            translation.y > 0.27 or translation.y < -0.27 or \
            rotation < -0.07 or rotation > 0.07:
-            self.diraction = self.diraction.rotate(rotation)
+            self.direction = self.direction.rotate(rotation)
             self.joints = [(joint, position_on_body.rotate(rotation))
                            for joint, position_on_body in self.joints]
             joint_position_on_body = joint_position_on_body.rotate(rotation)
@@ -58,7 +58,7 @@ class Circle:
 
     def add_joint(self, new_joint):
         position_on_body = (new_joint.position_m - self.position_m) +\
-            (Vector((1, 0)) - self.diraction)
+            (Vector((1, 0)) - self.direction)
         self.joints.append((new_joint, position_on_body))
 
     def draw(self, surface):
@@ -68,7 +68,7 @@ class Circle:
 class Triangle:
 
     def __init__(self, edges, position_m=Vector((0, 0))):
-        self.diraction = (Vector((1, 0)), Vector((0, 1)))
+        self.direction = (Vector((1, 0)), Vector((0, 1)))
         self.position_m = position_m
         self.edge_lenghts = dict(zip(["AB", "AC", "BC"], edges))
         self.calculate_vertices()
@@ -76,7 +76,7 @@ class Triangle:
         self.joints = []
 
   #  def __init__(self, vertices, lol, position_m=Vector((0, 0))):
-  #      self.diraction = (Vector((1, 0)), Vector((0, 1)))
+  #      self.direction = (Vector((1, 0)), Vector((0, 1)))
   #      self.position_m = position_m
   #      self.vertices = dict(zip(["A", "B", "C"], vertices))
   #      self.calculate_edges()
@@ -118,35 +118,36 @@ class Triangle:
    #     if
 
 
-class Rectangle:
+class Rectangle(pygame.sprite.Sprite):
 
-    def __init__(self, width_m, heigth_m, position_m):
+    def __init__(self, width_m, height_m, position_m):
         """
         position_m is the position of the center of mass
         """
+        pygame.sprite.Sprite.__init__(self)
         self.width_m = width_m
-        self.heigth_m = heigth_m
+        self.height_m = height_m
         self.position_m = Vector(position_m)
         self.joints = []
 
-        self.diraction = Vector((1, 0))
+        self.direction = Vector((1, 0))
 
     def calculate_vertices(self):
-        perpendicular = self.diraction.rotate(90)
+        perpendicular = self.direction.rotate(90)
         vertices = []
-        vertices.append(perpendicular * self.heigth_m / 2 +
-                        self.diraction * self.width_m / -2 + self.position_m)
-        vertices.append(perpendicular * self.heigth_m / 2 +
-                        self.diraction * self.width_m / 2 + self.position_m)
-        vertices.append(perpendicular * self.heigth_m / -2 +
-                        self.diraction * self.width_m / 2 + self.position_m)
-        vertices.append(perpendicular * self.heigth_m / -2 +
-                        self.diraction * self.width_m / -2 + self.position_m)
+        vertices.append(perpendicular * self.height_m / 2 +
+                        self.direction * self.width_m / -2 + self.position_m)
+        vertices.append(perpendicular * self.height_m / 2 +
+                        self.direction * self.width_m / 2 + self.position_m)
+        vertices.append(perpendicular * self.height_m / -2 +
+                        self.direction * self.width_m / 2 + self.position_m)
+        vertices.append(perpendicular * self.height_m / -2 +
+                        self.direction * self.width_m / -2 + self.position_m)
 
         return vertices
 
     def rotate(self, rotation):
-        self.diraction = self.diraction.rotate(rotation)
+        self.direction = self.direction.rotate(rotation)
         self.joints = [(joint, position_on_body.rotate(rotation))
                        for joint, position_on_body in self.joints]
         for joint, _ in self.joints:
@@ -163,7 +164,7 @@ class Rectangle:
             movement_m + anchor)
         # work around a pygame bug
         rotation = int(rotation * 100000) / 100000
-        self.diraction = self.diraction.rotate(rotation)
+        self.direction = self.direction.rotate(rotation)
         self.joints = [(joint, position_on_body.rotate(rotation))
                        for joint, position_on_body in self.joints]
         anchor = anchor.rotate(rotation)
@@ -183,7 +184,7 @@ class Rectangle:
 
     def add_joint(self, new_joint):
         position_on_body = (new_joint.position_m - self.position_m) +\
-            (Vector((1, 0)) - self.diraction)
+            (Vector((1, 0)) - self.direction)
         self.joints.append((new_joint, position_on_body))
 
     def is_under_cursor(self, cursor_location_px):
@@ -191,9 +192,24 @@ class Rectangle:
             px_to_m(cursor_location_px.x), px_to_m(cursor_location_px.y)))
         centroid_to_cursor = cursor_location_m - self.position_m
         centroid_to_cursor = centroid_to_cursor.rotate(
+<<<<<<< HEAD
             self.diraction.angle_to(Vector((1, 0))))
+=======
+            self.direction.angle_to(Vector((1, 0))))
+>>>>>>> e17edb44e868688fe6b6006e63f0f739d17b7a2c
         return abs(centroid_to_cursor.x) <= self.width_m / 2 and \
-            abs(centroid_to_cursor.y) <= self.heigth_m / 2
-
+            abs(centroid_to_cursor.y) <= self.height_m / 2
+            
+    def scale_avatar(self):
+        self.imageMaster = pygame.transform.scale(self.imageMaster, 
+                                                                        (int(self.width_m), int(self.height_m)))
+        
+    def display_avatar(self, surface):
+        self.image = pygame.transform.rotate(self.imageMaster, 
+                                                                Vector((1, 0)).angle_to(self.direction))
+        self.rect = self.image.get_rect()
+        self.rect.center = self.position_m
+        surface.blit(self.image, self.rect)
+            
     def draw(self, surface):
         pygame.draw.polygon(surface, (0, 0, 0), self.calculate_vertices())

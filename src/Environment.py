@@ -83,6 +83,10 @@ while True:
     
     events = pygame.event.get()        
     for event in events:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.type == pygame.MOUSEBUTTONUP:
+            print(event.button)
+        if event.type == pygame.MOUSEMOTION:
+            print(event.pos, event.rel)
         if event.type == pygame.QUIT:
             exit(0)
     #implement gravity
