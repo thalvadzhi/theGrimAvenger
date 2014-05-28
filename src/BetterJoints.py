@@ -31,7 +31,7 @@ class Joint:
         new_body.add_joint(self)
 
 
-class BallJoint (Joint):
+class BallJoint (Joint):  # might neet to create another type of joint
 
     def move(self, movement_m):
         for body in self.bodies:
@@ -51,7 +51,7 @@ class BodyPart:
 
     proportions = {"Forearm": (10, 6.3), "Arm": (15, 5.2), "Neck": (15, 13),
                    "Head": 8, "Torso": (15, 2.2), "Thigh": (15, 4),
-                   "Calf": (10, 4.2)}
+                   "Calf": (13, 4.2)}
 
 #    def __init__(self, heigth_m, part, previous_joint):
 #        self.upper_joint = previous
@@ -114,9 +114,9 @@ class Calf(BodyPart):
     def __init__(self, heigth_m):
         torso_heigth = heigth_m / BodyPart.proportions["Torso"][1]
         thigh_heigth = heigth_m / BodyPart.proportions["Thigh"][1]
-        calf_heigth = heigth_m / BodyPart.proportions["Forearm"][1]
+        calf_heigth = heigth_m / BodyPart.proportions["Calf"][1]
         calf_position_y = (calf_heigth + torso_heigth) / 2 + thigh_heigth
-        self.shape = Rectangle(BodyPart.proportions["Forearm"][0], calf_heigth,
+        self.shape = Rectangle(BodyPart.proportions["Calf"][0], calf_heigth,
                                Vector((0, calf_position_y)))
 
 

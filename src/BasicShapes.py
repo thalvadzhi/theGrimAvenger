@@ -179,7 +179,7 @@ class Rectangle:
         movement = new_position - self.position_m
         if abs(movement.x) > 0.27 or abs(movement.y) > 0.27:
             # The is statement stops the recursion
-            self.pull_on_anchor(joint_position_on_body, movement)
+            self.move(movement)
 
     def add_joint(self, new_joint):
         position_on_body = (new_joint.position_m - self.position_m) +\
@@ -191,7 +191,7 @@ class Rectangle:
             px_to_m(cursor_location_px.x), px_to_m(cursor_location_px.y)))
         centroid_to_cursor = cursor_location_m - self.position_m
         centroid_to_cursor = centroid_to_cursor.rotate(
-            Vector(1, 0).angle_to(self.diraction))
+            self.diraction.angle_to(Vector((1, 0))))
         return abs(centroid_to_cursor.x) <= self.width_m / 2 and \
             abs(centroid_to_cursor.y) <= self.heigth_m / 2
 
