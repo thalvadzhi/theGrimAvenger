@@ -37,10 +37,8 @@ class Control(Events):
             self.cursor_controll()
 
     def cursor_controll(self):
-        print(self.cursor_selected_body)
         self.cursor_selected_body[0].pull_on_anchor(
-            self.cursor_selected_body[1] -
-            self.cursor_selected_body[0].position_m,
+            self.cursor_selected_body[1],
             px_to_m(self.cursor_location_px) - self.cursor_selected_body[1])
         self.cursor_selected_body = (
             self.cursor_selected_body[0], self.cursor_location_px)

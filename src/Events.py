@@ -140,12 +140,12 @@ class Events:
 
     def check_for_left_button_selectable(self):
         for selectable in self.left_button_selectable:
-            if selectable.is_under_cursor(self.cursor_location_px):
+            if selectable.is_point_in_body(self.cursor_location_px):
                 return selectable
         return None
 
     def check_for_right_button_selectable(self):
         for selectable in self.right_button_selectable:
-            if selectable.is_under_cursor(self.cursor_location_px):
+            if selectable.is_point_in_body(self.cursor_location_px):
                 return selectable
         return None

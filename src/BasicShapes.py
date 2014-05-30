@@ -120,17 +120,40 @@ class Triangle:
 
 class Rectangle(pygame.sprite.Sprite):
 
-    def __init__(self, width_m, height_m, position_m):
+    def __init__(self, width_m, height_m, position_m, mass_kg=0):
         """
         position_m is the position of the center of mass
         """
-        pygame.sprite.Sprite.__init__(self)
-        self.width_m = width_m
-        self.height_m = height_m
+        pygame.sprite.Sprite.__init__(self)  # move to gui
+        self.__width_m = width_m
+        self.__height_m = height_m
         self.position_m = Vector(position_m)
+        self.direction = Vector((1.0, 0))
+        self.mass_kg = mass_kg
+        self.velocity_mps = Vector((0.0, 0.0))
+        self.pivot_m = Vector((0.0, 0.0))
+
         self.joints = []
 
-        self.direction = Vector((1, 0))
+    def __hash__(self):
+        return int(self.height_m + 1000 * self.width_m)
+
+    def __eq__(self, other):
+        result = self.position_m == other.position_m
+        result &= self.width_m == other.width_m
+        result &= self.height_m == other.height_m
+        result &= self.mass_kg == other.mass_kg
+        result &= self.direction == other.direction
+        result &= self.pivot_m == other.pivot_m
+        return result
+
+    @property
+    def height_m(self):
+        return self.__height_m
+
+    @property
+    def width_m(self):
+        return self.__width_m
 
     def calculate_vertices(self):
         perpendicular = self.direction.rotate(90)
@@ -143,73 +166,50 @@ class Rectangle(pygame.sprite.Sprite):
                         self.direction * self.width_m / 2 + self.position_m)
         vertices.append(perpendicular * self.height_m / -2 +
                         self.direction * self.width_m / -2 + self.position_m)
-
         return vertices
 
-    def rotate(self, rotation):
-        self.direction = self.direction.rotate(rotation)
-        self.joints = [(joint, position_on_body.rotate(rotation))
-                       for joint, position_on_body in self.joints]
-        for joint, _ in self.joints:
-            joint.update(self)
+    def fix_joints(self):
+        for joint in self.joints:
+            joint.apply_constraints(self)
+
+    def rotate(self, angle):
+        self.direction = self.direction.rotate(angle)
 
     def move(self, movement_m):
         self.position_m = self.position_m + movement_m
-        for joint, _ in self.joints:
-            joint.update(self)
 
     def pull_on_anchor(self, anchor, movement_m):
-        new_anchor_position = anchor + movement_m
-        rotation = (anchor).angle_to(
-            movement_m + anchor)
+        new_anchor = anchor + movement_m
+        magic = self.pivot_m.rotate(
+            Vector((1, 0)).angle_to(self.direction)) + self.position_m
+        rotation = (anchor - magic).angle_to(new_anchor - magic)
         # work around a pygame bug
         rotation = int(rotation * 100000) / 100000
-        self.direction = self.direction.rotate(rotation)
-        self.joints = [(joint, position_on_body.rotate(rotation))
-                       for joint, position_on_body in self.joints]
-        anchor = anchor.rotate(rotation)
-        translation = new_anchor_position - anchor
-        self.position_m = self.position_m + translation
-        for joint, _ in self.joints:
-            joint.update(self)
+        self.rotate(rotation)
+        anchor = (anchor - self.position_m).rotate(
+            rotation) + self.position_m
+        translation = new_anchor - anchor
+        self.move(translation)
+        self.fix_joints()
 
-    def move_to_joint(self, current_joint):  # might need to fix recursion
-        joint_position_on_body = sum([vec for _, vec in self.joints
-                                      if _ is current_joint], Vector((0, 0)))
-        new_position = current_joint.position_m - joint_position_on_body
-        movement = new_position - self.position_m
-        if abs(movement.x) > 0.27 or abs(movement.y) > 0.27:
-            # The is statement stops the recursion
-            self.move(movement)
-
-    def add_joint(self, new_joint):
-        position_on_body = (new_joint.position_m - self.position_m) +\
-            (Vector((1, 0)) - self.direction)
-        self.joints.append((new_joint, position_on_body))
-
-    def is_under_cursor(self, cursor_location_px):
-        cursor_location_m = Vector((
-            px_to_m(cursor_location_px.x), px_to_m(cursor_location_px.y)))
-        centroid_to_cursor = cursor_location_m - self.position_m
-        centroid_to_cursor = centroid_to_cursor.rotate(
-<<<<<<< HEAD
-            self.diraction.angle_to(Vector((1, 0))))
-=======
+    def is_point_in_body(self, point_location_m):
+        centroid_to_point = point_location_m - self.position_m
+        centroid_to_point = centroid_to_point.rotate(
             self.direction.angle_to(Vector((1, 0))))
->>>>>>> e17edb44e868688fe6b6006e63f0f739d17b7a2c
-        return abs(centroid_to_cursor.x) <= self.width_m / 2 and \
-            abs(centroid_to_cursor.y) <= self.height_m / 2
-            
+        return abs(centroid_to_point.x) <= self.width_m / 2 and \
+            abs(centroid_to_point.y) <= self.height_m / 2
+
+    # move the rest to gui
     def scale_avatar(self):
-        self.imageMaster = pygame.transform.scale(self.imageMaster, 
-                                                                        (int(self.width_m), int(self.height_m)))
-        
+        self.imageMaster = pygame.transform.scale(self.imageMaster,
+                                                  (int(self.width_m), int(self.height_m)))
+
     def display_avatar(self, surface):
-        self.image = pygame.transform.rotate(self.imageMaster, 
-                                                                Vector((1, 0)).angle_to(self.direction))
+        self.image = pygame.transform.rotate(self.imageMaster,
+                                             self.direction.angle_to(Vector((1, 0))))
         self.rect = self.image.get_rect()
         self.rect.center = self.position_m
         surface.blit(self.image, self.rect)
-            
+
     def draw(self, surface):
-        pygame.draw.polygon(surface, (0, 0, 0), self.calculate_vertices())
+        pygame.draw.polygon(surface, (255, 0, 0), self.calculate_vertices())
