@@ -1,8 +1,10 @@
 import math
 import sys
 import pygame
-
+import Camera
+import Environment
 from pygame.math import Vector2 as Vector
+
 
 pygame.init()
 
@@ -25,6 +27,7 @@ class Batarang(pygame.sprite.Sprite):
         self.step = 40
         self.x = x
         self.y = y
+        self.should_fly = False
         
     def rotate(self):
         oldCenter = self.rect.center
@@ -41,7 +44,7 @@ class Batarang(pygame.sprite.Sprite):
         self.frames += 1
         #after some time gravity starts to take effect
         if self.frames >= 25:
-            self.gravity += 0.3
+            self.gravity += 0.4
         self.rect = self.rect.move([self.direction.x * 20, self.direction.y * 20 + self.gravity])
         self.rotate()
         
@@ -52,33 +55,46 @@ class Batarang(pygame.sprite.Sprite):
         #run vector between the two to determine the direction of the batarang
         self.direction = Vector(mouse_x - self.x, mouse_y - self.y)
         self.direction = self.direction.normalize()
+
+    def draw(self, surface):
+        # for event in pygame.event.get():
+        #     if event.type == pygame.MOUSEBUTTONUP:
+        #         mouse_position = pygame.mouse.get_pos()
+        #         self.direct(mouse_position[0], mouse_position[1])
+        #         self.should_fly = True
+        surface.blit(self.image, self.rect)
+        if self.should_fly:
+            self.move()
+            self.rotate()
+
         
-        
-x = pygame.Rect(200, 200, 32, 32)
-color = (255, 0, 0)
+# x = Environment.Block((255, 0, 123), 32, 32, 20, 20)
 
-run = False
-a = Batarang(0, 450)
-allSprites = pygame.sprite.Group(a)
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
-        if event.type == pygame.MOUSEBUTTONUP:
-            mouse_position = pygame.mouse.get_pos()
-            a.direct(mouse_position[0], mouse_position[1])
-            #print("YEAH")
-            run = True
-    screen.fill((255, 255, 255))
-    if a.rect.colliderect(x):
-        color = (0, 255, 0)
-    pygame.draw.rect(screen, color, x)
-    screen.blit(a.image, a.rect)
-    keys = pygame.key.get_pressed() 
-    if run:
-        a.move()
-        #a.rotate()
-    pygame.display.update()
-    clock.tick(60)
-
-
+# color = (255, 0, 0)
+# camera = Camera.Camera(2000, 500, 1000, 500)
+# run = False
+# a = Batarang(0, 450)
+# allSprites = pygame.sprite.Group(a)
+# while True:
+#     for event in pygame.event.get():
+#         if event.type == pygame.QUIT:
+#             sys.exit()
+#         if event.type == pygame.MOUSEBUTTONUP:
+#             mouse_position = pygame.mouse.get_pos()
+#             a.direct(mouse_position[0], mouse_position[1])
+#             #print("YEAH")
+#             run = True
+#     camera.update(a)
+#     screen.fill((255, 255, 255))
+#     if a.rect.colliderect(x):
+#         color = (0, 255, 0)
+#     pygame.draw.rect(screen, color, camera.apply(x))
+#     screen.blit(a.image, camera.apply(a))
+#     keys = pygame.key.get_pressed()
+#     if run:
+#         a.move()
+#         #a.rotate()
+#     pygame.display.update()
+#     clock.tick(60)
+#
+#
