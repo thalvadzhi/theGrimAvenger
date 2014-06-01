@@ -17,11 +17,12 @@ class GraplingHook(pygame.sprite.Sprite):
         self.aim = (x, y + 20)
         self.should_aim = True
         self.should_retract = False
-        self.limit = Vector(30, 0)
+        self.limit = Vector(1, 0)
         self.angle = 0
         self.rotation = 0
-        self.step = -1
+        self.step = -2
         self.should_release = False
+        self.time = 0;
     
     def calculate_angle(self):
         self.angle = self.rope.angle_to(self.limit)
@@ -29,7 +30,7 @@ class GraplingHook(pygame.sprite.Sprite):
     def retract(self):
         screen.fill((255, 255, 255))
         if self.distance > 150:
-            self.rect = self.rect.move([self.rope.x * 10, self.rope.y * 10])
+            self.rect = self.rect.move([self.rope.x * 15, self.rope.y * 15])
             self.calculate()
         else:
             self.swing()
@@ -44,15 +45,22 @@ class GraplingHook(pygame.sprite.Sprite):
     
     def swing(self):
         #swing the player also reduce the angle of swinging with time
-        self.rotation += math.fabs(self.step)
-        if self.rotation >= 180 - 2 * self.angle:
-            self.step *= -1
-            self.rotation = 0  
-            self.angle += 3
-            if 180 - 2 * self.angle <= 0:
-                self.step = 0
+        self.time += 1
+        # self.rotation += math.fabs(self.step)
+        # if self.rotation >= 180 - 2 * self.angle:
+        #     self.step *= -1
+        #     self.rotation = 0
+        #     #self.angle += 3
+        #     if 180 - 2 * self.angle <= 0:
+        #         self.step = 0
         self.player = self.hook - (self.rope * self.distance)
+#        angle_to_Oy = - (270 - (-self.rope).angle_to(Vector(0, 1)))
+        angle_to_Oy = ((-self.rope).angle_to(Vector(0, -1)) - 90)
+
+        self.step = (angle_to_Oy) - (90 - self.angle) * math.cos(math.sqrt(0.001) * (self.time))
+
         self.rect.center = [self.player.x, self.player.y]
+        print(self.step, angle_to_Oy)
         self.rope.rotate_ip(self.step)
         
     
@@ -99,4 +107,4 @@ while True:
     screen.blit(graple.image, graple.rect)
     
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(10)
