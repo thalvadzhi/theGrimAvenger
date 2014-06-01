@@ -6,12 +6,6 @@ import Environment
 from pygame.math import Vector2 as Vector
 
 
-pygame.init()
-
-screen = pygame.display.set_mode((1000, 500))
-
-clock = pygame.time.Clock()
-
 class Batarang(pygame.sprite.Sprite):
     def __init__(self, x, y):
         #x and y are the coordinates of player's hand
