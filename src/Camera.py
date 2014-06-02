@@ -34,5 +34,4 @@ class Camera:
         left = max((self.window_width - self.state.width), left)
         top = max((self.window_height - self.state.height), top)
         top = min(0, top)
-        #print(left, top)
         return Rect(left, top, self.state[2], self.state[3])

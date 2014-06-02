@@ -2,6 +2,9 @@ import pygame
 import math
 from pygame.math import Vector2 as Vector
 import sys
+from Pendulum import Pendulum
+
+
 
 pygame.init()
 screen = pygame.display.set_mode((1000, 500))
@@ -17,45 +20,41 @@ class GraplingHook(pygame.sprite.Sprite):
         self.aim = (x, y + 20)
         self.should_aim = True
         self.should_retract = False
-        self.limit = Vector(30, 0)
+        self.limit = Vector(1, 0)
         self.angle = 0
         self.rotation = 0
-        self.step = -1
+        self.step = 0
         self.should_release = False
+        self.time = 0
+        self.distance_limit = 150
     
     def calculate_angle(self):
         self.angle = self.rope.angle_to(self.limit)
+        self.bob = Pendulum(90 - self.angle, self.distance_limit, (self.hook.x, self.hook.y))
         
     def retract(self):
         screen.fill((255, 255, 255))
-        if self.distance > 150:
-            self.rect = self.rect.move([self.rope.x * 10, self.rope.y * 10])
-            self.calculate()
+        if self.distance > self.distance_limit:
+            self.rect = self.rect.move([self.rope.x * 15, self.rope.y * 15])
+            self.calculate_rope()
         else:
             self.swing()
     
-    def calculate(self):
+    def calculate_rope(self):
         self.hook = Vector(self.aim)
         self.player = Vector(self.rect.center[0], self.rect.center[1])
         self.distance = self.hook.distance_to(self.player)
         self.rope = self.hook - self.player
         self.rope = self.rope.normalize()
-        
+
     
     def swing(self):
-        #swing the player also reduce the angle of swinging with time
-        self.rotation += math.fabs(self.step)
-        if self.rotation >= 180 - 2 * self.angle:
-            self.step *= -1
-            self.rotation = 0  
-            self.angle += 3
-            if 180 - 2 * self.angle <= 0:
-                self.step = 0
-        self.player = self.hook - (self.rope * self.distance)
-        self.rect.center = [self.player.x, self.player.y]
+        self.bob.recompute_angle()
+        self.step = self.bob.dtheta
         self.rope.rotate_ip(self.step)
-        
-    
+        self.rect.center = self.bob.rect.center
+
+
     def functionality(self, event):
         if event.type == pygame.MOUSEMOTION and self.should_aim:
                 screen.fill((255, 255, 255))
@@ -66,7 +65,7 @@ class GraplingHook(pygame.sprite.Sprite):
             self.should_aim = False
             self.draw()
             self.should_retract = True
-            self.calculate()
+            self.calculate_rope()
             self.calculate_angle()
             
         if event.type == pygame.KEYUP:
@@ -76,7 +75,10 @@ class GraplingHook(pygame.sprite.Sprite):
                 
     def release(self):
         screen.fill((255, 255, 255))
-        self.rect = self.rect.move([-self.rope.x*10, -self.rope.y*10])
+        self.calculate_rope()
+        self.rect = self.rect.move([-self.rope.x * 8 - (math.sin(self.bob.theta) * int(self.bob.dtheta)),
+                                    -self.rope.y * 10 + self.rope.y * (15 - self.time)])
+        self.time += 0.7
     
     def draw(self):
         if self.should_retract:

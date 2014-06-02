@@ -2,19 +2,23 @@ import pygame
 from pygame import *
 from pygame.math import Vector2 as Vector
 from Camera import Camera
+from Pendulum import Pendulum
 
 
 class Block(pygame.sprite.Sprite):
     #just the basic class for any obstacle
     def __init__(self, colour, width, height, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.saw_image = pygame.Surface((width, height))
-        self.saw_image.fill(colour)
-        self.saw_rect = Rect(x, y, width, height)
+        self.image = pygame.Surface((width, height))
+        self.image.fill(colour)
+        self.rect = Rect(x, y, width, height)
 
-class SawBlock(Block):
+
+
+class SawBlock(pygame.sprite.Sprite):
     #a swinging saw
-    def __init__(self, x, y):
+    def __init__(self, x, y, length):
+        pygame.sprite.Sprite.__init__(self)
         #x and y should be the coordinates from the point at which the rope would be hanging
         #self.image = "import saw image here"
         #this is the rope by which the saw would be swinging
@@ -23,7 +27,7 @@ class SawBlock(Block):
         self.saw_image = self.saw_image_master
         self.saw_rect = self.saw_image.get_rect()
         self.rope_width = 10
-        self.rope_height = 250
+        self.rope_height = length
         self.rope_master = pygame.Surface((self.rope_width, self.rope_height)).convert_alpha()
         self.rope = self.rope_master
         self.rope_rect = self.rope.get_rect()
@@ -31,13 +35,14 @@ class SawBlock(Block):
         pygame.Surface.fill(self.rope, (255, 0, 0))
         self.x = x
         self.y = y
-        self.swinged = 0
        # self.rect = Rect(x, y + 200, 30, 30)
         self.saw_rect.center = (x, y + self.rope_height + 15)
         self.step = 40
         self.swing_step = 1
         self.rotation = 0
         self.is_severed = False
+        self.rect = self.saw_rect
+        self.bob = Pendulum(45, self.rope_height, (self.x, self.y))
 
     def rotate_saw(self):
         old_center = self.saw_rect.center
@@ -49,56 +54,95 @@ class SawBlock(Block):
             self.rotation = self.step
 
     def swing_rope(self):
-        self.swinged += self.swing_step
-        self.rope = pygame.transform.rotate(self.rope_master, self.swinged)
-        if self.swinged > 40 or self.swinged < -40:
-            self.swing_step *= -1
+        self.rope = pygame.transform.rotate(self.rope_master, -self.bob.theta)
+        midpoint_x = (self.x + self.bob.rect.center[0]) / 2
+        midpoint_y = (self.y + self.bob.rect.center[1]) / 2
+        self.rope_rect = self.rope.get_rect()
+        self.rope_rect.center = (midpoint_x, midpoint_y)
+        self.saw_rect.center = self.bob.rect.center
+        self.bob.recompute_angle()
+
 
     def deploy(self, destroyer_rect):
         self.is_severed = True
         top_part_length = destroyer_rect.center[1] - self.y
         bottom_part_length = self.rope_height - top_part_length
-        print(top_part_length, bottom_part_length)
-
+        #cut_rope is the top part
         self.cut_rope = pygame.Surface((10, top_part_length))
         pygame.Surface.fill(self.cut_rope, (255, 0, 0))
         self.cut_rope_rect = self.cut_rope.get_rect()
-        print("self y: ", self.y)
         self.cut_rope_rect.center = (self.rope_rect.center[0], self.y + int(top_part_length / 2))
-        print("self y: ", self.y)
         self.rope = pygame.Surface((10, bottom_part_length))
         self.rope_rect = self.rope.get_rect()
         self.rope_rect.center = (self.cut_rope_rect.center[0], self.y + top_part_length + int(bottom_part_length / 2))
-
         pygame.Surface.fill(self.rope, (0, 255, 0))
-        print(self.cut_rope_rect.center, self.rope_rect.center)
 
     def move(self, to_move, increment):
         #expected tuple
         to_move = (to_move[0] + increment[0], to_move[1] + increment[1])
         return to_move
 
-    def draw(self, surface):
+    def draw(self, surface, camera):
         if self.is_severed:
-            surface.blit(self.cut_rope, self.cut_rope_rect)
-            surface.blit(self.rope, self.rope_rect)
-            surface.blit(self.saw_image, self.saw_rect)
+            surface.blit(self.cut_rope, camera.apply_to_rect(self.cut_rope_rect))
+            surface.blit(self.rope, camera.apply_to_rect(self.rope_rect))
+            surface.blit(self.saw_image, camera.apply_to_rect(self.saw_rect))
             self.rope_rect.center = self.move(self.rope_rect.center, (0, 4))
             self.saw_rect = self.saw_rect.move([0, 4])
             self.rotate_saw()
+           # self.swing_rope()
         else:
             self.rotate_saw()
-            surface.blit(self.rope, self.rope_rect)
-            surface.blit(self.saw_image, self.saw_rect)
+            self.swing_rope()
+            surface.blit(self.rope, camera.apply_to_rect(self.rope_rect))
+            surface.blit(self.saw_image, camera.apply_to_rect(self.saw_rect))
 
     def collide(self, bat):
         if bat.rect.colliderect(self.rope_rect) and not self.is_severed:
             self.deploy(bat.rect)
 
 
-class Shadow(Block):
-    pass
+class Shadow:
+    #this class needs 4 points to use as coordinates
+    SHADOW_SURFACE = pygame.Surface((800, 600))
+    SHADOW_SURFACE.fill((255, 0, 0))
+    SHADOW_SURFACE.set_colorkey((255, 0, 0))
+    SHADOW_SURFACE.set_alpha(200)
 
+    def __init__(self, topleft, topright, bottomleft, bottomright):
+        self.topleft = topleft
+        self.topright = topright
+        self.bottomleft = bottomleft
+        self.bottomright = bottomright
+
+    def draw(self):
+        pygame.draw.polygon(Shadow.SHADOW_SURFACE, (0, 0, 0, 100), [self.topleft, self.topright, self.bottomright, self.bottomleft])
+
+    def collide(self, player, shadow_coordinates):
+        #def point_inside_polygon(x,y,poly):
+        #some raycasting algorithm here
+        length = len(shadow_coordinates)
+        allpoints = []
+        for coordinate in player:
+            inside = False
+            #for coordinates in player:
+            point1X, point1Y = shadow_coordinates[0]
+            for i in range(length + 1):
+                point2X, point2Y = shadow_coordinates[i % length]
+                if coordinate[1] > min(point1Y, point2Y):
+                    if coordinate[1] <= max(point1Y, point2Y):
+                        if coordinate[0] <= max(point1X, point2X):
+                            if point1Y != point2Y:
+                                xintersection = (coordinate[1]-point1Y) * (point2X-point1X) / (point2Y-point1Y) + point1X
+                            if point1X == point2X or coordinate[0] <= xintersection:
+                                inside = not inside
+                point1X, point1Y = point2X, point2Y
+            allpoints.append(inside)
+        return all(allpoints)
+
+    @staticmethod
+    def draw_to_screen(surface):
+        surface.blit(Shadow.SHADOW_SURFACE, (0, 0))
 
 
 
@@ -118,6 +162,9 @@ timer = pygame.time.Clock()
 #X marks the Block
 level = ["XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
          "X             XXXX   XX X              X",
+         "X         X                            X",
+         "X         S                            X",
+         "X                                      X",
          "X                                      X",
          "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"]
    
@@ -125,97 +172,28 @@ x = y = 0
 for row in level:
     for element in row:
         if element == "X":
-            entities.add(Block((255, 0, 123), 32, 32, x, y))
-        if(y == (len(level) - 1) * 32):
-            collide_blocks_bottom.add(Block((255, 0, 123), 32, 32, x, y))
+            entities.add(Block((255, 0, 123), 64, 64, x, y))
+        elif element == "S":
+            entities.add(SawBlock(x + 32, y, 100))
+
+        if(y == (len(level) - 1) * 64):
+            collide_blocks_bottom.add(Block((255, 0, 123), 64, 64, x, y))
         if(y == 0):
-            collide_blocks_top.add(Block((255, 0, 123), 32, 32, x, y))
+            collide_blocks_top.add(Block((255, 0, 123), 64, 64, x, y))
         if x == (len(level[0]) - 1) * 32:
-            collide_blocks_right.add(Block((255, 0, 123), 32, 32, x, y))
+            collide_blocks_right.add(Block((255, 0, 123), 64, 64, x, y))
         if x == 0:
             collide_blocks_left.add(Block((255, 0, 123), 32, 32, x, y))
-        x += 32
-    y += 32
+        x += 64
+    y += 64
     x = 0
 
-level_width = len(level[0]) * 32
-level_height = len(level) * 32
+level_width = len(level[0]) * 64
+level_height = len(level) * 64
 
-player = Block((255, 0, 0), 32, 32, 32, 32)
+player = Block((255, 0, 0), 64, 64, 64, 64)
 
 camera = Camera(level_width, level_height, window_width, window_height)
 
     
-<<<<<<< HEAD
-#===============================================================================
-# while True:
-#     
-#     events = pygame.event.get()        
-#     for event in events:
-#         if event.type == pygame.QUIT:
-#             exit(0)
-#     #implement gravity
-# 
-#     if not bool(pygame.sprite.spritecollideany(player, collide_blocks_bottom)):
-#         player.rect = player.rect.move([0, 3])
-#         
-#            
-#     keys = pygame.key.get_pressed()
-#     if keys[pygame.K_LEFT] and not bool(pygame.sprite.spritecollideany(player, collide_blocks_left)):
-#         player.rect.x -= 5
-#         
-#        
-#     if keys[pygame.K_RIGHT] and not bool(pygame.sprite.spritecollideany(player, collide_blocks_right)):
-#         player.rect.x += 5
-#     
-#     if keys[pygame.K_UP] and not bool(pygame.sprite.spritecollideany(player, collide_blocks_top)):
-#         player.rect.y -= 5
-#             
-#   
-#     screen.fill(Color("#500011"))
-#     camera.update(player)
-#     
-#     for entity in entities:
-#         screen.blit(entity.image, camera.apply(entity))
-#     screen.blit(player.image, camera.apply(player))   
-#     timer.tick(60)
-#     pygame.display.update()
-#===============================================================================
-=======
-while True:
-    
-    events = pygame.event.get()        
-    for event in events:
-        if event.type == pygame.MOUSEBUTTONDOWN and event.type == pygame.MOUSEBUTTONUP:
-            print(event.button)
-        if event.type == pygame.MOUSEMOTION:
-            print(event.pos, event.rel)
-        if event.type == pygame.QUIT:
-            exit(0)
-    #implement gravity
 
-    if not bool(pygame.sprite.spritecollideany(player, collide_blocks_bottom)):
-        player.rect = player.rect.move([0, 3])
-        
-           
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] and not bool(pygame.sprite.spritecollideany(player, collide_blocks_left)):
-        player.rect.x -= 5
-        
-       
-    if keys[pygame.K_RIGHT] and not bool(pygame.sprite.spritecollideany(player, collide_blocks_right)):
-        player.rect.x += 5
-    
-    if keys[pygame.K_UP] and not bool(pygame.sprite.spritecollideany(player, collide_blocks_top)):
-        player.rect.y -= 5
-            
-  
-    screen.fill(Color("#500011"))
-    camera.update(player)
-    
-    for entity in entities:
-        screen.blit(entity.image, camera.apply(entity))
-    screen.blit(player.image, camera.apply(player))   
-    timer.tick(60)
-    pygame.display.update()
->>>>>>> c8a646e751d0abe8d1f69fe0fbcd42a3edd89e8b
