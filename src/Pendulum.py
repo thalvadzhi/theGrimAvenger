@@ -2,7 +2,7 @@ import pygame, sys
 from pygame.locals import *
 from math import sin, cos, radians
 
-class BobMass(pygame.sprite.Sprite):
+class Pendulum(pygame.sprite.Sprite):
     def __init__(self, angle, swing_length, pivot):
         pygame.sprite.Sprite.__init__(self)
         self.theta = angle
