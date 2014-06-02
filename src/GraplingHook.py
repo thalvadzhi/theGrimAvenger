@@ -2,7 +2,7 @@ import pygame
 import math
 from pygame.math import Vector2 as Vector
 import sys
-from Pendulum import BobMass
+from Pendulum import Pendulum
 
 
 
@@ -31,7 +31,7 @@ class GraplingHook(pygame.sprite.Sprite):
     def calculate_angle(self):
         self.angle = self.rope.angle_to(self.limit)
         #print(self.angle, "YEAH")
-        self.bob = BobMass(90 - self.angle, self.distance_limit, (self.hook.x, self.hook.y))
+        self.bob = Pendulum(90 - self.angle, self.distance_limit, (self.hook.x, self.hook.y))
         
     def retract(self):
         screen.fill((255, 255, 255))
