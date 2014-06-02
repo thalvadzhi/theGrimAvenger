@@ -2,6 +2,7 @@ import pygame
 from pygame import *
 from pygame.math import Vector2 as Vector
 from Camera import Camera
+from Pendulum import Pendulum
 
 
 class Block(pygame.sprite.Sprite):
@@ -11,6 +12,7 @@ class Block(pygame.sprite.Sprite):
         self.image = pygame.Surface((width, height))
         self.image.fill(colour)
         self.rect = Rect(x, y, width, height)
+
 
 
 class SawBlock(pygame.sprite.Sprite):
@@ -33,7 +35,6 @@ class SawBlock(pygame.sprite.Sprite):
         pygame.Surface.fill(self.rope, (255, 0, 0))
         self.x = x
         self.y = y
-        self.swinged = 0
        # self.rect = Rect(x, y + 200, 30, 30)
         self.saw_rect.center = (x, y + self.rope_height + 15)
         self.step = 40
@@ -41,6 +42,7 @@ class SawBlock(pygame.sprite.Sprite):
         self.rotation = 0
         self.is_severed = False
         self.rect = self.saw_rect
+        self.bob = Pendulum(45, self.rope_height, (self.x, self.y))
 
     def rotate_saw(self):
         old_center = self.saw_rect.center
@@ -52,10 +54,14 @@ class SawBlock(pygame.sprite.Sprite):
             self.rotation = self.step
 
     def swing_rope(self):
-        self.swinged += self.swing_step
-        self.rope = pygame.transform.rotate(self.rope_master, self.swinged)
-        if self.swinged > 40 or self.swinged < -40:
-            self.swing_step *= -1
+        self.rope = pygame.transform.rotate(self.rope_master, -self.bob.theta)
+        midpoint_x = (self.x + self.bob.rect.center[0]) / 2
+        midpoint_y = (self.y + self.bob.rect.center[1]) / 2
+        self.rope_rect = self.rope.get_rect()
+        self.rope_rect.center = (midpoint_x, midpoint_y)
+        self.saw_rect.center = self.bob.rect.center
+        self.bob.recompute_angle()
+
 
     def deploy(self, destroyer_rect):
         self.is_severed = True
@@ -84,8 +90,10 @@ class SawBlock(pygame.sprite.Sprite):
             self.rope_rect.center = self.move(self.rope_rect.center, (0, 4))
             self.saw_rect = self.saw_rect.move([0, 4])
             self.rotate_saw()
+           # self.swing_rope()
         else:
             self.rotate_saw()
+            self.swing_rope()
             surface.blit(self.rope, camera.apply_to_rect(self.rope_rect))
             surface.blit(self.saw_image, camera.apply_to_rect(self.saw_rect))
 
