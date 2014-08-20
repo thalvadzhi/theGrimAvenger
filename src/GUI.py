@@ -6,8 +6,14 @@ import pygame
 from pygame.color import THECOLORS
 
 
-class GameWindow:
+class Slider:
 
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
+
+class GameWindow:
+    
     """
     """
 
