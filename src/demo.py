@@ -75,12 +75,12 @@ while True:
     ragdoll.move(ragdoll_velosity)
     collide = [ground.check_if_collide(body_part)
                for body_part in ragdoll.body_parts.values()]
-    if any(collide):
-        max_MTV = [_ for _ in collide if _][0]
+    if any(_[0] for _ in collide):
+        max_MTV = [_[1] for _ in collide if _[0]][0]
         for MTV in collide:
-            if MTV:
-                if max_MTV.length() < MTV.length():
-                    max_MTV = MTV
+            if MTV[0]:
+                if max_MTV.length() < MTV[1].length():
+                    max_MTV = MTV[1]
         ragdoll.move(max_MTV)
         ragdoll_velosity = ragdoll_velosity + max_MTV
     screen.fill((55, 155, 255))
