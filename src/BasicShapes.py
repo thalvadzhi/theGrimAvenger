@@ -350,9 +350,9 @@ class Rectangle(RigitBody):
         self.__height_m = height_m
         self.sync_position()
         #topleft position
-        vertices = self.calculate_vertices()
-        self.x = vertices[3].x
-        self.y = vertices[3].y
+        self.sync_position()
+        self.x = self.vertices[3].x
+        self.y = self.vertices[3].y
         self.calculate_mass()
 
     def __hash__(self):
@@ -383,15 +383,15 @@ class Rectangle(RigitBody):
     def center(self, value):
 
         self.position_m = value
-        vertices = self.calculate_vertices()
-        self.x = vertices[3].x
-        self.y = vertices[3].y
+        self.sync_position()
+        self.x = self.vertices[3].x
+        self.y = self.vertices[3].y
 
     def advance(self, amount_x, amount_y):
         self.position_m = (self.center[0] + amount_x, self.center[1] + amount_y)
-        vertices = self.calculate_vertices()
-        self.x = vertices[3].x
-        self.y = vertices[3].y
+        self.sync_position()
+        self.x = self.vertices[3].x
+        self.y = self.vertices[3].y
 
     def sync_position(self):
         perpendicular = self.direction.rotate(90)
@@ -438,9 +438,9 @@ class Rectangle(RigitBody):
     def draw(self, surface, colour=(255, 0, 0), camera=0):
         #print(camera.update_vertices(self.calculate_vertices()))
         if camera != 0:
-            pygame.draw.polygon(surface, colour, camera.apply_to_vertices(self.calculate_vertices()))
+            pygame.draw.polygon(surface, colour, camera.apply_to_vertices(self.vertices))
         else:
-            pygame.draw.polygon(surface, colour, self.calculate_vertices())
+            pygame.draw.polygon(surface, colour, self.vertices)
 
     def get_SAT_axis(self):
         return [Line(self.vertices[0], self.vertices[1]),
