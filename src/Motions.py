@@ -1,15 +1,12 @@
-import pickle
+from pickle import dump, load
 import os
-
-from pygame.math import Vector2 as Vector
 
 
 class Motion:
 
     def __init__(self, item):
         self.__item = item
-        self.current_frame = 0
-        self.frames = {}
+        self.frames = []
 
     @property
     def item(self):
@@ -23,21 +20,29 @@ class Motion:
             motions[motion_file[:len(motion_file) - 3]] = motion
             with open(r"folder/{0}".format(motion_file),
                       "rb") as motion_frames:
-                motion.frames = pickle.load(motion_frames)
+                motion.frames = load(motion_frames)
+
+    def load_motion(self, path):
+        with open(path, "rb") as motion_frames:
+            self.frames = load(motion_frames)
 
     def save_motion(self, path):
         with open(path, 'wb') as motion_file:
-            pickle.dump(self.frames, motion_file)
+            print(self.frames)
+            dump(self.frames, motion_file)
 
     def capture_frame(self):
-        self.frames[len(
-            self.frames.keys()) + 1] = self.item.convert_to_local_coordinates()
+        self.frames.append(self.item.capture_frame())
 
-    def play_motion(self, fps):
-        for frame in self.frames.keys():
-            self.
+    def play_motion(self):
+        self.frames[0] = self.item.capture_frame()
+        for frame in range(len(self.frames) - 1):
+            for _ in self.item.shift_to_next_frame(self.frames[frame],
+                                                   self.frames[frame + 1]):
+                yield
+        raise StopIteration
 
-    def shift_to_next_frame(self, frames):
-        for state in range(frames):
-            yield
-        self.current_frame += 1
+ #   def shift_to_next_frame(self, frames):
+ #       for state in range(frames):
+ #           yield
+ #       self.current_frame += 1
