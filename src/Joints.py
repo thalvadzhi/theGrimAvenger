@@ -1,7 +1,7 @@
 from pygame.math import Vector2 as Vector
 
 from VectorMath import calculate_centroid
-from VectorMath import get_closest_point
+from VectorMath import Line
 
 
 class Joint:
@@ -63,7 +63,6 @@ class RailJoint(Joint):
         Joint.__init__(self, {})
         self.point_A = point_A
         self.point_B = point_B
-        self.apply_constraints()
 
     def __hash__(self):
         return Joint.__hash__(self)
@@ -72,16 +71,16 @@ class RailJoint(Joint):
         return Joint.__eq__(self, other)
 
     def move_to_joint(self, body):
-        joint_position = self.calculate_world_position(body)
-        new_joint_position = get_closest_point(
-            joint_position, self.point_A, self.point_B)
-        magic = self.calculate_pivot(body).rotate(
-            Vector((1, 0)).angle_to(body.direction)) - body.position_m
-        rotation = round((
-            joint_position + magic).angle_to(new_joint_position + magic), 5)
-        # missing code!
-        joint_position = self.calculate_world_position(body)
-        translation = new_joint_position - joint_position
+        anchor = self.calculate_world_position(body)
+        new_anchor = Line(self.point_A, self.point_B, True).get_closest_point(
+            self.calculate_world_position(body))
+        magic = Vector(0, 0).rotate(
+            Vector((1, 0)).angle_to(body.direction)) + body.position_m
+        rotation = round((- magic).angle_to(new_anchor - magic), 5)
+        body.rotate(rotation)
+        anchor = (anchor - body.position_m).rotate(
+            rotation) + body.position_m
+        translation = new_anchor - anchor
         body.move(translation)
 
 
