@@ -406,8 +406,11 @@ class Rectangle(RigitBody):
                         self.direction * self.width_m / -2 + self.position_m)
         self.vertices = vertices
 
-    def is_point_in_body(self, point_location_m):
-        centroid_to_point = point_location_m - self.position_m
+    def is_point_in_body(self, point_location_m, camera=0):
+        if camera != 0:
+            centroid_to_point = point_location_m - camera.apply_to_vertex(self.position_m)
+        else:
+            centroid_to_point = point_location_m - self.position_m
         centroid_to_point = centroid_to_point.rotate(
             self.direction.angle_to(Vector((1, 0))))
         return abs(centroid_to_point.x) <= self.width_m / 2 and \
