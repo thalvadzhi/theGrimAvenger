@@ -3,7 +3,7 @@ from math import pi
 
 import pygame
 
-from pygame.math import Vector2 as Vector
+from Vec2D import Vec2d as Vector
 
 from VectorMath import calculate_centroid
 from VectorMath import Line
@@ -348,7 +348,7 @@ class Rectangle(RigitBody):
         RigitBody.__init__(self, position_m, density)
         self.__width_m = width_m
         self.__height_m = height_m
-        self.sync_position()
+        #self.sync_position()
         #topleft position
         self.sync_position()
         self.x = self.vertices[3].x
@@ -461,7 +461,6 @@ class Rectangle(RigitBody):
             return Rectangle(0, 0, (0, 0))
 
         other_vertices = other.calculate_vertices()
-        print(other_vertices[0])
         this_vertices = self.calculate_vertices()
         clipped_vertices = [0 for i in range(4)]
         for i in range(4):
