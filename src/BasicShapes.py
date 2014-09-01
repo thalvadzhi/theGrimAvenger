@@ -439,7 +439,6 @@ class Rectangle(RigitBody):
   #          self.is_point_in_body(other.position_m)
 
     def draw(self, surface, colour=(255, 0, 0), camera=0):
-        #print(camera.update_vertices(self.calculate_vertices()))
         if camera != 0:
             pygame.draw.polygon(surface, colour, camera.apply_to_vertices(self.vertices))
         else:
