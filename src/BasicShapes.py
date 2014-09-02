@@ -83,7 +83,7 @@ class RigitBody:
                 new_joint_positions[joint])
 
     def rotate(self, angle):
-        self.direction = self.direction.rotate(round(angle, 5))
+        self.direction = self.direction.rotate(angle)
 
     def move(self, movement_m):
         self.position_m = self.position_m + movement_m
@@ -428,8 +428,8 @@ class Rectangle(RigitBody):
   #  def collides_triangle(self, other):
   #      return any(map(self.is_point_in_body, other.vertices.values()))
 
-  #  def collides_rectangle(self, other):
-  #      return any(map(self.is_point_in_body, other.vertices))
+    def collides_rectangle(self, other):
+        return any(map(self.is_point_in_body, other.vertices))
 
   #  def collides_circle(self, other):
   #      distances = [(other.position_m - Line(self.vertices[
@@ -459,8 +459,8 @@ class Rectangle(RigitBody):
         if not self.collides_rectangle(other):
             return Rectangle(0, 0, (0, 0))
 
-        other_vertices = other.calculate_vertices()
-        this_vertices = self.calculate_vertices()
+        other_vertices = other.vertices
+        this_vertices = self.vertices
         clipped_vertices = [0 for i in range(4)]
         for i in range(4):
             if self.is_point_in_body(other_vertices[i]):
@@ -488,7 +488,7 @@ class Rectangle(RigitBody):
         clipped_width = clipped_vertices[0].distance_to(clipped_vertices[1])
         clipped_center = (clipped_vertices[0].x + clipped_width / 2, clipped_vertices[0].y - clipped_height / 2)
 
-        return Rectangle(clipped_height, clipped_width, clipped_center)
+        return Rectangle(clipped_width, clipped_height, clipped_center)
 
     @staticmethod
     def get_rect(image, old_center):
