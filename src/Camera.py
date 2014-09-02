@@ -1,5 +1,5 @@
 from pygame import *
-from pygame.math import Vector2 as Vector
+from Vec2D import Vec2d as Vector
 
 class Camera:
     def __init__(self, width, height, window_width, window_height):
@@ -28,10 +28,10 @@ class Camera:
         return result_x, result_y
 
     def apply_to_vertices(self, vertices):
+        result = []
         for vertex in vertices:
-            vertex.x += self.state.x
-            vertex.y += self.state.y
-        return vertices
+            result.append(Vector((vertex.x + self.state.x, vertex.y + self.state.y)))
+        return result
 
     def apply_to_vertex(self, vertex):
         return Vector(vertex.x + self.state.x, vertex.y + self.state.y)
@@ -39,7 +39,7 @@ class Camera:
 
     #this updates sprites
     def update(self, target):
-        self.state = self.functionality(target.rect)
+        self.state = self.functionality((target.rect.x, target.rect.y))
 
     #this updates rects
     def update_rect(self, target):

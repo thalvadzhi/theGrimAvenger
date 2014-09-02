@@ -1,6 +1,6 @@
 import pygame, sys
 from pygame import *
-from pygame.math import Vector2 as Vector
+from Vec2D import Vec2d as Vector
 import pygame.gfxdraw
 import math
 from Camera import Camera
@@ -15,11 +15,11 @@ class Block():
     def __init__(self, colour, width, height, x, y):
         self.image = pygame.Surface((width, height))
         self.image.fill(colour)
-        self.rect = Rectangle(width, height, Vector(x // 2, y // 2))
+        self.rect = Rectangle(width, height, Vector(x + width / 2, y + height / 2))
         self.mask = get_hitmask(self, 0)
         self.colour = colour
 
-    def draw(self, screen, camera):
+    def draw(self, screen, camera=0):
         self.rect.draw(screen, self.colour, camera)
 
 
@@ -99,6 +99,10 @@ class SawBlock():
         else:
             return -1
 
+    def set_up(self, name):
+        self.saw_image_master = pygame.image.load(name).convert_alpha()
+        self.saw_image_master = pygame.transform.scale(self.saw_image_master, (50, 50))
+        self.image = self.saw_image_master
 
     def update(self, time):
         #remember to implement timer
@@ -150,8 +154,8 @@ class SawBlock():
 class Shadow:
     #this class needs 4 points to use as coordinates
     SHADOW_SURFACE = pygame.Surface((800, 600))
-    SHADOW_SURFACE.fill((255, 0, 0))
-    SHADOW_SURFACE.set_colorkey((255, 0, 0))
+    SHADOW_SURFACE.fill((0, 0, 0))
+    SHADOW_SURFACE.set_colorkey((0, 0, 0))
     SHADOW_SURFACE.set_alpha(200)
     SHADOWS = []
 
@@ -166,8 +170,7 @@ class Shadow:
     @staticmethod
     def set_up(width, height):
         Shadow.SHADOW_SURFACE = pygame.Surface((width, height))
-        Shadow.SHADOW_SURFACE.fill((255, 0, 0))
-        Shadow.SHADOW_SURFACE.set_colorkey((255, 0, 0))
+        Shadow.SHADOW_SURFACE.set_colorkey((0, 0, 0))
         Shadow.SHADOW_SURFACE.set_alpha(200)
         Shadow.SHADOWS = []
 
@@ -195,16 +198,16 @@ class Shadow:
         return all(allpoints)
 
     def draw(self, surface, camera):
-        Shadow.SHADOW_SURFACE.fill((255, 0, 0))
+        Shadow.SHADOW_SURFACE.fill((0, 0, 0))
         # pygame.draw.aalines(Shadow.SHADOW_SURFACE, (0, 0, 0, 100), True, [camera.apply_to_tuple(self.topleft), camera.apply_to_tuple(self.topright),
         #                                                             camera.apply_to_tuple(self.bottomright), camera.apply_to_tuple(self.bottomleft)], 50)
         # surface.blit(Shadow.SHADOW_SURFACE, (0, 0))
-        pygame.gfxdraw.aapolygon(Shadow.SHADOW_SURFACE, [camera.apply_to_tuple(self.topleft), camera.apply_to_tuple(self.topright),
-                                                          camera.apply_to_tuple(self.bottomright), camera.apply_to_tuple(self.bottomleft)],
-        (0, 0, 0, 100))
         pygame.gfxdraw.filled_polygon(Shadow.SHADOW_SURFACE, [camera.apply_to_tuple(self.topleft), camera.apply_to_tuple(self.topright),
                                                           camera.apply_to_tuple(self.bottomright), camera.apply_to_tuple(self.bottomleft)],
-        (0, 0, 0, 100))
+        (10, 10, 10))
+        pygame.gfxdraw.aapolygon(Shadow.SHADOW_SURFACE, [camera.apply_to_tuple(self.topleft), camera.apply_to_tuple(self.topright),
+                                                          camera.apply_to_tuple(self.bottomright), camera.apply_to_tuple(self.bottomleft)],
+        (10, 10, 10))
         surface.blit(Shadow.SHADOW_SURFACE, (0, 0))
 
 
