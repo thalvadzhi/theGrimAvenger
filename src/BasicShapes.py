@@ -408,7 +408,7 @@ class Rectangle(RigitBody):
 
     def is_point_in_body(self, point_location_m, camera=0):
         if camera != 0:
-            centroid_to_point = point_location_m - camera.apply_to_vertex(self.position_m)
+            centroid_to_point = point_location_m - camera.apply(self.position_m)
         else:
             centroid_to_point = point_location_m - self.position_m
         centroid_to_point = centroid_to_point.rotate(
@@ -440,7 +440,7 @@ class Rectangle(RigitBody):
 
     def draw(self, surface, colour=(255, 0, 0), camera=0):
         if camera != 0:
-            pygame.draw.polygon(surface, colour, camera.apply_to_vertices(self.vertices))
+            pygame.draw.polygon(surface, colour, camera.apply(self.vertices))
         else:
             pygame.draw.polygon(surface, colour, self.vertices)
 
