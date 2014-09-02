@@ -277,7 +277,7 @@ class Vec2d:
         dot = self.x*other[0] + self.y*other[1]
         return math.degrees(math.atan2(cross, dot))
  
-    def normalized(self):
+    def normalize(self):
         length = self.length
         if length != 0:
             return self/length
@@ -302,7 +302,7 @@ class Vec2d:
     def dot(self, other):
         return float(self.x*other[0] + self.y*other[1])
  
-    def get_distance(self, other):
+    def distance_to(self, other):
         return math.sqrt((self.x - other[0])**2 + (self.y - other[1])**2)
  
     def get_dist_sqrd(self, other):
