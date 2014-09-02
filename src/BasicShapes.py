@@ -114,20 +114,28 @@ class RigitBody:
         self.fix_joints()
 
     def load_avatar(self, path):
-        self.imageMaster = pygame.image.load(r"../ArtWork/Ragdolls/{0}".format(
-            path)).convert_alpha()
+        try:
+            self.imageMaster = pygame.image.load(r"../ArtWork/{0}".format(
+                path)).convert_alpha()
+        except pygame.error:
+            self.imageMaster = None
 
     def scale_avatar(self, width_m, height_m):
+        if self.imageMaster is None:
+            return
         self.imageMaster = pygame.transform.scale(self.imageMaster,
                                                   (int(width_m),
                                                    int(height_m)))
 
     def display_avatar(self, surface):
-        self.image = pygame.transform.rotate(
+        if self.imageMaster is None:
+            Rectangle.draw(self, surface)
+            return
+        image = pygame.transform.rotate(
             self.imageMaster, self.direction.angle_to(Vector((1, 0))))
-        self.rect = self.image.get_rect()
+        self.rect = image.get_rect()
         self.rect.center = self.position_m
-        surface.blit(self.image, self.rect)
+        surface.blit(image, self.rect)
 
   #  def box_collide(self, other):
   #      first_box = self.calculate_box()
