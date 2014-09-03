@@ -1,25 +1,22 @@
-def get_hitmask(object, alpha):
+def get_hitmask(rect, image, alpha):
     mask = []
-    for x in range(object.rect.width_m):
+    for x in range(rect.width_m):
         mask.append([])
-        for y in range(object.rect.height_m):
-            mask[x].append(not object.image.get_at((x, y))[3] == alpha)
+        for y in range(rect.height_m):
+            mask[x].append(not image.get_at((x, y))[3] == alpha)
     return mask
 
-
-def collide(sprite_a, sprite_b):
+def collide(rect1, hitmask1, rect2, hitmask2):
     #if the two rects don't overlap return false
 
-    section_rect = sprite_a.rect.intersect(sprite_b.rect)
-    hitmask_a = sprite_a.mask
-    hitmask_b = sprite_b.mask
-
+    section_rect = rect1.intersect(rect2)
+    hitmask_a = hitmask1
+    hitmask_b = hitmask2
     if section_rect.width_m == 0 or section_rect.height_m == 0:
         return False
 
-    collision_x_a, collision_y_a = int(section_rect.x) - int(sprite_a.rect.x), int(section_rect.y) - int(sprite_a.rect.y)
-    collision_x_b, collision_y_b = int(section_rect.x) - int(sprite_b.rect.x), int(section_rect.y) - int(sprite_b.rect.y)
-
+    collision_x_a, collision_y_a = int(section_rect.x) - int(rect1.x), int(section_rect.y) - int(rect1.y)
+    collision_x_b, collision_y_b = int(section_rect.x) - int(rect2.x), int(section_rect.y) - int(rect2.y)
     for x in range(int(section_rect.width_m)):
         for y in range(int(section_rect.height_m)):
             if hitmask_a[collision_x_a + x][collision_y_a + y] and hitmask_b[collision_x_b + x][collision_y_b + y]:
