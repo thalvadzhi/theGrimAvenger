@@ -22,22 +22,22 @@ class Pendulum:
 
         first_d_d_theta = -sin(radians(self.theta)) * scaling
         mid_d_theta = self.dtheta + first_d_d_theta
-        midtheta = self.theta + (self.dtheta + mid_d_theta) / 2.0
+        mid_theta = self.theta + (self.dtheta + mid_d_theta) / 2.0
 
-        mid_d_d_theta = -sin(radians(midtheta)) * scaling
+        mid_d_d_theta = -sin(radians(mid_theta)) * scaling
         mid_d_theta = self.dtheta + (first_d_d_theta + mid_d_d_theta) / 2
-        midtheta = self.theta + (self.dtheta + mid_d_theta) / 2
+        mid_theta = self.theta + (self.dtheta + mid_d_theta) / 2
 
-        mid_d_d_theta = -sin(radians(midtheta)) * scaling
+        mid_d_d_theta = -sin(radians(mid_theta)) * scaling
         last_d_theta = mid_d_theta + mid_d_d_theta
-        lasttheta = midtheta + (mid_d_theta + last_d_theta) / 2.0
+        last_theta = mid_theta + (mid_d_theta + last_d_theta) / 2.0
 
-        last_d_d_theta = -sin(radians(lasttheta)) * scaling
+        last_d_d_theta = -sin(radians(last_theta)) * scaling
         last_d_theta = mid_d_theta + (mid_d_d_theta + last_d_d_theta) / 2.0
-        lasttheta = midtheta + (mid_d_theta + last_d_theta) / 2.0
+        last_theta = mid_theta + (mid_d_theta + last_d_theta) / 2.0
 
         self.dtheta = last_d_theta
-        self.theta = lasttheta
+        self.theta = last_theta
         self.rect = Rectangle(1, 1,
                               (int(self.pivot[0] - self.swing_length *
                                    sin(radians(self.theta))),
