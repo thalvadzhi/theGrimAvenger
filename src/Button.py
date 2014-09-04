@@ -5,7 +5,9 @@ from pygame.math import Vector2 as Vector
 
 class Button:
     def __init__(self, position, size, message, colour, text_colour):
-        self.rect = Rectangle(size[0], size[1], Vector(position[0] + size[0] // 2, position[1] + size[1] // 2))
+        self.rect = Rectangle(size[0], size[1],
+                              Vector(position[0] + size[0] // 2,
+                                     position[1] + size[1] // 2))
         self.message = message
         self.colour = colour
         self.text_colour = text_colour
