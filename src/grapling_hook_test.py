@@ -4,6 +4,7 @@ from Environment import Block
 from BasicShapes import Rectangle
 from Vec2D import Vec2d as Vector
 from Pendulum import Pendulum
+from Camera import Camera
 import pygame
 pygame.init()
 screen = pygame.display.set_mode((0, 0))
@@ -100,6 +101,8 @@ class GraplingHookTest(unittest.TestCase):
         self.graple.reposition((10, 10))
         self.assertEqual(self.graple.rect.center, Vector(10, 10))
 
+    def test_drawing(self):
+        self.graple.draw(screen, Camera(10, 10, 10, 10))
 
 if __name__ == '__main__':
     unittest.main()
