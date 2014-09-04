@@ -2,9 +2,11 @@ from pygame import *
 from BasicShapes import Rectangle
 from Vec2D import Vec2d as Vector
 
+
 class Camera:
     def __init__(self, width, height, window_width, window_height):
-        self.state = Rectangle(width, height, Vector(0 + width // 2, 0 + height // 2))
+        self.state = Rectangle(width, height,
+                               Vector(0 + width // 2, 0 + height // 2))
         self.half_width = window_width // 2
         self.half_height = window_height // 2
         self.window_width = window_width
@@ -21,7 +23,8 @@ class Camera:
             result = []
             for vertex in target:
                 if isinstance(vertex, Vector):
-                    result.append(Vector((vertex.x + self.state.x, vertex.y + self.state.y)))
+                    result.append(Vector((vertex.x + self.state.x,
+                                          vertex.y + self.state.y)))
                 else:
                     raise TypeError
             return result
@@ -43,7 +46,8 @@ class Camera:
             result = []
             for vertex in target:
                 if isinstance(vertex, Vector):
-                    result.append(Vector((vertex.x - self.state.x, vertex.y - self.state.y)))
+                    result.append(Vector((vertex.x - self.state.x,
+                                          vertex.y - self.state.y)))
                 else:
                     raise TypeError
             return result
@@ -52,10 +56,11 @@ class Camera:
         left, top = target[0], target[1]
         left = self.half_width - left
         top = self.half_height - top
-        #this is so as to not scroll the camera outside the borders of the level
+        #this is to not scroll the camera outside the borders of the level
         left = min(0, left)
         left = max((self.window_width - self.state.width_m), left)
         top = max((self.window_height - self.state.height_m), top)
         top = min(0, top)
-        return Rectangle(self.state.width_m, self.state.height_m, Vector(left + self.state.width_m // 2,
-                                                                         top + self.state.height_m // 2))
+        return Rectangle(self.state.width_m, self.state.height_m,
+                         Vector(left + self.state.width_m // 2,
+                                top + self.state.height_m // 2))
