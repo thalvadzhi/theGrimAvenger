@@ -1,19 +1,19 @@
-import pygame, sys
+import pygame
 from pygame import *
 from Vec2D import Vec2d as Vector
 import pygame.gfxdraw
 import math
-from Camera import Camera
 from Pendulum import Pendulum
 from BasicShapes import Rectangle
 from pixelperfect import get_hitmask
-from Tools import image_to_rect
+
+
 class Block():
-    #just the basic class for any obstacle
     def __init__(self, colour, width, height, x, y):
         self.image = pygame.Surface((width, height))
         self.image.fill(colour)
-        self.rect = Rectangle(width, height, Vector(x + width / 2, y + height / 2))
+        self.rect = Rectangle(width, height,
+                              Vector(x + width / 2, y + height / 2))
         self.hitmask = get_hitmask(self.rect, self.image, 0)
         self.image = 0
         self.colour = colour
@@ -26,20 +26,21 @@ class Block():
     def set_up(self, name=0):
         if name != 0:
             self.image = pygame.image.load(name).convert_alpha()
-            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+            self.image = pygame.transform.scale(self.image,
+                                                (self.width, self.height))
         else:
             self.image = pygame.Surface((self.width, self.height))
             self.image.fill(self.colour)
 
 
-
 class SawBlock():
     def __init__(self, x, y, length):
-        ''' x and y should be the coordinates from the point at which the rope would be hanging '''
+        ''' x and y should be the coordinates of the pivot '''
         self.rope_width = 10
         self.rope_height = length
         self.saw_image_master = pygame.image.load("saw.png").convert_alpha()
-        self.saw_image_master = pygame.transform.scale(self.saw_image_master, (50, 50))
+        self.saw_image_master = pygame.transform.scale(self.saw_image_master,
+                                                       (50, 50))
         self.image = self.saw_image_master
 
         self.rect_center = (x, y + self.rope_height + 15)
@@ -60,12 +61,12 @@ class SawBlock():
         self.current_time = 0
 
     def rotate_saw(self, time):
-        self.image = pygame.transform.rotate(self.saw_image_master, self.rotation)
+        self.image = pygame.transform.rotate(self.saw_image_master,
+                                             self.rotation)
         self.rect = Rectangle.get_rect(self.image, self.rect_center)
         self.rotation += 300 * time / 1000
         if self.rotation > 360:
             self.rotation = self.step
-
 
     def swing_rope(self):
         self.current_time = pygame.time.get_ticks()
@@ -76,19 +77,20 @@ class SawBlock():
 
             self.last_time = self.current_time
 
-
     def deploy(self):
         self.is_severed = True
 
-        self.direction = Vector((self.x, self.y)) - Vector(self.rect_center[0], self.rect_center[1])
+        self.direction = Vector((self.x, self.y)) - Vector(self.rect_center[0],
+                                                           self.rect_center[1])
         self.direction = self.direction.normalize()
 
-        #pseudo velocity vector - defines only direction no speed
+        #pseudo velocity vector - defines only direction not speed
         self.velocity = self.direction.rotate(-90 * self.sign(self.bob.dtheta))
         self.velocity = self.velocity.normalize()
 
-
     def sign(self, number):
+        if number == 0:
+            return
         if number > 0:
             return 1
         else:
@@ -96,15 +98,18 @@ class SawBlock():
 
     def set_up(self, name):
         self.saw_image_master = pygame.image.load(name).convert_alpha()
-        self.saw_image_master = pygame.transform.scale(self.saw_image_master, (50, 50))
+        self.saw_image_master = pygame.transform.scale(self.saw_image_master,
+                                                       (50, 50))
         self.image = self.saw_image_master
 
     def update(self, time):
         if self.is_severed:
             self.time += 0.5
 
-            self.rect.advance((self.velocity.x * 10 + math.sin(math.fabs(self.bob.theta))),
-                              (self.velocity.y * 8 * Vector(0, 1).x * 10 + self.time))
+            self.rect.advance((self.velocity.x * 10 +
+                               math.sin(math.fabs(self.bob.theta))),
+                              (self.velocity.y * 8 * Vector(0, 1).x * 10 +
+                               self.time))
             self.rect_center = self.rect.center
         else:
             self.rotate_saw(time)
@@ -118,9 +123,9 @@ class SawBlock():
             surface.blit(self.image, camera.apply((self.rect.x, self.rect.y)))
             pygame.draw.line(surface, (0, 0, 0),
                              camera.apply((self.x, self.y)),
-                             camera.apply((self.rect.center[0], self.rect.center[1])),
+                             camera.apply((self.rect.center[0],
+                                           self.rect.center[1])),
                              self.rope_width)
-
 
     def collide_line(self, point_x, point_y):
         #y = kx + c
@@ -133,16 +138,15 @@ class SawBlock():
 
         #add room for error due to batarangs teleportational tendencies
         for i in range(0, 30):
-            if int(point_y) == int(k * point_x + c) - i or int(point_y) == int(k * point_x + c) + i:
+            if int(point_y) == int(k * point_x + c) - i or \
+                    int(point_y) == int(k * point_x + c) + i:
                 return True
         return False
-
 
     def collide(self, bat):
         #implement list of bats
         if self.collide_line(bat.x, bat.y) and not self.is_severed:
             self.deploy()
-
 
 
 class Shadow:
@@ -159,7 +163,8 @@ class Shadow:
         self.bottomleft = bottomleft
         self.bottomright = bottomright
 
-        Shadow.SHADOWS.append((self.topleft, self.topright, self.bottomright, self.bottomleft))
+        Shadow.SHADOWS.append((self.topleft, self.topright,
+                               self.bottomright, self.bottomleft))
 
     @staticmethod
     def set_up(width, height):
@@ -171,7 +176,8 @@ class Shadow:
     def collide(self, player):
         #def point_inside_polygon(x,y,poly):
         #some raycasting algorithm here
-        shadow_coordinates = [self.topleft, self.topright, self.bottomright, self.bottomleft]
+        shadow_coordinates = [self.topleft, self.topright,
+                              self.bottomright, self.bottomleft]
         length = len(shadow_coordinates)
         allpoints = []
         for coordinate in player:
@@ -184,8 +190,11 @@ class Shadow:
                     if coordinate[1] <= max(point1Y, point2Y):
                         if coordinate[0] <= max(point1X, point2X):
                             if point1Y != point2Y:
-                                xintersection = (coordinate[1]-point1Y) * (point2X-point1X) / (point2Y-point1Y) + point1X
-                            if point1X == point2X or coordinate[0] <= xintersection:
+                                xintersection = (coordinate[1] - point1Y) * \
+                                                (point2X - point1X) / \
+                                                (point2Y - point1Y) + point1X
+                            if point1X == point2X or \
+                                    coordinate[0] <= xintersection:
                                 inside = not inside
                 point1X, point1Y = point2X, point2Y
             allpoints.append(inside)
@@ -193,10 +202,16 @@ class Shadow:
 
     def draw(self, surface, camera):
         Shadow.SHADOW_SURFACE.fill((0, 0, 0))
-        pygame.gfxdraw.filled_polygon(Shadow.SHADOW_SURFACE, [camera.apply(self.topleft), camera.apply(self.topright),
-                                                          camera.apply(self.bottomright), camera.apply(self.bottomleft)],
-        (10, 10, 10))
-        pygame.gfxdraw.aapolygon(Shadow.SHADOW_SURFACE, [camera.apply(self.topleft), camera.apply(self.topright),
-                                                          camera.apply(self.bottomright), camera.apply(self.bottomleft)],
-        (10, 10, 10))
+        pygame.gfxdraw.filled_polygon(Shadow.SHADOW_SURFACE,
+                                      [camera.apply(self.topleft),
+                                       camera.apply(self.topright),
+                                       camera.apply(self.bottomright),
+                                       camera.apply(self.bottomleft)],
+                                      (10, 10, 10))
+        pygame.gfxdraw.aapolygon(Shadow.SHADOW_SURFACE,
+                                 [camera.apply(self.topleft),
+                                  camera.apply(self.topright),
+                                  camera.apply(self.bottomright),
+                                  camera.apply(self.bottomleft)],
+                                 (10, 10, 10))
         surface.blit(Shadow.SHADOW_SURFACE, (0, 0))
