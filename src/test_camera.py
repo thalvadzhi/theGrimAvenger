@@ -2,6 +2,7 @@ import unittest
 from Camera import Camera
 from Vec2D import Vec2d as Vector
 
+
 class CameraTest(unittest.TestCase):
     def setUp(self):
         self.camera = Camera(800, 800, 10, 10)
@@ -9,7 +10,8 @@ class CameraTest(unittest.TestCase):
     def test_apply(self):
         self.assertEqual(self.camera.apply((10, 10)), (10, 10))
         self.assertEqual(self.camera.apply(Vector((10, 10))), Vector(10, 10))
-        self.assertEqual(self.camera.apply([Vector((10, 10)), Vector((5, 5))]), [Vector((10, 10)), Vector((5, 5))])
+        self.assertEqual(self.camera.apply([Vector((10, 10)), Vector((5, 5))]),
+                         [Vector((10, 10)), Vector((5, 5))])
 
     def test_update(self):
         self.camera.update((50, 50))
@@ -19,15 +21,15 @@ class CameraTest(unittest.TestCase):
 
     def test_reverse_apply(self):
         self.assertEqual(self.camera.reverse_apply((10, 10)), (10, 10))
-        self.assertEqual(self.camera.reverse_apply(Vector((10, 10))), Vector(10, 10))
-        self.assertEqual(self.camera.reverse_apply([Vector((10, 10)), Vector((5, 5))]), [Vector((10, 10)), Vector((5, 5))])
+        self.assertEqual(self.camera.reverse_apply(Vector((10, 10))),
+                         Vector(10, 10))
+        self.assertEqual(self.camera.reverse_apply([Vector((10, 10)),
+                                                    Vector((5, 5))]),
+                         [Vector((10, 10)), Vector((5, 5))])
 
     def test_functionality(self):
         self.assertEqual(self.camera.functionality((50, 50)).x, -45.0)
         self.assertEqual(self.camera.functionality((50, 50)).y, -45.0)
 
-
-
 if __name__ == '__main__':
     unittest.main()
-
