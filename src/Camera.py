@@ -1,50 +1,52 @@
 from pygame import *
+from BasicShapes import Rectangle
 from Vec2D import Vec2d as Vector
 
 class Camera:
     def __init__(self, width, height, window_width, window_height):
-        self.state = Rect(0, 0, width, height)
+        self.state = Rectangle(width, height, Vector(0 + width // 2, 0 + height // 2))
         self.half_width = window_width // 2
         self.half_height = window_height // 2
         self.window_width = window_width
         self.window_height = window_height
 
-    #this applies to sprites
     def apply(self, target):
-        return target.rect.move(self.state.topleft)
+        if isinstance(target, tuple):
+            result_x = target[0] + self.state.x
+            result_y = target[1] + self.state.y
+            return result_x, result_y
+        elif isinstance(target, Vector):
+            return Vector(target.x + self.state.x, target.y + self.state.y)
+        elif isinstance(target, list):
+            result = []
+            for vertex in target:
+                if isinstance(vertex, Vector):
+                    result.append(Vector((vertex.x + self.state.x, vertex.y + self.state.y)))
+                else:
+                    raise TypeError
+            return result
 
-    #this applies to rects
-    def apply_to_rect(self, target):
-        return target.move(self.state.topleft)
-
-    def apply_to_tuple(self, target):
-        result_x = target[0] + self.state.x
-        result_y = target[1] + self.state.y
-        return result_x, result_y
+    def update(self, target):
+        if isinstance(target, tuple):
+            self.state = self.functionality(target)
+        elif isinstance(target, Rectangle) or isinstance(target, Vector):
+            self.state = self.functionality((target.x, target.y))
 
     def reverse_apply(self, target):
-        result_x = target[0] - self.state.x
-        result_y = target[1] - self.state.y
-        return result_x, result_y
-
-    def apply_to_vertices(self, vertices):
-        result = []
-        for vertex in vertices:
-            result.append(Vector((vertex.x + self.state.x, vertex.y + self.state.y)))
-        return result
-
-    def apply_to_vertex(self, vertex):
-        return Vector(vertex.x + self.state.x, vertex.y + self.state.y)
-
-
-    #this updates sprites
-    def update(self, target):
-        self.state = self.functionality((target.rect.x, target.rect.y))
-
-    #this updates rects
-    def update_rect(self, target):
-        self.state = self.functionality((target.x, target.y))
-
+        if isinstance(target, tuple):
+            result_x = target[0] - self.state.x
+            result_y = target[1] - self.state.y
+            return result_x, result_y
+        elif isinstance(target, Vector):
+            return Vector(target.x - self.state.x, target.y - self.state.y)
+        elif isinstance(target, list):
+            result = []
+            for vertex in target:
+                if isinstance(vertex, Vector):
+                    result.append(Vector((vertex.x - self.state.x, vertex.y - self.state.y)))
+                else:
+                    raise TypeError
+            return result
 
     def functionality(self, target):
         left, top = target[0], target[1]
@@ -52,7 +54,8 @@ class Camera:
         top = self.half_height - top
         #this is so as to not scroll the camera outside the borders of the level
         left = min(0, left)
-        left = max((self.window_width - self.state.width), left)
-        top = max((self.window_height - self.state.height), top)
+        left = max((self.window_width - self.state.width_m), left)
+        top = max((self.window_height - self.state.height_m), top)
         top = min(0, top)
-        return Rect(left, top, self.state[2], self.state[3])
+        return Rectangle(self.state.width_m, self.state.height_m, Vector(left + self.state.width_m // 2,
+                                                                         top + self.state.height_m // 2))

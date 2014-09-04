@@ -5,9 +5,9 @@ from Button import Button
 from Camera import Camera
 from Environment import Block, SawBlock, Shadow
 from Vec2D import Vec2d as Vector
-import pygame, sys, math
-HEIGHT = 768
-WIDTH = 1366
+import pygame, sys
+HEIGHT = 600
+WIDTH = 800
 FPS = 60
 
 
@@ -19,7 +19,7 @@ world = []
 Shadow.set_up(GAME_MEASURES[0], GAME_MEASURES[1])
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 timer = pygame.time.Clock()
 moving = Block((0, 0, 0), WIDTH, HEIGHT, 0, 0)
 
@@ -151,7 +151,6 @@ def de_spawn(index):
 
 def decode_textbox(textbox_input):
     value = textbox_input.value.split()
-    print(len(value))
     if len(value) == 0:
         return -1
     elif len(value) == 1:
@@ -263,7 +262,7 @@ def button_management(mouse_position, events):
     elif retract_left.is_pressed(mouse_position, events):
         resize_game_field("retract left")
     elif quit.is_pressed(mouse_position, events):
-        pygame.quit()
+        sys.exit()
     elif delete_button.is_pressed(mouse_position, events):
         while True:
             mouse_position = pygame.mouse.get_pos()
@@ -300,8 +299,7 @@ while True:
 
     button_management(mouse_position, events)
 
-    camera[0].update(moving)
-
+    camera[0].update(moving.rect)
 
 
     for textbox in textboxes:
