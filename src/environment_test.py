@@ -5,6 +5,7 @@ from Vec2D import Vec2d as Vector
 pygame.init()
 screen = pygame.display.set_mode((0, 0))
 
+
 class EnvironmentTest(unittest.TestCase):
     def test_block_setting_up(self):
         block = Block((0, 0, 0), 50, 50, 0, 0)
@@ -64,8 +65,9 @@ class EnvironmentTest(unittest.TestCase):
 
     def test_collide(self):
         saw = SawBlock(10, 0, 5)
+
         class Bat:
-            def __init__(self, x ,y):
+            def __init__(self, x, y):
                 self.x = x
                 self.y = y
         saw.bob.dtheta = 20
@@ -75,10 +77,9 @@ class EnvironmentTest(unittest.TestCase):
         Shadow.set_up(50, 50)
         shadow = Shadow((0, 0), (500, 0), (500, 500), (0, 500))
         self.assertEqual(shadow.collide([(50, 50)]), True)
-        self.assertEqual(shadow.collide([(50, 50), (100, 100), (200, 200)]), True)
+        self.assertEqual(shadow.collide([(50, 50), (100, 100), (200, 200)]),
+                         True)
         self.assertEqual(shadow.collide([(800, 50)]), False)
 
 if __name__ == '__main__':
     unittest.main()
-
-
