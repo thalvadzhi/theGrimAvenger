@@ -3,9 +3,11 @@ from Button import Button
 import pygame
 pygame.init()
 
+
 class ButtonTest(unittest.TestCase):
     def test_button(self):
         button = Button((0, 0), (50, 50), "TEST", (0, 0, 0), (0, 0, 0))
+
         class EVT:
             def __init__(self, event, key):
                 self.type = event
@@ -20,4 +22,3 @@ class ButtonTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
