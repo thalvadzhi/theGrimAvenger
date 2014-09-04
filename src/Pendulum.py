@@ -10,8 +10,10 @@ class Pendulum:
         self.pivot = pivot
         self.time = 0
         self.rect = Rectangle(1, 1,
-                              (int(self.pivot[0] - self.swing_length * cos(radians(self.theta))),
-                              int(self.pivot[1] + self.swing_length * sin(radians(self.theta)))))
+                              (int(self.pivot[0] - self.swing_length *
+                                   cos(radians(self.theta))),
+                               int(self.pivot[1] + self.swing_length *
+                                   sin(radians(self.theta)))))
 
     def recompute_angle(self):
         self.time += 1
@@ -37,7 +39,7 @@ class Pendulum:
         self.dtheta = last_d_theta
         self.theta = lasttheta
         self.rect = Rectangle(1, 1,
-                              (int(self.pivot[0] - self.swing_length * sin(radians(self.theta))),
-                              int(self.pivot[1] + self.swing_length * cos(radians(self.theta)))))
-
-
+                              (int(self.pivot[0] - self.swing_length *
+                                   sin(radians(self.theta))),
+                               int(self.pivot[1] + self.swing_length *
+                                   cos(radians(self.theta)))))
