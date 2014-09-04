@@ -1,13 +1,13 @@
 import unittest
 from GraplingHook import GraplingHook
 from Environment import Block
-from BasicShapes import Rectangle
 from Vec2D import Vec2d as Vector
 from Pendulum import Pendulum
 from Camera import Camera
 import pygame
 pygame.init()
 screen = pygame.display.set_mode((0, 0))
+
 
 class GraplingHookTest(unittest.TestCase):
     def setUp(self):
@@ -41,7 +41,8 @@ class GraplingHookTest(unittest.TestCase):
         self.graple.aim = Vector(0, 1)
         self.graple.calculate_rope()
         self.assertAlmostEqual(self.graple.distance, 1.41, 2)
-        self.assertEqual(self.graple.rope, Vector(-0.7071067811865475, 0.7071067811865475))
+        self.assertEqual(self.graple.rope,
+                         Vector(-0.7071067811865475, 0.7071067811865475))
 
     def test_swinging(self):
         self.graple.bob = Pendulum(10, 1, (0, 0))
