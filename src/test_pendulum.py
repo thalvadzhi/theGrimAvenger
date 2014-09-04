@@ -1,6 +1,7 @@
 import unittest
 from Pendulum import Pendulum
 
+
 class PendulumTest(unittest.TestCase):
     def test_pendulum(self):
         bob = Pendulum(30, 30, (30, 30))
@@ -10,4 +11,3 @@ class PendulumTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
