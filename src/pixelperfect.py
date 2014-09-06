@@ -7,21 +7,23 @@ def get_hitmask(rect, image, alpha):
     return mask
 
 
-def collide(rect1, hitmask1, rect2, hitmask2):
+def collide(sprite_a, sprite_b):
+    '''
+    both sprites should have rects and hitmasks
+    '''
     #if the two rects don't overlap return false
-    section_rect = rect1.intersect(rect2)
-    hitmask_a = hitmask1
-    hitmask_b = hitmask2
+    section_rect = sprite_a.rect.intersect(sprite_b.rect)
+    hitmask_a = sprite_a.hitmask
+    hitmask_b = sprite_b.hitmask
+    #print(section_rect.width_m, section_rect.height_m)
     if section_rect.width_m == 0 or section_rect.height_m == 0:
         return False
-    collision_x_a = int(section_rect.x) - int(rect1.x)
-    collision_y_a = int(section_rect.y) - int(rect1.y)
-    collision_x_b = int(section_rect.x) - int(rect2.x)
-    collision_y_b = int(section_rect.y) - int(rect2.y)
-
+    collision_x_a = int(section_rect.x) - int(sprite_a.rect.x)
+    collision_y_a = int(section_rect.y) - int(sprite_a.rect.y)
+    collision_x_b = int(section_rect.x) - int(sprite_b.rect.x)
+    collision_y_b = int(section_rect.y) - int(sprite_b.rect.y)
     for x in range(int(section_rect.width_m)):
         for y in range(int(section_rect.height_m)):
-            if hitmask_a[collision_x_a + x][collision_y_a + y] and \
-                    hitmask_b[collision_x_b + x][collision_y_b + y]:
+            if hitmask_a[collision_x_a + x][collision_y_a + y] and hitmask_b[collision_x_b + x][collision_y_b + y]:
                 return True
     return False
