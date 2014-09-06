@@ -337,9 +337,9 @@ class Vec2d:
                      self.y + (other[1] - self.y)*range)
 
     def convert_to_basis(self, x_vector, y_vector):
-        return Vec2d(self.dot(x_vector) / x_vector.length_sqrd(), 
-                             self.dot(y_vector) / y_vector.length_sqrd())
- 
+        return Vec2d(self.dot(x_vector) / x_vector.length_sqrd(),
+                     self.dot(y_vector) / y_vector.length_sqrd())
+
     def __getstate__(self):
         return [self.x, self.y]
 
