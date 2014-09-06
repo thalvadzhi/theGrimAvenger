@@ -6,13 +6,14 @@ from Control import Control
 from Motions import Motion
 from RagDoll import HumanRagdoll
 from BasicShapes import Rectangle
-from Environment import Block
-from pixelperfect import collide as collision
+from Camera import Camera
+from Environment import Block, SawBlock
+from pixelperfect import collide as pixel
 import sys
 
 pygame.init()
 
-screen = pygame.display.set_mode((500, 500))
+screen = pygame.display.set_mode((800, 500))
 
 clock = pygame.time.Clock()
 
@@ -21,10 +22,10 @@ ragdoll = HumanRagdoll("Batman")
 #NPC = HumanRagdoll("NPC")
 ragdoll.move(Vector((250, 250)))
 #NPC.move(Vector((100, 250)))
-
+camera = Camera(800, 500, 800, 500)
 ground = Rectangle(500, 70, Vector(250, 500))
 ground = Block((0, 0, 0), 500, 70, 0, 450)
-collider = Block((255, 0, 0), 50, 50, 450, 250)
+block = Block((255, 0, 0), 50, 50, 350, 100)
 #for body_part in list(ragdoll.body_parts.values())[::-1]:
 #    control.left_button_selectable.append(body_part)
 anchor = Vector(0, 0)
@@ -38,15 +39,35 @@ ragdoll_velosity = Vector(0, 0)
 cursor_left_button_is_down = False
 cursor_selected_body = None
 utilitites = [Batarang(ragdoll.hand_position("right")[0], ragdoll.hand_position("right")[1])]
-world = [collider]
+saw = SawBlock(600, 50, 150)
+world = [block]
 formal_frame = 0
+take_coordinates = True
+
+################################################
+#make the batarang take coordinates only once
+def run_once(f):
+    def wrapper(*args, **kwargs):
+        if not wrapper.has_run:
+            wrapper.has_run = True
+            return f(*args, **kwargs)
+    wrapper.has_run = False
+    return wrapper
+@run_once
+def direct():
+    utilitites[0].direct(utilitites[0].mouse_position[0], utilitites[0].mouse_position[1])
+##################################################
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            utilitites[0].take_action()
+            ###########################################
+            #otherwise you can reposition batarang's direction on click
+            if not utilitites[0].should_fly:
+                utilitites[0].take_action()
+            ###########################################
             if event.button == 1:
                 cursor_left_button_is_down = True
                 for body_part in ragdoll.body_parts.values():
@@ -58,7 +79,7 @@ while True:
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 cursor_left_button_is_down = False
-    timer = clock.tick(60)
+    timer = clock.tick(120)
 
     keys = pygame.key.get_pressed()
     if cursor_left_button_is_down and cursor_selected_body is not None:
@@ -73,6 +94,9 @@ while True:
         ragdoll.turn("right")
         #ragdoll.move(Vector((2, 0)))
 
+
+##########################################
+    #this moves is the deal with the batarangs
     if utilitites[0].should_fly:
         try:
             current_frame = next(play)
@@ -81,8 +105,11 @@ while True:
         if current_frame < 3:
             utilitites[0].reposition((ragdoll.hand_position("right")[0], ragdoll.hand_position("right")[1]), ragdoll.body_parts["right_forearm"].direction)
 
-        if current_frame >= 3 and not utilitites[0].rect.collides_rectangle(collider.rect):
+        if current_frame >= 3 and not pixel(utilitites[0], world[0]):
+            direct()
             utilitites[0].update(timer)
+##########################################
+
         formal_frame = current_frame
     if keys[pygame.K_LEFT]:
         try:
@@ -143,7 +170,12 @@ while True:
     for collider in world:
         collider.draw(screen)
     utilitites[0].draw(screen)
-
+#########################################
+    #this is all that's needed to cut the saw
+    saw.draw(screen, camera)
+    saw.update(timer)
+    saw.collide(utilitites[0])
+##########################################
     #   NPC.display_avatar(screen)
 
     pygame.display.update()
