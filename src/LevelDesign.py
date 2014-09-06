@@ -5,6 +5,7 @@ from Button import Button
 from Camera import Camera
 from Environment import Block, SawBlock, Shadow
 from Vec2D import Vec2d as Vector
+from collections import defaultdict
 import pygame
 import sys
 
@@ -87,7 +88,7 @@ def construct():
     world.clear()
     for item in load()["world"]:
         if isinstance(item, SawBlock):
-            item.set_up("saw.png")
+            item.load_texture("saw.png")
         world.append(item)
     CONSTANTS.clear()
     GAME_MEASURES.clear()
@@ -154,8 +155,20 @@ def resize_game_field(action):
 
 
 def save():
-    level = {"constants": CONSTANTS,
-             "game measures": GAME_MEASURES, "world": world}
+    # level = {"constants": CONSTANTS,
+    #          "game measures": GAME_MEASURES, "world": world}
+    print("YEAHHHHHHHHHH")
+    level = defaultdict(list)
+    for item in world:
+        if isinstance(item, SawBlock):
+            print("YEAAH")
+            level["sawblocks"].append([item.x, item.y, item.rope_height])
+        elif isinstance(item, Block):
+            level["blocks"].append([item.colour, item.rect.width_m, item.rect.height_m, item.rect.x, item.rect.y])
+        elif isinstance(item, Shadow):
+            level["shadows"].append([item.topleft, item.topright, item.bottomright, item.bottomleft])
+    level["constants"] = CONSTANTS
+    level["game measures"] = GAME_MEASURES
     pickle.dump(level, open("level.btmn", "wb"))
 
 

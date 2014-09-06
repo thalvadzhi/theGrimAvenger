@@ -23,7 +23,7 @@ class Block():
     def draw(self, screen, camera=0):
         self.rect.draw(screen, self.colour, camera)
 
-    def set_up(self, name=0):
+    def load_texture(self, name=0):
         if name != 0:
             self.image = pygame.image.load(name).convert_alpha()
             self.image = pygame.transform.scale(self.image,
@@ -43,7 +43,7 @@ class SawBlock():
                                                        (50, 50))
         self.image = self.saw_image_master
 
-        self.rect_center = (x, y + self.rope_height + 15)
+        self.rect_center = Vector(x, y + self.rope_height + 15)
         self.rect = Rectangle.get_rect(self.image, self.rect_center)
         self.x = x
         self.y = y
@@ -96,7 +96,7 @@ class SawBlock():
         else:
             return -1
 
-    def set_up(self, name):
+    def load_texture(self, name):
         self.saw_image_master = pygame.image.load(name).convert_alpha()
         self.saw_image_master = pygame.transform.scale(self.saw_image_master,
                                                        (50, 50))
@@ -201,17 +201,17 @@ class Shadow:
         return all(allpoints)
 
     def draw(self, surface, camera):
-        Shadow.SHADOW_SURFACE.fill((0, 0, 0))
-        pygame.gfxdraw.filled_polygon(Shadow.SHADOW_SURFACE,
+        #Shadow.SHADOW_SURFACE.fill((0, 0, 0))
+        pygame.gfxdraw.filled_polygon(surface,
                                       [camera.apply(self.topleft),
                                        camera.apply(self.topright),
                                        camera.apply(self.bottomright),
                                        camera.apply(self.bottomleft)],
-                                      (10, 10, 10))
-        pygame.gfxdraw.aapolygon(Shadow.SHADOW_SURFACE,
+                                      (0, 0, 0, 200))
+        pygame.gfxdraw.aapolygon(surface,
                                  [camera.apply(self.topleft),
                                   camera.apply(self.topright),
                                   camera.apply(self.bottomright),
                                   camera.apply(self.bottomleft)],
-                                 (10, 10, 10))
-        surface.blit(Shadow.SHADOW_SURFACE, (0, 0))
+                                 (0, 0, 0, 200))
+        #surface.blit(Shadow.SHADOW_SURFACE, (0, 0))

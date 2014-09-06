@@ -9,9 +9,9 @@ screen = pygame.display.set_mode((0, 0))
 class EnvironmentTest(unittest.TestCase):
     def test_block_setting_up(self):
         block = Block((0, 0, 0), 50, 50, 0, 0)
-        block.set_up()
+        block.load_texture()
         self.assertEqual(block.image.get_width(), block.width)
-        block.set_up("saw.png")
+        block.load_texture("saw.png")
         self.assertEqual(block.image.get_width(), block.width)
 
     def test_saw_rotation(self):
@@ -41,7 +41,7 @@ class EnvironmentTest(unittest.TestCase):
 
     def test_set_up(self):
         saw = SawBlock(50, 50, 150)
-        saw.set_up("saw.png")
+        saw.load_texture("saw.png")
         self.assertEqual(saw.image.get_width(), 50)
 
     def test_update(self):
@@ -74,7 +74,7 @@ class EnvironmentTest(unittest.TestCase):
         saw.collide(Bat(2, 1))
 
     def test_shadow(self):
-        Shadow.set_up(50, 50)
+        Shadow.load_texture(50, 50)
         shadow = Shadow((0, 0), (500, 0), (500, 500), (0, 500))
         self.assertEqual(shadow.collide([(50, 50)]), True)
         self.assertEqual(shadow.collide([(50, 50), (100, 100), (200, 200)]),

@@ -136,24 +136,25 @@ class RigitBody:
             return
         image = pygame.transform.rotate(
             self.imageMaster, self.direction.angle_to(Vector(1, 0)))
-        self.rect = image.get_rect()
-        self.rect.center = centre
-        surface.blit(image, self.rect)
+        rect = image.get_rect()
+        rect.center = centre
+        surface.blit(image, rect)
 
-  #  def box_collide(self, other):
-  #      first_box = self.calculate_box()
-  #      second_box = other.calculate_box()
-  #      return (first_box[0][0] <= second_box[0][1] and
-  #              first_box[0][1] >= second_box[0][0]) and \
-  #          (first_box[1][0] <= second_box[1][1] and
-  #           first_box[1][1] >= second_box[1][0])
 
-  #  def check_if_collide(self, other):
-  #      if self.box_collide(other):
-  #          return getattr(self, "collides_{0}".format(
-  #              str(other).lower()))(other) or\
-  #              getattr(other, "collides_{0}".format(str(self).lower()))(self)
-  #      return False
+        #  def box_collide(self, other):
+        #      first_box = self.calculate_box()
+        #      second_box = other.calculate_box()
+        #      return (first_box[0][0] <= second_box[0][1] and
+        #              first_box[0][1] >= second_box[0][0]) and \
+        #          (first_box[1][0] <= second_box[1][1] and
+        #           first_box[1][1] >= second_box[1][0])
+
+        #  def check_if_collide(self, other):
+        #      if self.box_collide(other):
+        #          return getattr(self, "collides_{0}".format(
+        #              str(other).lower()))(other) or\
+        #              getattr(other, "collides_{0}".format(str(self).lower()))(self)
+        #      return False
 
     def check_if_collide(self, other):
         if isinstance(self, Circle) and isinstance(other, Circle):
