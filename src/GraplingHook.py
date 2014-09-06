@@ -1,5 +1,5 @@
 import pygame
-from Vec2D import Vec2d as Vector
+from pygame.math import Vector2 as Vector
 from Pendulum import Pendulum
 from BasicShapes import Rectangle
 from pixelperfect import get_hitmask, collide
