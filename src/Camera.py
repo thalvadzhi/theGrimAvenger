@@ -1,6 +1,7 @@
 from pygame import *
 from BasicShapes import Rectangle
 from pygame.math import Vector2 as Vector
+from Vec2D import Vec2d
 
 
 class Camera:
@@ -22,7 +23,7 @@ class Camera:
         elif isinstance(target, list):
             result = []
             for vertex in target:
-                if isinstance(vertex, Vector):
+                if isinstance(vertex, Vector) or isinstance(vertex, Vec2d):
                     result.append(Vector((vertex.x + self.state.x,
                                           vertex.y + self.state.y)))
                 else:
