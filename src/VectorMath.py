@@ -1,4 +1,4 @@
-from Vec2D import Vec2d as Vector
+from pygame.math import Vector2 as Vector
 import sys
 
 

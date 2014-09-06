@@ -3,7 +3,7 @@ from collections import OrderedDict
 from pickle import load
 
 
-from Vec2D import Vec2d as Vector
+from pygame.math import Vector2 as Vector
 
 from Joints import RevoluteJoint
 
@@ -96,6 +96,12 @@ class HumanRagdoll:
         except IOError:
             self.load_dimensions()
 
+    def hand_position(self, leftedness):
+        forearm = self.body_parts["{0}_forearm".format(leftedness)]
+        bone = (forearm.vertices[0] +
+                forearm.vertices[1]) / 2 - forearm.position_m
+        return forearm.position_m + bone + bone.normalize() * 5
+
     def capture_frame(self):
         if self.facing == "left":
             frame = {joint: 360 - self.joints[joint].calculate_angle_to_base()
@@ -124,12 +130,14 @@ class HumanRagdoll:
     def shift_to_next_frame(self, previous_frame, next_frame):
         difference = {key:  next_frame[key] - previous_frame[key]
                       for key in next_frame}
+        difference["slope"] *= -1
+        print(difference["slope"])
+        print(previous_frame["slope"], next_frame["slope"])
         if difference["slope"] > 180:
             difference["slope"] = difference["slope"] - 360
         if difference["slope"] < -180:
             difference["slope"] = difference["slope"] + 360
-        if self.facing == "left":
-            difference["slope"] *= -1
+        print(difference["slope"])
         for frame in range(25):
             for joint in self.joints:
                 angle = difference[joint]
@@ -140,6 +148,8 @@ class HumanRagdoll:
                 if self.facing == "left":
                     angle *= -1
                 self.joints[joint].bent_keeping_angles(angle / 25)
+            if self.facing == "left":
+                difference["slope"] *= -1
             self.rotate(difference["slope"] / 25)
             yield
         raise StopIteration

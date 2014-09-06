@@ -1,7 +1,7 @@
 import pygame
 from pygame import *
-from Vec2D import Vec2d as Vector
 import pygame.gfxdraw
+from pygame.math import Vector2 as Vector
 import math
 from Pendulum import Pendulum
 from BasicShapes import Rectangle

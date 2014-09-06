@@ -3,7 +3,7 @@ from math import pi
 
 import pygame
 
-from Vec2D import Vec2d as Vector
+from pygame.math import Vector2 as Vector
 
 from VectorMath import calculate_centroid
 from VectorMath import Line

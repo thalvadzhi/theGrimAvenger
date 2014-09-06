@@ -2,7 +2,7 @@ import sys
 
 import pygame
 
-from Vec2D import Vec2d as Vector
+from pygame.math import Vector2 as Vector
 
 
 def check_if_groups_collide(first_group, second_group):

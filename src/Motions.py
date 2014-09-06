@@ -38,8 +38,8 @@ class Motion:
         for frame in range(len(self.frames) - 1):
             for _ in self.item.shift_to_next_frame(self.frames[frame],
                                                    self.frames[frame + 1]):
-                yield
-        raise StopIteration
+                yield frame
+        # raise StopIteration
 
  #   def shift_to_next_frame(self, frames):
  #       for state in range(frames):

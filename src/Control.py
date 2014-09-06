@@ -2,7 +2,7 @@ from os import listdir
 
 import pygame
 from pickle import load, dump
-from Vec2D import Vec2d as Vector
+from pygame.math import Vector2 as Vector
 
 from Events import Events
 from Camera import Camera
@@ -70,7 +70,7 @@ class Control(Events):
                              self.level["game measures"][1],
                              self.gui_settings["resolution"][0],
                              self.gui_settings["resolution"][1])
-        Shadow.set_up(self.level["game measures"][0],
+        Shadow.load_texture(self.level["game measures"][0],
                       self.level["game measures"][1])
 
     def sync_volume(self):
