@@ -12,13 +12,13 @@ class Block():
     def __init__(self, colour, width, height, x, y):
         self.image = pygame.Surface((width, height))
         self.image.fill(colour)
+        self.width = width
+        self.height = height
         self.rect = Rectangle(width, height,
                               Vector(x + width / 2, y + height / 2))
         self.hitmask = get_hitmask(self.rect, self.image, 0)
         self.image = 0
         self.colour = colour
-        self.width = width
-        self.height = height
 
     def draw(self, screen, camera=0):
         self.rect.draw(screen, self.colour, camera)
@@ -129,6 +129,8 @@ class SawBlock():
 
     def collide_line(self, point_x, point_y):
         #y = kx + c
+        if point_y > self.rect.center[1] or point_y < self.y:
+            return False
         if int(self.rect.center[0]) - self.x != 0:
             k = (self.rect.center[1] - self.y) / (self.rect.center[0] - self.x)
             c = self.y - k * self.x
@@ -137,7 +139,7 @@ class SawBlock():
                 and point_y in range(self.y, self.rect.center[1])
 
         #add room for error due to batarangs teleportational tendencies
-        for i in range(0, 30):
+        for i in range(0, 10):
             if int(point_y) == int(k * point_x + c) - i or \
                     int(point_y) == int(k * point_x + c) + i:
                 return True
@@ -145,7 +147,7 @@ class SawBlock():
 
     def collide(self, bat):
         #implement list of bats
-        if self.collide_line(bat.x, bat.y) and not self.is_severed:
+        if self.collide_line(bat.rect.x, bat.rect.y) and not self.is_severed:
             self.deploy()
 
 
