@@ -3,7 +3,7 @@ from collections import OrderedDict
 from pickle import load
 
 
-from pygame.math import Vector2 as Vector
+from Vec2D import Vec2d as Vector
 
 from Joints import RevoluteJoint
 
@@ -86,9 +86,8 @@ class HumanRagdoll:
 
     def load_dimensions(self, name="default"):
         try:
-            with open(
-                    r"../ArtWork/Ragdolls/{0}/body_part_dimensions".format(name),
-                    "rb") as dimensions:
+            with open(r"../ArtWork/Ragdolls/{0}/body_part_dimensions".format(
+                    name), "rb") as dimensions:
                 self.__proportions = load(dimensions)
                 self.__body_part_dimensions = OrderedDict(load(dimensions))
             with open(r"../ArtWork/Ragdolls/{0}/joint_placement".format(name),
@@ -154,25 +153,45 @@ class HumanRagdoll:
             part.move(movement)
 
     def load_avatars(self, folder):
-        try:
-            for body_part in self.body_parts:
-                self.body_parts[body_part].load_avatar(r"{0}/{1}.png".format(
-                    folder, body_part))
-                self.body_parts[body_part].scale_avatar(
-                    self.body_parts[body_part].imageMaster.get_width()
-                    / self.proportions[1],
-                    self.body_parts[body_part].imageMaster.get_height()
-                    / self.proportions[1])
-        except pygame.error:
-            self.display_avatar = self.draw
+        for body_part in self.body_parts:
+            self.body_parts[body_part].load_avatar(
+                r"Ragdolls/{0}/{1}.png".format(folder, body_part))
+            self.body_parts[body_part].scale_avatar(
+                self.body_parts[body_part].imageMaster.get_width()
+                / self.proportions[1],
+                self.body_parts[body_part].imageMaster.get_height()
+                / self.proportions[1])
 
-    def draw(self, surface):
+    def draw(self, surface, camera=0):
         for body_part in self.body_parts.values():
-            body_part.draw(surface)
+            body_part.draw(surface, camera)
 
-    def display_avatar(self, surface):
+    def display_avatar(self, surface, camera=0):
         for body_part in self.body_parts.values():
-            body_part.display_avatar(surface)
+            body_part.display_avatar(surface, camera)
 
     def orientate_feet(self, floor):
         pass
+
+
+class NPC(HumanRagdoll):
+
+    observance_levels = {
+        "easy": (10, 20),
+        "normal": (20, 30),
+        "hard": (30, 40),
+        "insane": (40, 50)
+    }
+
+    def __init__(self, observance, NPC_type="trooper"):
+        HumanRagdoll.__init__(self, "NPC_{0}".format(NPC_type))
+        self.NPC_type = NPC_type
+        self.observance = observance
+        self.alerted = False
+
+    def check_if_hears(self, sounds):
+        for sound in sounds:
+            if SHAPES["Circle"](NPC.observance_levels[self.observance][0],
+                                sound).check_if_collide(
+                    self.body_parts["head"])[0]:
+                self.alerted = True

@@ -2,7 +2,7 @@ import sys
 
 import pygame
 
-from pygame.math import Vector2 as Vector
+from Vec2D import Vec2d as Vector
 
 
 def check_if_groups_collide(first_group, second_group):
@@ -15,11 +15,10 @@ def check_if_groups_collide(first_group, second_group):
 
 class Events:
 
-    def __init__(self, envirment):
+    def __init__(self):
         # envirment will can hold classes of collision and selectable classes
         # that way one can have events for different envirment like different
         # maps or different menus or windows
-        self.envirment = envirment
         self.keyboard_input = []
         self.mouse_input = []
         self.cursor_left_button_is_down = False
@@ -31,6 +30,7 @@ class Events:
 
     def get_user_input(self):
         self.keyboard_input = []
+        self.mouse_input = []
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()

@@ -28,7 +28,6 @@ class Motion:
 
     def save_motion(self, path):
         with open(path, 'wb') as motion_file:
-            print(self.frames)
             dump(self.frames, motion_file)
 
     def capture_frame(self):

@@ -17,14 +17,14 @@ class RigitBody:
     """
     __counter = 0
 
-    def __init__(self, position_m=Vector((0, 0)), density=0):
+    def __init__(self, position_m=Vector(0, 0), density=0):
         """
         position is the position of the center of mass
         """
         self.__position_m = position_m
-        self.__direction = Vector((1, 0))
+        self.__direction = Vector(1, 0)
         self.__density = density
-        self.velocity = Vector((0.0, 0.0))
+        self.velocity = Vector(0.0, 0.0)
         self.joints = []
         self.__hash_count = RigitBody.__counter
         RigitBody.__counter += 1
@@ -48,8 +48,8 @@ class RigitBody:
         self.sync_position()
 
     @property
-    def mass_kg(self):
-        return self.__mass_kg
+    def mass(self):
+        return self.__mass
 
     def __hash__(self):
         return self.__hash_count
@@ -89,12 +89,12 @@ class RigitBody:
         self.position_m = self.position_m + movement_m
 
     def position_in_world(self, position_on_body):
-        return position_on_body.rotate(round(Vector((1, 0)).angle_to(
+        return position_on_body.rotate(round(Vector(1, 0).angle_to(
             self.direction), 5)) + self.position_m
 
     def position_on_body(self, position_in_world):
         return (position_in_world - self.position_m).rotate(
-            round(self.direction.angle_to(Vector((1, 0))), 5))
+            round(self.direction.angle_to(Vector(1, 0)), 5))
 
     def rotate_around(self, pivot, angle):
         pivot_position = self.position_in_world(pivot)
@@ -104,7 +104,7 @@ class RigitBody:
     def pull_on_anchor(self, anchor, movement_m):
         new_anchor = anchor + movement_m
         magic = self.pivot_m.rotate(
-            Vector((1, 0)).angle_to(self.direction)) + self.position_m
+            Vector(1, 0).angle_to(self.direction)) + self.position_m
         rotation = round((anchor - magic).angle_to(new_anchor - magic), 5)
         self.rotate(rotation)
         anchor = (anchor - self.position_m).rotate(
@@ -127,14 +127,17 @@ class RigitBody:
                                                   (int(width_m),
                                                    int(height_m)))
 
-    def display_avatar(self, surface):
+    def display_avatar(self, surface, camera=0):
+        centre = self.position_m
+        if camera != 0:
+            centre = camera.apply([centre])[0]
         if self.imageMaster is None:
             Rectangle.draw(self, surface)
             return
         image = pygame.transform.rotate(
-            self.imageMaster, self.direction.angle_to(Vector((1, 0))))
+            self.imageMaster, self.direction.angle_to(Vector(1, 0)))
         self.rect = image.get_rect()
-        self.rect.center = self.position_m
+        self.rect.center = centre
         surface.blit(image, self.rect)
 
   #  def box_collide(self, other):
@@ -179,7 +182,7 @@ class RigitBody:
 
 class Circle(RigitBody):
 
-    def __init__(self, radius_m, position_m=Vector((0, 0)), density=0):
+    def __init__(self, radius_m, position_m=Vector(0, 0), density=0):
         RigitBody.__init__(self, position_m, density)
         self.__radius_m = radius_m
         self.calculate_mass()
@@ -246,7 +249,7 @@ class Circle(RigitBody):
 
 class Triangle(RigitBody):
 
-    def __init__(self, three_elements, position_m=Vector((0, 0)), density=0):
+    def __init__(self, three_elements, position_m=Vector(0, 0), density=0):
         RigitBody.__init__(self, position_m, density)
         if isinstance(three_elements[0], Vector):
             three_elements = [element for element in three_elements]
@@ -272,10 +275,10 @@ class Triangle(RigitBody):
         return result
 
     def calculate_surface(self):
-        return ((self.vertices["B"].x - self.vertices["A"].x) *
-               (self.vertices["C"].y - self.vertices["A"].x) -
-               (self.vertices["C"].x - self.vertices["A"].x) *
-               (self.vertices["B"].x - self.vertices["A"].x))
+        return ((self.vertices["A"].x - self.vertices["C"].x) *
+               (self.vertices["B"].y - self.vertices["A"].y) -
+               (self.vertices["A"].x - self.vertices["B"].x) *
+               (self.vertices["C"].y - self.vertices["A"].y)) / 2
 
     def calculate_edges(self):
         self.edge_lenghts = {"".join(sorted(pair[0] + pair[1])): (
@@ -297,7 +300,7 @@ class Triangle(RigitBody):
             "A": Vector((0, 0)), "B": Vector((self.edge_lenghts["AB"], 0))}
         x_c = (self.edge_lenghts["AB"] ** 2 + self.edge_lenghts["AC"] ** 2 -
                self.edge_lenghts["BC"] ** 2) / (2 * self.edge_lenghts["AB"])
-        y_c = (self.edge_lenghts["AB"] ** 2 - x_c ** 2) ** 0.5
+        y_c = (self.edge_lenghts["AC"] ** 2 - x_c ** 2) ** 0.5
         self.vertices["C"] = Vector((x_c, y_c))
 
     def is_point_in_body(self, point):
@@ -352,7 +355,7 @@ class Triangle(RigitBody):
 class Rectangle(RigitBody):
 
     def __init__(self, width_m, height_m,
-                 position_m=Vector((0, 0)), density=0):
+                 position_m=Vector(0, 0), density=0):
         RigitBody.__init__(self, position_m, density)
         self.__width_m = width_m
         self.__height_m = height_m
