@@ -4,13 +4,13 @@ import pickle
 from Button import Button
 from Camera import Camera
 from Environment import Block, SawBlock, Shadow
-from Vec2D import Vec2d as Vector
+from pygame.math import Vector2 as Vector
 from collections import defaultdict
 import pygame
 import sys
 
-HEIGHT = 600
-WIDTH = 800
+HEIGHT = 768
+WIDTH = 1366
 FPS = 60
 
 
@@ -22,7 +22,7 @@ world = []
 Shadow.set_up(GAME_MEASURES[0], GAME_MEASURES[1])
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
 timer = pygame.time.Clock()
 moving = Block((0, 0, 0), WIDTH, HEIGHT, 0, 0)
 
@@ -86,10 +86,13 @@ def load():
 
 def construct():
     world.clear()
-    for item in load()["world"]:
-        if isinstance(item, SawBlock):
-            item.load_texture("saw.png")
-        world.append(item)
+    for item in load()["blocks"]:
+        print(item)
+        world.append(Block(*item))
+    for item in load()["sawblocks"]:
+        world.append(SawBlock(*item))
+    for item in load()["shadows"]:
+        world.append(Shadow(*item))
     CONSTANTS.clear()
     GAME_MEASURES.clear()
     for item in load()["constants"]:
@@ -155,20 +158,23 @@ def resize_game_field(action):
 
 
 def save():
-    # level = {"constants": CONSTANTS,
-    #          "game measures": GAME_MEASURES, "world": world}
-    print("YEAHHHHHHHHHH")
     level = defaultdict(list)
     for item in world:
         if isinstance(item, SawBlock):
-            print("YEAAH")
             level["sawblocks"].append([item.x, item.y, item.rope_height])
         elif isinstance(item, Block):
-            level["blocks"].append([item.colour, item.rect.width_m, item.rect.height_m, item.rect.x, item.rect.y])
+            level["blocks"].append([item.colour, item.rect.width_m, item.rect.height_m,
+                                    item.rect.center[0] - item.rect.width_m / 2,
+                                    item.rect.center[1] - item.rect.height_m / 2])
         elif isinstance(item, Shadow):
-            level["shadows"].append([item.topleft, item.topright, item.bottomright, item.bottomleft])
+            level["shadows"].append([item.topleft,
+                                     item.topright,
+                                     item.bottomright,
+                                     item.bottomleft])
     level["constants"] = CONSTANTS
     level["game measures"] = GAME_MEASURES
+    level["music"] = "ingame_1"
+    level["start_position"] = (50, 50)
     pickle.dump(level, open("level.btmn", "wb"))
 
 
@@ -272,6 +278,7 @@ def move(index):
         if isinstance(world[index], Block):
             world[index].rect.position_m = \
                 Vector(camera[0].reverse_apply(mouse_position))
+
         elif isinstance(world[index], SawBlock):
             world[index].rect.center = \
                 Vector(camera[0].reverse_apply(mouse_position))
