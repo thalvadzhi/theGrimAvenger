@@ -142,7 +142,7 @@ class Vec2d:
     # Multiplication
     def __mul__(self, other):
         if isinstance(other, Vec2d):
-            return Vec2d(self.x*other.x, self.y*other.y)
+            return self.x*other.x + self.y*other.y
         if (hasattr(other, "__getitem__")):
             return Vec2d(self.x*other[0], self.y*other[1])
         else:
@@ -151,9 +151,8 @@ class Vec2d:
 
     def __imul__(self, other):
         if isinstance(other, Vec2d):
-            self.x *= other.x
-            self.y *= other.y
-        elif hasattr(other, "__getitem__"):
+            self = self.x*other.x + self.y*other.y
+        elif (hasattr(other, "__getitem__")):
             self.x *= other[0]
             self.y *= other[1]
         else:
@@ -248,19 +247,18 @@ class Vec2d:
         return Vec2d(-self.x, -self.y)
 
     # vectory functions
-    def get_length_sqrd(self):
+    def length_sqrd(self):
         return self.x**2 + self.y**2
-
-    def get_length(self):
+ 
+    def length(self):
         return math.sqrt(self.x**2 + self.y**2)
 
     def __setlength(self, value):
-        length = self.get_length()
+        length = self.length()
         self.x *= value/length
         self.y *= value/length
-    length = property(get_length, __setlength, None,
-                      "gets or sets the magnitude of the vector")
-
+    distance = property(length, __setlength, None, "gets or sets the magnitude of the vector")
+ 
     def rotated(self, angle_degrees):
         radians = math.radians(angle_degrees)
         cos = math.cos(radians)
@@ -279,12 +277,12 @@ class Vec2d:
         return Vec2d(x, y)
 
     def get_angle(self):
-        if self.get_length_sqrd() == 0:
+        if self.length_sqrd() == 0:
             return 0
         return math.degrees(math.atan2(self.y, self.x))
 
     def __setangle(self, angle_degrees):
-        self.x = self.length
+        self.x = self.distance
         self.y = 0
         self.rotated(angle_degrees)
     angle = property(get_angle, __setangle, None,
@@ -296,13 +294,13 @@ class Vec2d:
         return math.degrees(math.atan2(cross, dot))
 
     def normalize(self):
-        length = self.length
+        length = self.distance
         if length != 0:
-            return self/length
-        return Vec2d(self)
-
+            return Vec2d(self.y/length, self.x/length)        
+        return Vec2d(0, 0)
+ 
     def normalize_return_length(self):
-        length = self.length
+        length = self.distance
         if length != 0:
             self.x /= length
             self.y /= length
@@ -312,7 +310,7 @@ class Vec2d:
         return Vec2d(-self.y, self.x)
 
     def perpendicular_normal(self):
-        length = self.length
+        length = self.distance
         if length != 0:
             return Vec2d(-self.y/length, self.x/length)
         return Vec2d(self)
@@ -339,9 +337,9 @@ class Vec2d:
                      self.y + (other[1] - self.y)*range)
 
     def convert_to_basis(self, x_vector, y_vector):
-        return Vec2d(self.dot(x_vector) / x_vector.get_length_sqrd(),
-                     self.dot(y_vector) / y_vector.get_length_sqrd())
-
+        return Vec2d(self.dot(x_vector) / x_vector.length_sqrd(), 
+                             self.dot(y_vector) / y_vector.length_sqrd())
+ 
     def __getstate__(self):
         return [self.x, self.y]
 

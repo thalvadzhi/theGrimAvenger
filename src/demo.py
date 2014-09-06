@@ -1,6 +1,6 @@
 import pygame
 
-from pygame.math import Vector2 as Vector
+from Vec2D import Vec2d as Vector
 
 from Control import Control
 from Motions import Motion
@@ -13,14 +13,16 @@ screen = pygame.display.set_mode((500, 500))
 
 clock = pygame.time.Clock()
 
-control = Control(2)
+#control = Control()
 ragdoll = HumanRagdoll("Batman")
+#NPC = HumanRagdoll("NPC")
 ragdoll.move(Vector((250, 250)))
+#NPC.move(Vector((100, 250)))
 
 ground = Rectangle(500, 70, Vector(250, 500))
 
-for body_part in list(ragdoll.body_parts.values())[::-1]:
-    control.left_button_selectable.append(body_part)
+#for body_part in list(ragdoll.body_parts.values())[::-1]:
+#    control.left_button_selectable.append(body_part)
 
 play = 1
 motion = Motion(ragdoll)
@@ -28,6 +30,7 @@ ragdoll_velosity = Vector(0, 0)
 
 while True:
     keys = pygame.key.get_pressed()
+    print(keys)
 
     if keys[pygame.K_RIGHT]:
         try:
@@ -90,8 +93,9 @@ while True:
     ground.draw(screen)
 
     ragdoll.display_avatar(screen)
+ #   NPC.display_avatar(screen)
 
     pygame.display.update()
     clock.tick(60)
 
-    control.handle_user_input()
+   # control.handle_user_input()
