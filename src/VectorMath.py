@@ -38,11 +38,10 @@ class Line:
         self.line_equation = self.calculate_line_equation()
 
     def calculate_line_equation(self):
-        if self.vertices[0].x - self.vertices[1].x == 0:
-            a = 0
-        else:
-            a = ((self.vertices[0].y - self.vertices[1].y) /
-                (self.vertices[0].x - self.vertices[1].x))
+        divider = self.vertices[0].x - self.vertices[1].x
+        if divider == 0:
+            divider = sys.float_info.epsilon
+        a = (self.vertices[0].y - self.vertices[1].y) / divider
         b = self.vertices[0].y - a * self.vertices[0].x
         return (a, b)
 
@@ -61,8 +60,7 @@ class Line:
         return Vector(x, y)
 
     def check_if_parallel(self, other):
-        return self.line_equation[0] - other.line_equation[0] \
-            <= sys.float_info.epsilon
+        return check_if_parallel(self.direction, other.direction)
 
     def get_closest_point(self, point):
         altitude_foot = self.calculate_altitude_foot(point)
@@ -90,7 +88,7 @@ class Line:
         return Vector((x, y))
 
     def get_normal(self):
-        return Vector(self.direction.x, - self.direction.y).normalize()
+        return self.direction.rotate(90)
 
     def check_if_intersects_line(self, line):
         return self.calculate_point_of_intersection(line) is not None

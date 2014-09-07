@@ -22,6 +22,14 @@ class HumanRagdoll:
         self.body_parts["torso"].pivot = Vector(
             (0, self.body_parts["torso"].height / 2))
         self.__facing = "right"
+        self.velocity = Vector(0.0, 0.0)
+        self.impulse = Vector(0.0, 0.0)
+        self.__mass = sum([body_part.mass
+                           for body_part in self.body_parts.values()])
+
+    @property
+    def mass(self):
+        return self.__mass
 
     @property
     def facing(self):

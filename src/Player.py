@@ -31,11 +31,12 @@ class Player(HumanRagdoll):
                     self.moving = None
                 elif keyboard_input[0] in [pygame.K_LEFT, pygame.K_a]:
                     self.moving = None
+        control.camera.update((self.position.x, self.position.y))
         self.update(control)
 
     def update(self, control):
         if self.moving:
-            if self.current_motion.name is not "walk":
-                self.current_motion
+           # if self.current_motion.name is not "walk":
+           #     self.current_motion
             self.turn(self.moving)
             self.move(Vector({"left": (-2, 0), "right": (2, 0)}[self.moving]))

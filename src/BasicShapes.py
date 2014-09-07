@@ -23,6 +23,7 @@ class RigitBody:
         self.__direction = Vector(1, 0)
         self.__density = density
         self.velocity = Vector(0.0, 0.0)
+        self.impulse = Vector(0.0, 0.0)
         self.image_master = None
         self.pivot = position
         self.joints = []

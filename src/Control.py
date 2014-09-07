@@ -16,6 +16,7 @@ class Control(Events):
 
     def __init__(self):
         Events.__init__(self)
+        self.gravity = Vector(0.0, 0.1)
         self.init_graphics()
         self.init_sound()
         Menu.init_menus(self)
@@ -214,8 +215,16 @@ class Control(Events):
         self.get_user_input()
         self.player.handle_input(self)
 
-    def apply_physics(self, body):
-        pass
+   # def update_velocity(self, body):
+   #     dt_s = self.timer / 1000
+   #     # Net resulting force on the puck.
+   #     forces_on_body = self.gravity * body.mass + body.impulse / dt_s
+
+   #     # Acceleration from Newton's law.
+   #     acceleration = forces_on_body / body.mass
+
+   # def apply_physics(self):
+   #     self.update_velocity(self.player)
 
 #    def cursor_controll(self):
 #        self.cursor_selected_body[0].pull_on_anchor(
