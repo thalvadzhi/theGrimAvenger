@@ -75,8 +75,13 @@ class GraplingHook():
 
     def shoot(self, timer):
         for element in self.stop_rect:
-            if not collide(self.hook_rect, self.hitmask,
-                           element.rect, element.hitmask):
+            class Collide:
+                def __init__(self, rect, hitmask):
+                    self.rect = rect
+                    self.hitmask = hitmask
+
+            collider = Collide(self.hook_rect, self.hitmask)
+            if not collide(collider, element):
                 self.hook_rect.advance(self.rope.x * 500 * (timer / 1000),
                                        self.rope.y * 500 * (timer / 1000))
             else:

@@ -203,7 +203,6 @@ class Shadow:
         return all(allpoints)
 
     def draw(self, surface, camera):
-        #Shadow.SHADOW_SURFACE.fill((0, 0, 0))
         pygame.gfxdraw.filled_polygon(surface,
                                       [camera.apply(self.topleft),
                                        camera.apply(self.topright),
@@ -216,4 +215,3 @@ class Shadow:
                                   camera.apply(self.bottomright),
                                   camera.apply(self.bottomleft)],
                                  (0, 0, 0, 200))
-        #surface.blit(Shadow.SHADOW_SURFACE, (0, 0))
