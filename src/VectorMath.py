@@ -1,29 +1,26 @@
-from pygame.math import Vector2 as Vector
 import sys
 
+from pygame.math import Vector2 as Vector
 
-def seperate_point(static, to_move, length):
-    seperation_vector = to_move - static
-    if int(seperation_vector.length() * 100) == int(length * 100):
-        return to_move
-    seperation_vector = seperation_vector.normalize()
-    return static + seperation_vector * length
 
-# TODO useless might need to remove
+# def seperate_point(static, to_move, length):
+#     seperation_vector = to_move - static
+#     if int(seperation_vector.length() * 100) == int(length * 100):
+#         return to_move
+#     seperation_vector = seperation_vector.normalize()
+#     return static + seperation_vector * length
 
 
 def check_if_parallel(first, second):
     return abs((first * second) / (
         first.length() * second.length())) > 1 - sys.float_info.epsilon
 
-# Used only once
 
-
-def point_in_same_diraction(first, second):
+def point_in_same_direction(first, second):
     """
     The function assumes that the two vectors are parallel.
     If the dot product is >= 0 then the angle between the vectors is in the
-    (270, 90) range, therefor if parallel they point in the same diraction.
+    (270, 90) range, therefor if parallel they point in the same direction.
     """
     return first * second >= 0
 
@@ -57,7 +54,7 @@ class Line:
         x = (b[1] - a[1]) / (a[0] - b[0])
         y = (a[0] * b[1] - b[0] * a[1]) / (a[0] - b[0])
         point_of_intersection = Vector(x, y)
-        if self.is_segment and point_in_same_diraction(
+        if self.is_segment and point_in_same_direction(
                 point_of_intersection - self.vertices[0],
                 point_of_intersection - self.vertices[1]):
             return None
@@ -69,7 +66,7 @@ class Line:
 
     def get_closest_point(self, point):
         altitude_foot = self.calculate_altitude_foot(point)
-        if self.is_segment and point_in_same_diraction(
+        if self.is_segment and point_in_same_direction(
                 altitude_foot - self.vertices[0],
                 altitude_foot - self.vertices[1]):
             if (self.vertices[0] - point).length() > (
@@ -101,7 +98,7 @@ class Line:
     def check_if_point_belongs(self, point):
         on_line = point.x * self.line_equation[0] + self.line_equation[1] - \
             point.y <= sys.float_info.epsilon
-        if on_line and self.is_segment and point_in_same_diraction(
+        if on_line and self.is_segment and point_in_same_direction(
                 point - self.vertices[0], point - self.vertices[1]):
             return False
         return on_line

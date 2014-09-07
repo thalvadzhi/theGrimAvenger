@@ -1,5 +1,5 @@
-from pickle import dump, load
 import os
+from pickle import dump, load
 
 
 class Motion:
@@ -12,18 +12,19 @@ class Motion:
     def item(self):
         return self.__item
 
-    @classmethod
-    def load_motions(cls, folder):
-        motions = {}
-        for motion_file in os.listdir(folder):
-            motion = cls()
-            motions[motion_file[:len(motion_file) - 3]] = motion
-            with open(r"folder/{0}".format(motion_file),
-                      "rb") as motion_frames:
-                motion.frames = load(motion_frames)
+#    @classmethod
+#    def load_motions(cls, folder):
+#        motions = {}
+#        for motion_file in os.listdir(folder):
+#            motion = cls()
+#            motions[motion_file[:len(motion_file) - 3]] = motion
+#            with open(r"folder/{0}".format(motion_file),
+#                      "rb") as motion_frames:
+#                motion.frames = load(motion_frames)
 
     def load_motion(self, path):
-        with open(path, "rb") as motion_frames:
+        self.name = path
+        with open("../Files/Motions/{0}".format(path), "rb") as motion_frames:
             self.frames = load(motion_frames)
 
     def save_motion(self, path):
@@ -39,7 +40,7 @@ class Motion:
             for _ in self.item.shift_to_next_frame(self.frames[frame],
                                                    self.frames[frame + 1]):
                 yield frame
-        # raise StopIteration
+        raise StopIteration
 
  #   def shift_to_next_frame(self, frames):
  #       for state in range(frames):
