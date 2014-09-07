@@ -1,10 +1,9 @@
 from os import listdir
-from pickle import load, dump
-import pygame
-from Vec2D import Vec2d as Vector
 
-from BasicShapes import Rectangle
-from BasicShapes import Circle
+import pygame
+from pygame.math import Vector2 as Vector
+
+from BasicShapes import Rectangle, Circle
 
 GUI_SETTINGS = {
     "fps": 60,
@@ -45,15 +44,15 @@ class TextBox(Rectangle):
     def create_text_avatar(self):
         self.text_avatar = pygame.font.Font(*self.text_font).render(
             self.text, 20, self.text_colour)
-        if self.text_avatar.get_width() > self.width_m or \
-           self.text_avatar.get_height() > self.height_m:
+        if self.text_avatar.get_width() > self.width or \
+           self.text_avatar.get_height() > self.height:
             self.text_avatar = pygame.transform.scale(
-                self.text_avatar, (int(self.width_m), int(self.height_m)))
+                self.text_avatar, (int(self.width), int(self.height)))
 
     def draw(self, surface):
         if self.background is not None:
             surface.blit(self.background, self.vertices[3])
-        surface.blit(self.text_avatar, self.position_m - Vector(
+        surface.blit(self.text_avatar, self.position - Vector(
             self.text_avatar.get_width(), self.text_avatar.get_height()) / 2)
 
 
@@ -66,9 +65,10 @@ class Button(Rectangle):
         for state in ["active", "hover", "normal"]:
             self.load_avatar(
                 r"GUI/Button/{0}/{1}.png".format(button_type, state))
-            self.scale_avatar(self.width_m, self.height_m)
-            self.states[state] = self.imageMaster
+            self.scale_avatar(self.width, self.height)
+            self.states[state] = self.image_master
         self.state = "normal"
+        self.clicked = False
         self.sound_effect = pygame.mixer.Sound(
             r"../Files/Sounds/button_{0}.wav".format(button_type))
         self.text_box = TextBox(width, height, position, text,
@@ -89,6 +89,7 @@ class Button(Rectangle):
             if not event:
                 if mouse_on_button:
                     self.state = "hover"
+                    self.clicked = True
                     self.sound_effect.play()
                 else:
                     self.state = "normal"
@@ -102,7 +103,7 @@ class Button(Rectangle):
                 self.state = "active"
             elif mouse_on_button:
                 self.state = "hover"
-        self.imageMaster = self.states[self.state]
+        self.image_master = self.states[self.state]
 
     def draw(self, surface):
         self.display_avatar(surface)
@@ -125,14 +126,14 @@ class Slider(Rectangle):
             self.puck.load_avatar(
                 r"GUI/Slider/{0}/{1}.png".format(slider_type, state))
             self.puck.scale_avatar(
-                self.puck.radius_m * 2, self.puck.radius_m * 2)
-            self.states[state] = self.puck.imageMaster
+                self.puck.radius * 2, self.puck.radius * 2)
+            self.states[state] = self.puck.image_master
         self.sound_effect = pygame.mixer.Sound(
             r"../Files/Sounds/slider_{0}.wav".format(slider_type))
         self.state = "normal"
         self.text_box = TextBox(
             text_box_width, text_box_height, position +
-            Vector(0, -max(self.puck.radius_m, height / 2) -
+            Vector(0, -max(self.puck.radius, height / 2) -
                    text_box_height / 2), text,
             text_colour, text_font)
         self.left_fill = (253, 238, 0)
@@ -144,6 +145,11 @@ class Slider(Rectangle):
     def value(self):
         return self.__value
 
+    @value.setter
+    def value(self, value):
+        self.__value = value
+        self.sync_puck()
+
     def move(self, translation):
         Rectangle.move(self, translation)
         self.sync_position()
@@ -151,11 +157,11 @@ class Slider(Rectangle):
         self.text_box.move(translation)
 
     def get_containing_rectangle(self):
-        width = max(self.width_m, self.text_box.width_m)
-        height = max(self.height_m, self.puck.radius_m * 2) + \
-            self.text_box.height_m
-        return Rectangle(width, height, self.position_m +
-                         Vector(0, -self.text_box.height_m / 2))
+        width = max(self.width, self.text_box.width)
+        height = max(self.height, self.puck.radius * 2) + \
+            self.text_box.height
+        return Rectangle(width, height, self.position +
+                         Vector(0, -self.text_box.height / 2))
 
     def update_state(self, mouse_position, event):
         mouse_on_puck = self.puck.is_point_in_body(mouse_position)
@@ -167,10 +173,10 @@ class Slider(Rectangle):
                     self.state = "normal"
             elif event is None:
                 self.move_puck(
-                    Vector(mouse_position.x - self.puck.position_m.x, 0))
+                    Vector(mouse_position.x - self.puck.position.x, 0))
                 self.value_text_box = TextBox(
-                    self.text_box.width_m, self.text_box.height_m,
-                    self.text_box.position_m, str(self.value),
+                    self.text_box.width, self.text_box.height,
+                    self.text_box.position, str(self.value),
                     self.text_box.text_colour, self.text_box.text_font)
                 self.timer = pygame.time.get_ticks() + 1000
         elif self.state is "hover":
@@ -185,25 +191,25 @@ class Slider(Rectangle):
                 self.sound_effect.play()
             elif mouse_on_puck:
                 self.state = "hover"
-        self.puck.imageMaster = self.states[self.state]
+        self.puck.image_master = self.states[self.state]
 
     def move_puck(self, translation):
         self.puck.move(translation)
-        if self.puck.position_m.x < self.position_m.x - self.width_m / 2:
-            self.puck.move(Vector(self.position_m.x - self.width_m / 2 -
-                                  self.puck.position_m.x, 0))
-        elif self.puck.position_m.x > self.position_m.x + self.width_m / 2:
-            self.puck.move(Vector(self.position_m.x + self.width_m / 2 -
-                                  self.puck.position_m.x, 0))
+        if self.puck.position.x < self.position.x - self.width / 2:
+            self.puck.move(Vector(self.position.x - self.width / 2 -
+                                  self.puck.position.x, 0))
+        elif self.puck.position.x > self.position.x + self.width / 2:
+            self.puck.move(Vector(self.position.x + self.width / 2 -
+                                  self.puck.position.x, 0))
         if len(self.values) == 2:
             self.__value = self.values[0] + (self.values[1] - self.values[0]) \
-                * ((self.puck.position_m.x - self.position_m.x +
-                    self.width_m / 2) / self.width_m)
+                * ((self.puck.position.x - self.position.x +
+                    self.width / 2) / self.width)
             self.__value = round(self.__value)
         else:
             step = round((len(self.values) - 1) *
-                         ((self.puck.position_m.x - self.position_m.x +
-                           self.width_m / 2) / self.width_m))
+                         ((self.puck.position.x - self.position.x +
+                           self.width / 2) / self.width))
             self.__value = self.values[step]
         self.sync_puck()
 
@@ -215,16 +221,16 @@ class Slider(Rectangle):
         else:
             step = self.values.index(self.value)
             portion = (step) / (len(self.values) - 1)
-        self.puck.move(Vector(self.position_m.x - self.width_m / 2 +
-                              self.width_m * portion -
-                              self.puck.position_m.x, 0))
+        self.puck.move(Vector(self.position.x - self.width / 2 +
+                              self.width * portion -
+                              self.puck.position.x, 0))
 
     def draw(self, surface):
         pygame.draw.polygon(surface, self.right_fill, self.vertices)
         pygame.draw.polygon(
             surface, self.left_fill, [
-                self.puck.position_m - Vector(0, self.height_m / 2),
-                self.puck.position_m + Vector(0, self.height_m / 2),
+                self.puck.position - Vector(0, self.height / 2),
+                self.puck.position + Vector(0, self.height / 2),
                 self.vertices[0], self.vertices[3]])
         self.puck.display_avatar(surface)
         if pygame.time.get_ticks() < self.timer:
@@ -245,8 +251,8 @@ class Checkbox(Rectangle):
                       "checked_hover", "unchecked_hover"]:
             self.load_avatar(
                 r"GUI/Checkbox/{0}/{1}.png".format(checkbox_type, state))
-            self.scale_avatar(self.width_m, self.height_m)
-            self.states[state] = self.imageMaster
+            self.scale_avatar(self.width, self.height)
+            self.states[state] = self.image_master
         if value:
             self.state = "checked"
         else:
@@ -254,8 +260,8 @@ class Checkbox(Rectangle):
         self.sound_effect = pygame.mixer.Sound(
             r"../Files/Sounds/checkbox_{0}.wav".format(checkbox_type))
         self.text_box = TextBox(
-            text_box_width, text_box_height, self.position_m +
-            Vector((self.width_m + text_box_width) / 2, 0),
+            text_box_width, text_box_height, self.position +
+            Vector((self.width + text_box_width) / 2, 0),
             text, text_colour, text_font)
         self.checkbox_type = checkbox_type
 
@@ -265,16 +271,29 @@ class Checkbox(Rectangle):
             return True
         return False
 
+    @value.setter
+    def value(self, value):
+        if value:
+            if self.state[-5:] is "hover":
+                self.state = "checked_hover"
+            else:
+                self.state = "checked"
+        else:
+            if self.state[-5:] is "hover":
+                self.state = "unchecked_hover"
+            else:
+                self.state = "unchecked"
+
     def move(self, translation):
         Rectangle.move(self, translation)
         self.sync_position()
         self.text_box.move(translation)
 
     def get_containing_rectangle(self):
-        width = self.width_m + self.text_box.width_m
-        height = max(self.height_m, self.text_box.height_m)
-        return Rectangle(width, height, self.position_m +
-                         Vector(self.text_box.width_m / 2, 0))
+        width = self.width + self.text_box.width
+        height = max(self.height, self.text_box.height)
+        return Rectangle(width, height, self.position +
+                         Vector(self.text_box.width / 2, 0))
 
     def update_state(self, mouse_position, event):
         mouse_on_checkbox = self.is_point_in_body(mouse_position)
@@ -297,9 +316,9 @@ class Checkbox(Rectangle):
                     self.state = "checked"
                 elif self.state is "unchecked_hover":
                     self.state = "unchecked"
-        self.imageMaster = self.states[self.state]
 
     def draw(self, surface):
+        self.image_master = self.states[self.state]
         self.display_avatar(surface)
         self.text_box.draw(surface)
 
@@ -322,24 +341,24 @@ class Menu(Rectangle):
 
     def add_element(self, spacing, element_type, *args):
         previous = self.elements[-1].get_containing_rectangle()
-        self.elements.append(element_type(previous.position_m, *args))
+        self.elements.append(element_type(previous.position, *args))
         current = self.elements[-1].get_containing_rectangle()
-        self.elements[-1].move(Vector(0, previous.height_m / 2 +
-                                      current.height_m / 2 + spacing))
+        self.elements[-1].move(Vector(0, previous.height / 2 +
+                                      current.height / 2 + spacing))
 
     def handle_input(self, control):
         for event in control.mouse_input:
             if event[0] == 1:
                 for element in self.elements:
                     element.update_state(event[1] - self.vertices[3], event[2])
-        for event in control.keyboard_input:
-            if event[2] and event[0] in set(range(48, 59)) and \
-                    event[0] <= len(self.elements) and \
-                    isinstance(self.elements[event[0] - 1], Button):
-                self.elements[event[0] - 1].action()
         for element in self.elements:
             element.update_state(
                 control.cursor_location - self.vertices[3], None)
+
+    def reset_menu_buttons(self):
+        for element in self.elements:
+            if isinstance(element, Button):
+                element.clicked = False
 
     @classmethod
     def sync_volume(cls, control):
@@ -347,7 +366,7 @@ class Menu(Rectangle):
             for element in menu.elements:
                 if not isinstance(element, TextBox):
                     element.sound_effect.set_volume(
-                        100 / control.sound_settings["effects"])
+                        control.sound_settings["effects"] / 100)
 
     @classmethod
     def init_menus(cls, control):
@@ -410,7 +429,7 @@ class Menu(Rectangle):
             20, Button, 400, 50, "BACK", (0, 0, 0), (None, 50))
         cls.MENUS["video_menu"] = video_menu
 
-        new_game_menu = cls(600, 380, screen_centre, "NEW GAME",
+        new_game_menu = cls(600, 450, screen_centre, "NEW GAME",
                             (0, 0, 0), (None, 50), 400, 50)
         new_game_menu.add_element(
             20, Button, 400, 50, "EASY", (0, 0, 0), (None, 50))
@@ -420,6 +439,8 @@ class Menu(Rectangle):
             20, Button, 400, 50, "HARD", (0, 0, 0), (None, 50))
         new_game_menu.add_element(
             20, Button, 400, 50, "INSANE", (0, 0, 0), (None, 50))
+        new_game_menu.add_element(
+            20, Button, 400, 50, "BACK", (0, 0, 0), (None, 50))
         cls.MENUS["new_game_menu"] = new_game_menu
 
         saves = listdir(r"../Files/Saves/")
@@ -456,8 +477,8 @@ class Menu(Rectangle):
         cls.sync_volume(control)
 
     def draw(self, surface):
-        elements = pygame.Surface((self.width_m, self.height_m))
-        elements.blit(self.imageMaster, Vector(0, 0))
+        elements = pygame.Surface((self.width, self.height))
+        elements.blit(self.image_master, Vector(0, 0))
         for element in self.elements:
             element.draw(elements)
         pygame.draw.polygon(elements, self.frame[0], [

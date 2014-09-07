@@ -1,12 +1,10 @@
-import pygame
 from collections import OrderedDict
 from pickle import load
 
-
+import pygame
 from pygame.math import Vector2 as Vector
 
 from Joints import RevoluteJoint
-
 from BasicShapes import SHAPES
 from VectorMath import Line
 
@@ -21,8 +19,8 @@ class HumanRagdoll:
         self.joints = {joint: self.create_joint(joint)
                        for joint in self.joint_placement}
         self.load_avatars(name)
-        self.body_parts["torso"].pivot_m = Vector(
-            (0, self.body_parts["torso"].height_m / 2))
+        self.body_parts["torso"].pivot = Vector(
+            (0, self.body_parts["torso"].height / 2))
         self.__facing = "right"
 
     @property
@@ -43,7 +41,7 @@ class HumanRagdoll:
 
     @property
     def position(self):
-        return self.body_parts["torso"].position_m
+        return self.body_parts["torso"].position
 
     @property
     def direction(self):
@@ -76,7 +74,7 @@ class HumanRagdoll:
                   for dimension in self.body_part_dimensions[body_part][1:]])
 
     def create_joint(self, joint):
-        self.body_parts[self.joint_placement[joint][2]].pivot_m = Vector(
+        self.body_parts[self.joint_placement[joint][2]].pivot = Vector(
             self.joint_placement[joint][3]) / self.proportions[1]
         return RevoluteJoint(
             self.body_parts[self.joint_placement[joint][0]],
@@ -99,8 +97,8 @@ class HumanRagdoll:
     def hand_position(self, leftedness):
         forearm = self.body_parts["{0}_forearm".format(leftedness)]
         bone = (forearm.vertices[0] +
-                forearm.vertices[1]) / 2 - forearm.position_m
-        return forearm.position_m + bone + bone.normalize() * 5
+                forearm.vertices[1]) / 2 - forearm.position
+        return forearm.position + bone + bone.normalize() * 5
 
     def capture_frame(self):
         if self.facing == "left":
@@ -115,7 +113,7 @@ class HumanRagdoll:
 
     def save_state(self):
         return {body_part: (self.body_parts[body_part].direction,
-                            self.body_parts[body_part].position_m -
+                            self.body_parts[body_part].position -
                             self.position)
                 for body_part in self.body_parts}
 
@@ -123,7 +121,7 @@ class HumanRagdoll:
         current_position = self.position
         for body_part in self.body_parts:
             self.body_parts[body_part].direction = state[body_part][0]
-            self.body_parts[body_part].position_m = \
+            self.body_parts[body_part].position = \
                 state[body_part][1] + current_position
         self.body_parts["torso"].fix_joints()
 
@@ -167,9 +165,9 @@ class HumanRagdoll:
             self.body_parts[body_part].load_avatar(
                 r"Ragdolls/{0}/{1}.png".format(folder, body_part))
             self.body_parts[body_part].scale_avatar(
-                self.body_parts[body_part].imageMaster.get_width()
+                self.body_parts[body_part].image_master.get_width()
                 / self.proportions[1],
-                self.body_parts[body_part].imageMaster.get_height()
+                self.body_parts[body_part].image_master.get_height()
                 / self.proportions[1])
 
     def draw(self, surface, camera=0):
@@ -184,24 +182,24 @@ class HumanRagdoll:
         pass
 
 
-class NPC(HumanRagdoll):
-
-    observance_levels = {
-        "easy": (10, 20),
-        "normal": (20, 30),
-        "hard": (30, 40),
-        "insane": (40, 50)
-    }
-
-    def __init__(self, observance, NPC_type="trooper"):
-        HumanRagdoll.__init__(self, "NPC_{0}".format(NPC_type))
-        self.NPC_type = NPC_type
-        self.observance = observance
-        self.alerted = False
-
-    def check_if_hears(self, sounds):
-        for sound in sounds:
-            if SHAPES["Circle"](NPC.observance_levels[self.observance][0],
-                                sound).check_if_collide(
-                    self.body_parts["head"])[0]:
-                self.alerted = True
+# class NPC(HumanRagdoll):
+#
+#     observance_levels = {
+#         "easy": (10, 20),
+#         "normal": (20, 30),
+#         "hard": (30, 40),
+#         "insane": (40, 50)
+#     }
+#
+#     def __init__(self, observance, NPC_type="trooper"):
+#         HumanRagdoll.__init__(self, "NPC_{0}".format(NPC_type))
+#         self.NPC_type = NPC_type
+#         self.observance = observance
+#         self.alerted = False
+#
+#     def check_if_hears(self, sounds):
+#         for sound in sounds:
+#             if SHAPES["Circle"](NPC.observance_levels[self.observance][0],
+#                                 sound).check_if_collide(
+#                     self.body_parts["head"])[0]:
+#                 self.alerted = True

@@ -163,9 +163,9 @@ def save():
         if isinstance(item, SawBlock):
             level["sawblocks"].append([item.x, item.y, item.rope_height])
         elif isinstance(item, Block):
-            level["blocks"].append([item.colour, item.rect.width_m, item.rect.height_m,
-                                    item.rect.center[0] - item.rect.width_m / 2,
-                                    item.rect.center[1] - item.rect.height_m / 2])
+            level["blocks"].append([item.colour, item.rect.width, item.rect.height,
+                                    item.rect.center[0] - item.rect.width / 2,
+                                    item.rect.center[1] - item.rect.height / 2])
         elif isinstance(item, Shadow):
             level["shadows"].append([item.topleft,
                                      item.topright,
@@ -276,14 +276,14 @@ def move(index):
         mouse_position = pygame.mouse.get_pos()
 
         if isinstance(world[index], Block):
-            world[index].rect.position_m = \
+            world[index].rect.position = \
                 Vector(camera[0].reverse_apply(mouse_position))
 
         elif isinstance(world[index], SawBlock):
             world[index].rect.center = \
                 Vector(camera[0].reverse_apply(mouse_position))
             world[index].x = camera[0].reverse_apply(mouse_position)[0]
-            world[index].y = world[index].rect.position_m[1] - \
+            world[index].y = world[index].rect.position[1] - \
                 world[index].rope_height - 15
         elif isinstance(world[index], Shadow):
             resize_shadow(world[index], mouse_position)

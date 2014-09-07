@@ -46,8 +46,8 @@ class Batarang():
         self.rect_center = (old_center[0] + self.direction.x * speed,
                             old_center[1] + self.direction.y * speed)
         self.rect.center = self.rect_center
-        self.rect.center = (self.x + self.rect.width_m / 2,
-                            self.y + self.rect.height_m / 2)
+        self.rect.center = (self.x + self.rect.width / 2,
+                            self.y + self.rect.height / 2)
         self.hitmask = get_hitmask(self.rect, self.image, 0)
 
     def direct(self, mouse_x, mouse_y):

@@ -59,9 +59,9 @@ class Camera:
         top = self.half_height - top
         #this is to not scroll the camera outside the borders of the level
         left = min(0, left)
-        left = max((self.window_width - self.state.width_m), left)
-        top = max((self.window_height - self.state.height_m), top)
+        left = max((self.window_width - self.state.width), left)
+        top = max((self.window_height - self.state.height), top)
         top = min(0, top)
-        return Rectangle(self.state.width_m, self.state.height_m,
-                         Vector(left + self.state.width_m // 2,
-                                top + self.state.height_m // 2))
+        return Rectangle(self.state.width, self.state.height,
+                         Vector(left + self.state.width // 2,
+                                top + self.state.height // 2))

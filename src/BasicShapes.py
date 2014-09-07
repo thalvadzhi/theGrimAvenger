@@ -1,12 +1,10 @@
-from itertools import combinations
 from math import pi
+from itertools import combinations
 
 import pygame
-
 from pygame.math import Vector2 as Vector
 
-from VectorMath import calculate_centroid
-from VectorMath import Line
+from VectorMath import Line, calculate_centroid
 
 
 class RigitBody:
@@ -17,26 +15,29 @@ class RigitBody:
     """
     __counter = 0
 
-    def __init__(self, position_m=Vector(0, 0), density=0):
+    def __init__(self, position=Vector(0, 0), density=0):
         """
         position is the position of the center of mass
         """
-        self.__position_m = position_m
+        self.__position = position
         self.__direction = Vector(1, 0)
         self.__density = density
         self.velocity = Vector(0.0, 0.0)
+        self.image_master = None
+        self.pivot = position
         self.joints = []
         self.__hash_count = RigitBody.__counter
         RigitBody.__counter += 1
 
     @property
-    def position_m(self):
-        return self.__position_m
+    def position(self):
+        return self.__position
 
-    @position_m.setter
-    def position_m(self, value):
-        self.__position_m = value
-        self.sync_position()
+    @position.setter
+    def position(self, value):
+        self.__position = value
+        if hasattr(self, "sync_position"):
+            self.sync_position()
 
     @property
     def direction(self):
@@ -45,7 +46,8 @@ class RigitBody:
     @direction.setter
     def direction(self, value):
         self.__direction = value
-        self.sync_position()
+        if hasattr(self, "sync_position"):
+            self.sync_position()
 
     @property
     def mass(self):
@@ -69,9 +71,10 @@ class RigitBody:
         for joint in self.joints:
             new_joint_positions[joint] = line.reflect_point(
                 joint.calculate_world_position(self))
-        self.__position_m = line.reflect_point(self.position_m)
+        self.__position = line.reflect_point(self.position)
         self.__direction = self.direction.reflect(line.direction)
-        self.imageMaster = pygame.transform.flip(self.imageMaster, True, False)
+        self.image_master = pygame.transform.flip(
+            self.image_master, True, False)
         if isinstance(self, Triangle):
             centroid_to_line = line.get_closest_point(Vector(0, 0))
             self.generic_vertices = {key: line.reflect_point(
@@ -85,15 +88,15 @@ class RigitBody:
     def rotate(self, angle):
         self.direction = self.direction.rotate(angle)
 
-    def move(self, movement_m):
-        self.position_m = self.position_m + movement_m
+    def move(self, movement):
+        self.position = self.position + movement
 
     def position_in_world(self, position_on_body):
         return position_on_body.rotate(round(Vector(1, 0).angle_to(
-            self.direction), 5)) + self.position_m
+            self.direction), 5)) + self.position
 
     def position_on_body(self, position_in_world):
-        return (position_in_world - self.position_m).rotate(
+        return (position_in_world - self.position).rotate(
             round(self.direction.angle_to(Vector(1, 0)), 5))
 
     def rotate_around(self, pivot, angle):
@@ -101,45 +104,44 @@ class RigitBody:
         self.rotate(round(angle, 5))
         self.move(pivot_position - self.position_in_world(pivot))
 
-    def pull_on_anchor(self, anchor, movement_m):
-        new_anchor = anchor + movement_m
-        magic = self.pivot_m.rotate(
-            Vector(1, 0).angle_to(self.direction)) + self.position_m
+    def pull_on_anchor(self, anchor, movement):
+        new_anchor = anchor + movement
+        magic = self.pivot.rotate(
+            Vector(1, 0).angle_to(self.direction)) + self.position
         rotation = round((anchor - magic).angle_to(new_anchor - magic), 5)
         self.rotate(rotation)
-        anchor = (anchor - self.position_m).rotate(
-            rotation) + self.position_m
+        anchor = (anchor - self.position).rotate(
+            rotation) + self.position
         translation = new_anchor - anchor
         self.move(translation)
         self.fix_joints()
 
     def load_avatar(self, path):
         try:
-            self.imageMaster = pygame.image.load(r"../ArtWork/{0}".format(
+            self.image_master = pygame.image.load(r"../ArtWork/{0}".format(
                 path)).convert_alpha()
         except pygame.error:
-            self.imageMaster = None
+            self.image_master = None
 
-    def scale_avatar(self, width_m, height_m):
-        if self.imageMaster is None:
+    def scale_avatar(self, width, height):
+        if self.image_master is None:
             return
-        self.imageMaster = pygame.transform.scale(self.imageMaster,
-                                                  (int(width_m),
-                                                   int(height_m)))
+        self.image_master = pygame.transform.scale(self.image_master,
+                                                   (int(width),
+                                                    int(height)))
 
     def display_avatar(self, surface, camera=0):
-        centre = self.position_m
+        centre = self.position
         if camera != 0:
             centre = camera.apply([centre])[0]
-        if self.imageMaster is None:
+        if self.image_master is None:
             Rectangle.draw(self, surface)
             return
         image = pygame.transform.rotate(
-            self.imageMaster, self.direction.angle_to(Vector(1, 0)))
+            self.image_master, self.direction.angle_to(Vector(1, 0)))
         rect = image.get_rect()
         rect.center = centre
         surface.blit(image, rect)
-
 
         #  def box_collide(self, other):
         #      first_box = self.calculate_box()
@@ -148,12 +150,12 @@ class RigitBody:
         #              first_box[0][1] >= second_box[0][0]) and \
         #          (first_box[1][0] <= second_box[1][1] and
         #           first_box[1][1] >= second_box[1][0])
-
         #  def check_if_collide(self, other):
         #      if self.box_collide(other):
         #          return getattr(self, "collides_{0}".format(
         #              str(other).lower()))(other) or\
-        #              getattr(other, "collides_{0}".format(str(self).lower()))(self)
+        #              getattr(other, "collides_{0}".format(
+        #                  str(self).lower()))(self)
         #      return False
 
     def check_if_collide(self, other):
@@ -175,7 +177,7 @@ class RigitBody:
         minimal_magnitude = min(magnitudes)
         direction = 1
         if magnitudes[minimal_magnitude].direction * (
-                other.position_m - self.position_m) < 0:
+                other.position - self.position) < 0:
             direction = -1
         return (collide, magnitudes[minimal_magnitude].direction *
                 minimal_magnitude * direction)
@@ -183,27 +185,26 @@ class RigitBody:
 
 class Circle(RigitBody):
 
-    def __init__(self, radius_m, position_m=Vector(0, 0), density=0):
-        RigitBody.__init__(self, position_m, density)
-        self.__radius_m = radius_m
+    def __init__(self, radius, position=Vector(0, 0), density=0):
+        RigitBody.__init__(self, position, density)
+        self.__radius = radius
         self.calculate_mass()
 
     def __hash__(self):
         return RigitBody.__hash__(self)
 
     def __eq__(self, other):
-        return self.position_m == other.position_m and \
-            self.radius_m == other.radius_m and \
-            self.mass_kg == other.mass_kg and \
-            self.direction == other.direction and \
-            self.pivot_m == other.pivot_m
+        return self.position == other.position and \
+            self.radius == other.radius and \
+            self.mass == other.mass and \
+            self.direction == other.direction
 
     @property
-    def radius_m(self):
-        return self.__radius_m
+    def radius(self):
+        return self.__radius
 
     def is_point_in_body(self, point):
-        if abs((point - self.position_m).length()) < self.radius_m:
+        if abs((point - self.position).length()) < self.radius:
             return True
         return False
 
@@ -211,13 +212,13 @@ class Circle(RigitBody):
         pass
 
     def calculate_surface(self):
-        return pi * pow(self.radius_m, 2)
+        return pi * pow(self.radius, 2)
 
   #  def calculate_box(self):
-  #      return ((self.position_m.x - self.radius_m,
-  #               self.position_m.x + self.radius_m),
-  #              (self.position_m.y - self.radius_m,
-  #               self.position_m.y + self.radius_m))
+  #      return ((self.position.x - self.radius,
+  #               self.position.x + self.radius),
+  #              (self.position.y - self.radius,
+  #               self.position.y + self.radius))
 
   #  def collides_triangle(self, other):
   #      return any(map(self.is_point_in_body, other.vertices.values()))
@@ -227,31 +228,31 @@ class Circle(RigitBody):
 
     def collide_circle(self, other):
         collide = True
-        centre_difference = other.position_m - self.position_m
+        centre_difference = other.position - self.position
         separation = centre_difference.length()
-        if separation >= self.radius_m + other.radius_m:
+        if separation >= self.radius + other.radius:
             collide = False
         return (collide, centre_difference.normalize() * (
-            self.radius_m + other.radius_m - separation))
+            self.radius + other.radius - separation))
 
     def draw(self, surface, colour=(0, 0, 0)):
         pygame.draw.circle(surface, colour,
-                           (int(self.position_m.x), int(self.position_m.y)),
-                           int(self.radius_m))
+                           (int(self.position.x), int(self.position.y)),
+                           int(self.radius))
 
     def get_SAT_axis(self):
         return []
 
     def get_SAT_projections(self, axes):
-        centre_projection = axes.direction * self.position_m
-        return (centre_projection - self.radius_m,
-                centre_projection + self.radius_m)
+        centre_projection = axes.direction * self.position
+        return (centre_projection - self.radius,
+                centre_projection + self.radius)
 
 
 class Triangle(RigitBody):
 
-    def __init__(self, three_elements, position_m=Vector(0, 0), density=0):
-        RigitBody.__init__(self, position_m, density)
+    def __init__(self, three_elements, position=Vector(0, 0), density=0):
+        RigitBody.__init__(self, position, density)
         if isinstance(three_elements[0], Vector):
             three_elements = [element for element in three_elements]
             self.vertices = dict(zip(["A", "B", "C"], three_elements))
@@ -267,13 +268,11 @@ class Triangle(RigitBody):
         return RigitBody.__hash__(self)
 
     def __eq__(self, other):
-        result = self.position_m == other.position_m
-        result &= all([self.edge_lenghts[key] == other.edge_lenghts[key]
-                       for key in self.edge_lenghts.keys()])
-        result &= self.mass_kg == other.mass_kg
-        result &= self.direction == other.direction
-        result &= self.pivot_m == other.pivot_m
-        return result
+        return self.position == other.position and \
+            all([self.edge_lenghts[key] == other.edge_lenghts[key]
+                 for key in self.edge_lenghts.keys()]) and \
+            self.mass == other.mass and \
+            self.direction == other.direction
 
     def calculate_surface(self):
         return ((self.vertices["A"].x - self.vertices["C"].x) *
@@ -288,7 +287,7 @@ class Triangle(RigitBody):
 
     def sync_position(self):
         self.vertices = {key: self.generic_vertices[key].rotate(round(
-            Vector((1, 0)).angle_to(self.direction), 5)) + self.position_m
+            Vector((1, 0)).angle_to(self.direction), 5)) + self.position
             for key in self.generic_vertices.keys()}
 
     def sync_centroid(self):
@@ -330,12 +329,12 @@ class Triangle(RigitBody):
   #      return any(map(self.is_point_in_body, other.vertices))
 
   #  def collides_circle(self, other):
-  #      distances = [(other.position_m - Line(
+  #      distances = [(other.position - Line(
   #          combination[0], combination[1], True).get_closest_point(
-  #          other.position_m)).length() for combination in combinations(
+  #          other.position)).length() for combination in combinations(
   #          self.vertices.values(), 2)]
-  #      return any([_ <= other.radius_m for _ in distances]) or\
-  #          self.is_point_in_body(other.position_m)
+  #      return any([_ <= other.radius for _ in distances]) or\
+  #          self.is_point_in_body(other.position)
 
     def draw(self, surface, colour=(255, 0, 0)):
         self.sync_position()
@@ -355,13 +354,13 @@ class Triangle(RigitBody):
 
 class Rectangle(RigitBody):
 
-    def __init__(self, width_m, height_m,
-                 position_m=Vector(0, 0), density=0):
-        RigitBody.__init__(self, position_m, density)
-        self.__width_m = width_m
-        self.__height_m = height_m
-        #self.sync_position()
-        #topleft position
+    def __init__(self, width, height,
+                 position=Vector(0, 0), density=0):
+        RigitBody.__init__(self, position, density)
+        self.__width = width
+        self.__height = height
+        # self.sync_position()
+        # topleft position
         self.sync_position()
         self.x = self.vertices[3].x
         self.y = self.vertices[3].y
@@ -371,36 +370,36 @@ class Rectangle(RigitBody):
         return RigitBody.__hash__(self)
 
     def __eq__(self, other):
-        result = self.position_m == other.position_m
-        result &= self.width_m == other.width_m
-        result &= self.height_m == other.height_m
-        result &= self.mass_kg == other.mass_kg
-        result &= self.direction == other.direction
-        result &= self.pivot_m == other.pivot_m
-        return result
+        return self.position == other.position and \
+            self.width == other.width and \
+            self.height == other.height and \
+            self.mass == other.mass and \
+            self.direction == other.direction
 
     @property
-    def height_m(self):
-        return self.__height_m
+    def height(self):
+        return self.__height
 
     @property
-    def width_m(self):
-        return self.__width_m
+    def width(self):
+        return self.__width
 
     @property
     def center(self):
-        return self.position_m
+        return self.position
 
     @center.setter
     def center(self, value):
 
-        self.position_m = value
+        self.position = value
         self.sync_position()
         self.x = self.vertices[3].x
         self.y = self.vertices[3].y
 
     def advance(self, amount_x, amount_y):
-        self.position_m = (self.center[0] + amount_x, self.center[1] + amount_y)
+        self.position = (
+            self.center[0] + amount_x,
+            self.center[1] + amount_y)
         self.sync_position()
         self.x = self.vertices[3].x
         self.y = self.vertices[3].y
@@ -408,28 +407,29 @@ class Rectangle(RigitBody):
     def sync_position(self):
         perpendicular = self.direction.rotate(90)
         vertices = []
-        vertices.append(perpendicular * self.height_m / 2 +
-                        self.direction * self.width_m / -2 + self.position_m)
-        vertices.append(perpendicular * self.height_m / 2 +
-                        self.direction * self.width_m / 2 + self.position_m)
-        vertices.append(perpendicular * self.height_m / -2 +
-                        self.direction * self.width_m / 2 + self.position_m)
-        vertices.append(perpendicular * self.height_m / -2 +
-                        self.direction * self.width_m / -2 + self.position_m)
+        vertices.append(perpendicular * self.height / 2 +
+                        self.direction * self.width / -2 + self.position)
+        vertices.append(perpendicular * self.height / 2 +
+                        self.direction * self.width / 2 + self.position)
+        vertices.append(perpendicular * self.height / -2 +
+                        self.direction * self.width / 2 + self.position)
+        vertices.append(perpendicular * self.height / -2 +
+                        self.direction * self.width / -2 + self.position)
         self.vertices = vertices
 
     def is_point_in_body(self, point_location_m, camera=0):
         if camera != 0:
-            centroid_to_point = point_location_m - camera.apply(Vector(self.position_m))
+            centroid_to_point = point_location_m - \
+                camera.apply(Vector(self.position))
         else:
-            centroid_to_point = point_location_m - Vector(self.position_m)
+            centroid_to_point = point_location_m - Vector(self.position)
         centroid_to_point = centroid_to_point.rotate(
             self.direction.angle_to(Vector((1, 0))))
-        return abs(centroid_to_point.x) <= self.width_m / 2 and \
-            abs(centroid_to_point.y) <= self.height_m / 2
+        return abs(centroid_to_point.x) <= self.width / 2 and \
+            abs(centroid_to_point.y) <= self.height / 2
 
     def calculate_surface(self):
-        return self.width_m * self.height_m
+        return self.width * self.height
 
   #  def calculate_box(self):
   #      x_coordinates = [_.x for _ in self.vertices]
@@ -444,11 +444,11 @@ class Rectangle(RigitBody):
         return any(map(self.is_point_in_body, other.vertices))
 
   #  def collides_circle(self, other):
-  #      distances = [(other.position_m - Line(self.vertices[
+  #      distances = [(other.position - Line(self.vertices[
   #          index], self.vertices[(index + 1) % 4], True).get_closest_point(
-  #          other.position_m)).length() for index in range(0, 4)]
-  #      return any([_ <= other.radius_m for _ in distances]) or\
-  #          self.is_point_in_body(other.position_m)
+  #          other.position)).length() for index in range(0, 4)]
+  #      return any([_ <= other.radius for _ in distances]) or\
+  #          self.is_point_in_body(other.position)
 
     def draw(self, surface, colour=(255, 0, 0), camera=0):
         if camera != 0:
@@ -490,15 +490,25 @@ class Rectangle(RigitBody):
             return Rectangle(0, 0, (0, 0))
 
         if isinstance(clipped_vertices[3], Vector):
-            clipped_vertices[0] = Vector(clipped_vertices[3].x, clipped_vertices[1].y)
-            clipped_vertices[2] = Vector(clipped_vertices[1].y, clipped_vertices[3].y)
+            clipped_vertices[0] = Vector(
+                clipped_vertices[3].x,
+                clipped_vertices[1].y)
+            clipped_vertices[2] = Vector(
+                clipped_vertices[1].y,
+                clipped_vertices[3].y)
         elif isinstance(clipped_vertices[2], Vector):
-            clipped_vertices[3] = Vector(clipped_vertices[0].x, clipped_vertices[2].y)
-            clipped_vertices[1] = Vector(clipped_vertices[2].x, clipped_vertices[0].y)
+            clipped_vertices[3] = Vector(
+                clipped_vertices[0].x,
+                clipped_vertices[2].y)
+            clipped_vertices[1] = Vector(
+                clipped_vertices[2].x,
+                clipped_vertices[0].y)
 
         clipped_height = clipped_vertices[0].distance_to(clipped_vertices[3])
         clipped_width = clipped_vertices[0].distance_to(clipped_vertices[1])
-        clipped_center = (clipped_vertices[0].x + clipped_width / 2, clipped_vertices[0].y - clipped_height / 2)
+        clipped_center = (
+            clipped_vertices[0].x + clipped_width / 2,
+            clipped_vertices[0].y - clipped_height / 2)
 
         return Rectangle(clipped_width, clipped_height, clipped_center)
 

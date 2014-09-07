@@ -1,7 +1,6 @@
 from pygame.math import Vector2 as Vector
 
-from VectorMath import calculate_centroid
-from VectorMath import Line
+from VectorMath import calculate_centroid, Line
 
 
 class Joint:
@@ -12,7 +11,7 @@ class Joint:
         self._bodies_positions = bodies_positions
         for body in self._bodies_positions.keys():
             body.joints.append(self)
-        self.limited = False
+        # self.limited = False
         self.__hash_count = Joint.__counter
         Joint.__counter += 1
 
@@ -43,7 +42,7 @@ class Joint:
         recursive_fix(self, stationary)
 
     def calculate_world_position(self, base):
-        return self.calculate_position(base) + base.position_m
+        return self.calculate_position(base) + base.position
 
     def calculate_position(self, base):
         return self._bodies_positions[base].rotate(round(
@@ -53,46 +52,47 @@ class Joint:
         connections = [joint._bodies_positions[body] for joint in body.joints
                        if joint != self]
         if not connections:
-            return body.position_m
+            return body.position
         return calculate_centroid(connections)
 
 
-class RailJoint(Joint):
-
-    def __init__(self, point_A, point_B):
-        Joint.__init__(self, {})
-        self.point_A = point_A
-        self.point_B = point_B
-
-    def __hash__(self):
-        return Joint.__hash__(self)
-
-    def __eq__(self, other):
-        return Joint.__eq__(self, other)
-
-    def move_to_joint(self, body):
-        anchor = self.calculate_world_position(body)
-        new_anchor = Line(self.point_A, self.point_B, True).get_closest_point(
-            self.calculate_world_position(body))
-        magic = Vector(0, 0).rotate(
-            Vector((1, 0)).angle_to(body.direction)) + body.position_m
-        rotation = round((- magic).angle_to(new_anchor - magic), 5)
-        body.rotate(rotation)
-        anchor = (anchor - body.position_m).rotate(
-            rotation) + body.position_m
-        translation = new_anchor - anchor
-        body.move(translation)
+# class RailJoint(Joint):
+#
+#     def __init__(self, point_A, point_B):
+#         Joint.__init__(self, {})
+#         self.point_A = point_A
+#         self.point_B = point_B
+#
+#     def __hash__(self):
+#         return Joint.__hash__(self)
+#
+#     def __eq__(self, other):
+#         return Joint.__eq__(self, other)
+#
+#     def move_to_joint(self, body):
+#         anchor = self.calculate_world_position(body)
+#         new_anchor = Line(
+#             self.point_A, self.point_B, True).get_closest_point(
+#             self.calculate_world_position(body))
+#         magic = Vector(0, 0).rotate(
+#             Vector((1, 0)).angle_to(body.direction)) + body.position
+#         rotation = round((- magic).angle_to(new_anchor - magic), 5)
+#         body.rotate(rotation)
+#         anchor = (anchor - body.position).rotate(
+#             rotation) + body.position
+#         translation = new_anchor - anchor
+#         body.move(translation)
 
 
 class RevoluteJoint(Joint):
 
-    def __init__(self, body_A, pos_on_body_A_m, body_B, pos_on_body_B_m):
-        Joint.__init__(self, {body_A: pos_on_body_A_m,
-                              body_B: pos_on_body_B_m})
+    def __init__(self, body_A, pos_on_body_A, body_B, pos_on_body_B):
+        Joint.__init__(self, {body_A: pos_on_body_A,
+                              body_B: pos_on_body_B})
         self.base = body_A
         self.mobile = body_B
-        self.__limit = (0, 90)
-        self.__motor = False
+        # self.__limit = (0, 90)
+        # self.__motor = False
         self.apply_constraints(body_A)
 
     def __hash__(self):
@@ -101,21 +101,21 @@ class RevoluteJoint(Joint):
     def __eq__(self, other):
         return Joint.__eq__(self, other)
 
-    @property
-    def limit(self):
-        return self.__limit
+#    @property
+#    def limit(self):
+#        return self.__limit
 
-    @property
-    def motor(self):
-        return self.__motor
+#    @property
+#    def motor(self):
+#        return self.__motor
 
-    @limit.setter
-    def limit(self, value):
-        self.__limit = (value + 360) % 360
-
-    @motor.setter
-    def motor(self, value):
-        pass
+#    @limit.setter
+#    def limit(self, value):
+#        self.__limit = (value + 360) % 360
+#
+#    @motor.setter
+#    def motor(self, value):
+#        pass
 
     def bent(self, angle):
         self.mobile.rotate_around(self._bodies_positions[self.mobile], angle)
@@ -168,7 +168,7 @@ class RevoluteJoint(Joint):
         base = self.other_body(body)
         new_joint_position = self.calculate_world_position(base)
         magic = self.calculate_pivot(body).rotate(round(
-            Vector((1, 0)).angle_to(body.direction), 5)) - body.position_m
+            Vector((1, 0)).angle_to(body.direction), 5)) - body.position
         rotation = round((
             joint_position + magic).angle_to(new_joint_position + magic), 5)
         # work around a pygame bug
