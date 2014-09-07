@@ -1,6 +1,6 @@
 import unittest
 from Camera import Camera
-from Vec2D import Vec2d as Vector
+from pygame.math import Vector2 as Vector
 
 
 class CameraTest(unittest.TestCase):

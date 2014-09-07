@@ -1,7 +1,7 @@
 import unittest
 from GraplingHook import GraplingHook
 from Environment import Block
-from Vec2D import Vec2d as Vector
+from pygame.math import Vector2 as Vector
 from Pendulum import Pendulum
 from Camera import Camera
 import pygame

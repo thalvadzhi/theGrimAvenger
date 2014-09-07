@@ -1,7 +1,8 @@
 import unittest
 import pygame
 from Environment import Block, SawBlock, Shadow
-from Vec2D import Vec2d as Vector
+from Batarangs import Batarang
+from pygame.math import Vector2 as Vector
 pygame.init()
 screen = pygame.display.set_mode((0, 0))
 
@@ -66,15 +67,12 @@ class EnvironmentTest(unittest.TestCase):
     def test_collide(self):
         saw = SawBlock(10, 0, 5)
 
-        class Bat:
-            def __init__(self, x, y):
-                self.x = x
-                self.y = y
+
         saw.bob.dtheta = 20
-        saw.collide(Bat(2, 1))
+        saw.collide(Batarang(2, 1))
 
     def test_shadow(self):
-        Shadow.load_texture(50, 50)
+        Shadow.set_up(50, 50)
         shadow = Shadow((0, 0), (500, 0), (500, 500), (0, 500))
         self.assertEqual(shadow.collide([(50, 50)]), True)
         self.assertEqual(shadow.collide([(50, 50), (100, 100), (200, 200)]),
