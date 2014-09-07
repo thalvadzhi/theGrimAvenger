@@ -1,7 +1,6 @@
 from pygame import *
 from BasicShapes import Rectangle
 from pygame.math import Vector2 as Vector
-from Vec2D import Vec2d
 
 
 class Camera:
