@@ -1,13 +1,15 @@
 from collections import OrderedDict
+from math import copysign
 from pickle import load
 
 import pygame
 from pygame.math import Vector2 as Vector
 
+import Physics
 from Joints import RevoluteJoint
+from Motions import Motion
 from BasicShapes import SHAPES
 from VectorMath import Line
-
 
 class HumanRagdoll:
 
@@ -26,6 +28,7 @@ class HumanRagdoll:
         self.impulse = Vector(0.0, 0.0)
         self.__mass = sum([body_part.mass
                            for body_part in self.body_parts.values()])
+        self.motion = Motion(self)
 
     @property
     def mass(self):
@@ -104,9 +107,10 @@ class HumanRagdoll:
 
     def hand_position(self, leftedness):
         forearm = self.body_parts["{0}_forearm".format(leftedness)]
-        bone = (forearm.vertices[0] +
-                forearm.vertices[1]) / 2 - forearm.position
-        return forearm.position + bone + bone.normalize() * 5
+        return (forearm.vertices[0] + forearm.vertices[1]) / 2 
+        # bone = (forearm.vertices[0] +
+        #        forearm.vertices[1]) / 2 - forearm.position
+        # return forearm.position + bone + bone.normalize() * 5
 
     def capture_frame(self):
         if self.facing == "left":
@@ -133,30 +137,39 @@ class HumanRagdoll:
                 state[body_part][1] + current_position
         self.body_parts["torso"].fix_joints()
 
-    def shift_to_next_frame(self, previous_frame, next_frame):
-        difference = {key:  next_frame[key] - previous_frame[key]
-                      for key in next_frame}
-        difference["slope"] *= -1
-        print(difference["slope"])
-        print(previous_frame["slope"], next_frame["slope"])
-        if difference["slope"] > 180:
-            difference["slope"] = difference["slope"] - 360
-        if difference["slope"] < -180:
-            difference["slope"] = difference["slope"] + 360
-        print(difference["slope"])
-        for frame in range(25):
+    def calculate_frame_difference(self, frame):
+        previous_frame = self.capture_frame()
+        frame = {key: frame[key] - previous_frame[key]
+                      for key in previous_frame}
+        for joint in self.joints:
+            if frame[joint] > 180 or frame[joint] < -180:
+                frame[joint] -= copysign(360, frame[joint])
+        if frame["slope"] > 180 or frame["slope"] < -180:
+            frame["slope"] -= copysign(360, frame["slope"])
+        return frame
+
+    def set_frame(self, frame):
+        frame = self.calculate_frame_difference(frame)
+        facing = {"left": -1, "right": 1}[self.facing]
+        for joint in self.joints:
+            self.joints[joint].bent_keeping_angles(frame[joint] * facing)
+        self.rotate(frame["slope"] * -facing)
+
+    def shift_to_frame(self, frame, start_time, clock):
+        duration = frame["duration"]
+        frame = self.calculate_frame_difference(frame)
+        elapsed_time = 0
+        bent_fraction = 0
+        while elapsed_time < duration:
+            facing = {"left": -1, "right": 1}[self.facing]
+            elapsed_time = clock.get_ticks() - start_time
+            fraction = elapsed_time / duration - bent_fraction
+            if elapsed_time > duration:
+                fraction = 1 - bent_fraction
+            bent_fraction += fraction
             for joint in self.joints:
-                angle = difference[joint]
-                if angle > 180:
-                    angle = angle - 360
-                if angle < -180:
-                    angle = angle + 360
-                if self.facing == "left":
-                    angle *= -1
-                self.joints[joint].bent_keeping_angles(angle / 25)
-            if self.facing == "left":
-                difference["slope"] *= -1
-            self.rotate(difference["slope"] / 25)
+                self.joints[joint].bent_keeping_angles(frame[joint] * fraction * facing)
+            self.rotate(frame["slope"] * fraction * -facing)
             yield
         raise StopIteration
 
@@ -177,6 +190,10 @@ class HumanRagdoll:
                 / self.proportions[1],
                 self.body_parts[body_part].image_master.get_height()
                 / self.proportions[1])
+
+    def apply_physics(self, time):
+        Physics.apply_gravity(self, time)
+        self.move(self.velocity)
 
     def draw(self, surface, camera=0):
         for body_part in self.body_parts.values():
