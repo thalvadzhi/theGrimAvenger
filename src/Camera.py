@@ -22,9 +22,11 @@ class Camera:
         elif isinstance(target, list):
             result = []
             for vertex in target:
-                if isinstance(vertex, Vector) or isinstance(vertex, Vec2d):
+                if isinstance(vertex, Vector):
                     result.append(Vector((vertex.x + self.state.x,
                                           vertex.y + self.state.y)))
+                elif isinstance(vertex, tuple):
+                    result.append((vertex[0] + self.state.x, vertex[1] + self.state.y))
                 else:
                     raise TypeError
             return result
