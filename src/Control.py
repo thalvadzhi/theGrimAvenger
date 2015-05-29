@@ -22,7 +22,9 @@ class Control(Events):
         Menu.init_menus(self)
         self.current_menu = "welcome_menu"
         self.camera = 0
-        self.clock = pygame.time.Clock()
+        self.clock = pygame.time.Clock()        
+        self.time = pygame.time
+        self.last_time = 0
         self.take_screenshot = False
         self.ingame = False
         self.play_music("menu")
@@ -85,6 +87,7 @@ class Control(Events):
                              self.gui_settings["resolution"][0],
                              self.gui_settings["resolution"][1])
         self.play_music(self.level["music"])
+        # self.current_time = pygame.time.get_ticks()
 
     def play_music(self, path):
         pygame.mixer.music.load(r"../Files/Sounds/{0}.mp3".format(path))
@@ -211,9 +214,10 @@ class Control(Events):
     def game_handler(self):
         for saw in self.level_saws:
             saw.update(self.timer)
-        self.refresh_screen()
         self.get_user_input()
         self.player.handle_input(self)
+        self.apply_physics()
+        self.refresh_screen()
 
    # def update_velocity(self, body):
    #     dt_s = self.timer / 1000
@@ -223,8 +227,22 @@ class Control(Events):
    #     # Acceleration from Newton's law.
    #     acceleration = forces_on_body / body.mass
 
-   # def apply_physics(self):
-   #     self.update_velocity(self.player)
+    def apply_physics(self):
+        # self.update_velocity(self.player)
+        current_time = pygame.time.get_ticks()
+        time = current_time - self.last_time 
+        self.player.apply_physics(time) 
+        collide = [block.rect.check_if_collide(body_part) for block in self.level_blocks
+            for body_part in [self.player.body_parts["left_boot"], self.player.body_parts["right_boot"]]]
+        if any(_[0] for _ in collide):
+            max_MTV = [_[1] for _ in collide if _[0]][0]
+            for MTV in collide:
+                if MTV[0]:
+                    if max_MTV.length() < MTV[1].length():
+                        max_MTV = MTV[1]
+            self.player.move(max_MTV)
+            self.player.velocity[1] = 0
+        self.last_time = current_time
 
 #    def cursor_controll(self):
 #        self.cursor_selected_body[0].pull_on_anchor(
