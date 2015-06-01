@@ -6,6 +6,7 @@ import pygame
 from pygame.math import Vector2 as Vector
 
 import Physics
+from Physics import PHYSICS_SETTINGS
 from Joints import RevoluteJoint
 from Motions import Motion
 from BasicShapes import SHAPES
@@ -24,6 +25,7 @@ class HumanRagdoll:
         self.body_parts["torso"].pivot = Vector(
             (0, self.body_parts["torso"].height / 2))
         self.__facing = "right"
+        self.ground = None
         self.velocity = Vector(0.0, 0.0)
         self.impulse = Vector(0.0, 0.0)
         self.__mass = sum([body_part.mass
@@ -191,9 +193,27 @@ class HumanRagdoll:
                 self.body_parts[body_part].image_master.get_height()
                 / self.proportions[1])
 
-    def apply_physics(self, time):
+    def apply_physics(self, time, world):
+        boots = [self.body_parts["left_boot"], self.body_parts["right_boot"]]
+        if self.ground is not None:
+            collisions = [self.ground.rect.check_if_collide(boot) for boot in boots]
+            if any(collision[1].length() < PHYSICS_SETTINGS["touch_distance"] 
+                    for collision in collisions):
+                return
+            else:
+                self.ground = None
+        
         Physics.apply_gravity(self, time)
         self.move(self.velocity)
+
+        collisions = {block: block.rect.check_if_collide(body_part) for block in world.level_blocks
+            for body_part in [self.body_parts["left_boot"], self.body_parts["right_boot"]]}
+        for block in world.level_blocks: 
+            for MTV in [block.rect.check_if_collide(boot) for boot in boots]:
+                if MTV[0]:
+                    self.move(MTV[1])
+                    self.velocity[1] = 0
+                    self.ground = block
 
     def draw(self, surface, camera=0):
         for body_part in self.body_parts.values():

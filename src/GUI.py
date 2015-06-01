@@ -19,6 +19,46 @@ SOUND_SETTINGS = {
 RESOLUTIONS = [(1280, 1024), (1366, 768), (1600, 1024),
                (1600, 1200), (1920, 1080), (1920, 1200)]
 
+class SoundEffect:
+    """
+    Fix settings not being loaded/saved maybe not using global SOUND_SETTINGS
+    """
+    LOADED = {}
+
+    def __init__(self, sound):
+        if sound in SoundEffect.LOADED:
+            self.sound = SoundEffect.LOADED[sound]
+        else:
+            self.sound = pygame.mixer.Sound(
+                r"../Files/Sounds/{0}".format(sound))
+            SoundEffect.LOADED[sound] = self.sound
+        self.volume = SOUND_SETTINGS["effects"]
+        self.reset_volume()
+
+    def reset_volume(self):
+        if self.volume is 0:
+            self.sound.set_volume(self.volume)
+        else:
+            self.sound.set_volume(self.volume / 100)
+
+    @classmethod
+    def set_music_volume(cls, volume):
+        SOUND_SETTINGS["music"] = volume
+        if volume is 0:
+            pygame.mixer.music.set_volume(volume)
+        else:
+            pygame.mixer.music.set_volume(volume / 100)
+
+    @classmethod
+    def play_music(cls, path):
+        pygame.mixer.music.load(r"../Files/Sounds/{0}".format(path))
+        pygame.mixer.music.play(-1)
+
+    def play(self):
+        if self.volume != SOUND_SETTINGS["effects"]:
+            self.volume = SOUND_SETTINGS["effects"]
+            self.reset_volume()
+        self.sound.play()
 
 class TextBox(Rectangle):
 
@@ -69,8 +109,7 @@ class Button(Rectangle):
             self.states[state] = self.image_master
         self.state = "normal"
         self.clicked = False
-        self.sound_effect = pygame.mixer.Sound(
-            r"../Files/Sounds/button_{0}.wav".format(button_type))
+        self.sound_effect = SoundEffect(r"button_{0}.wav".format(button_type))
         self.text_box = TextBox(width, height, position, text,
                                 text_colour, text_font)
         self.button_type = button_type
@@ -128,8 +167,7 @@ class Slider(Rectangle):
             self.puck.scale_avatar(
                 self.puck.radius * 2, self.puck.radius * 2)
             self.states[state] = self.puck.image_master
-        self.sound_effect = pygame.mixer.Sound(
-            r"../Files/Sounds/slider_{0}.wav".format(slider_type))
+        self.sound_effect = SoundEffect(r"slider_{0}.wav".format(slider_type))
         self.state = "normal"
         self.text_box = TextBox(
             text_box_width, text_box_height, position +
@@ -257,8 +295,7 @@ class Checkbox(Rectangle):
             self.state = "checked"
         else:
             self.state = "unchecked"
-        self.sound_effect = pygame.mixer.Sound(
-            r"../Files/Sounds/checkbox_{0}.wav".format(checkbox_type))
+        self.sound_effect = SoundEffect(r"checkbox_{0}.wav".format(checkbox_type))
         self.text_box = TextBox(
             text_box_width, text_box_height, self.position +
             Vector((self.width + text_box_width) / 2, 0),
@@ -361,14 +398,6 @@ class Menu(Rectangle):
                 element.clicked = False
 
     @classmethod
-    def sync_volume(cls, control):
-        for menu in cls.MENUS.values():
-            for element in menu.elements:
-                if not isinstance(element, TextBox):
-                    element.sound_effect.set_volume(
-                        control.sound_settings["effects"] / 100)
-
-    @classmethod
     def init_menus(cls, control):
         screen_centre = Vector(control.gui_settings["resolution"]) / 2
 
@@ -397,10 +426,10 @@ class Menu(Rectangle):
         sound_menu = cls(600, 450, screen_centre, "SOUND",
                          (0, 0, 0), (None, 50), 400, 50)
         sound_menu.add_element(
-            0, Slider, control.sound_settings["effects"], [0, 100], 400, 5, 15,
+            0, Slider, SOUND_SETTINGS["effects"], [0, 100], 400, 5, 15,
             "EFFECTS", (0, 0, 0), (None, 30), 200, 40)
         sound_menu.add_element(
-            0, Slider,  control.sound_settings["music"], [0, 100], 400, 5, 15,
+            0, Slider, SOUND_SETTINGS["music"], [0, 100], 400, 5, 15,
             "MUSIC", (0, 0, 0), (None, 30), 200, 40)
         sound_menu.add_element(
             20, Button, 400, 50, "LOAD DEFAULT", (0, 0, 0), (None, 50))
@@ -473,8 +502,6 @@ class Menu(Rectangle):
         pause_menu.add_element(
             20, Button, 400, 50, "QUIT", (0, 0, 0), (None, 50))
         cls.MENUS["pause_menu"] = pause_menu
-
-        cls.sync_volume(control)
 
     def draw(self, surface):
         elements = pygame.Surface((self.width, self.height))
