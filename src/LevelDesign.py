@@ -1,374 +1,352 @@
 from BasicShapes import Rectangle
+from Constants import *
 import eztext
-import pickle
+from Light import Light
 from Button import Button
 from Camera import Camera
 from Environment import Block, SawBlock, Shadow
-from pygame.math import Vector2 as Vector
-from collections import defaultdict
 import pygame
 import sys
-
-HEIGHT = 768
-WIDTH = 1366
-FPS = 60
+from Serialize import *
+import json
 
 
-GAME_MEASURES = [WIDTH, HEIGHT, WIDTH - WIDTH // 4, HEIGHT]
-CONSTANTS = [WIDTH, HEIGHT, FPS]
-#these are all the printables
-world = []
+class DecodingFailure(Exception):
+    def __init__(self, message):
+        super(DecodingFailure, self).__init__(message)
 
-Shadow.set_up(GAME_MEASURES[0], GAME_MEASURES[1])
+
+class LevelDesign:
+    GAME_MEASURES = [WIDTH, HEIGHT, WIDTH - WIDTH // 4, HEIGHT]
+    def __init__(self):
+        self.world = []
+        self.lights = []
+        #this is the block according to which the view will move
+        self.observer = Block((0, 0, 0), WIDTH, HEIGHT, 0, 0)
+        self.setup_menu_camera()
+        self.setup_text_boxes()
+        self.setup_buttons()
+        self.set_up_boundaries()
+        Light.set_up_surfaces(LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1])
+
+    def setup_menu_camera(self):
+        #this is the menu bar
+        self.menu = Rectangle(WIDTH // 4, HEIGHT,
+                              (WIDTH - WIDTH // 4 + (WIDTH // 4) // 2, HEIGHT // 2))
+        self.camera = Camera(LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1],
+                             WIDTH - WIDTH // 4, HEIGHT)
+
+    def setup_text_boxes(self):
+        self.block_textbox = eztext.Input(maxlength=15, color=(255, 0, 0),
+                                          prompt='w, h, c: ', x=WIDTH - WIDTH // 4 + 10,
+                                          y=0, font=pygame.font.Font(None, 30))
+        self.sawblock_textbox = eztext.Input(maxlength=5, color=(255, 0, 0), prompt='l: ',
+                                             x=WIDTH - WIDTH // 4 + 10,
+                                             y=70, font=pygame.font.Font(None, 30))
+
+        self.textboxes = [self.block_textbox, self.sawblock_textbox]
+
+    def setup_buttons(self):
+        self.rectangle_button = Button((WIDTH - WIDTH // 4 + 10, 30),
+                                       (150, 30), "Spawn Rect", (0, 0, 0), (255, 0, 0))
+        self.sawblock_button = Button((WIDTH - WIDTH // 4 + 10, 100),
+                                      (150, 30), "Spawn Saw", (0, 0, 0), (255, 0, 0))
+        self.light_button = Button((WIDTH - WIDTH // 4 + 10, 140),
+                                   (180, 30), "Spawn Light", (0, 0, 0), (255, 0, 0))
+        self.expand_up = Button((WIDTH - WIDTH // 4 + 10, HEIGHT - 90),
+                                (100, 30), "Expand^", (0, 0, 0), (255, 255, 255))
+        self.expand_right = Button((WIDTH - WIDTH // 4 + 10, HEIGHT - 30),
+                                   (100, 30), "Expand>", (0, 0, 0), (255, 255, 255))
+
+        self.retract_left = Button((WIDTH - WIDTH // 4 + 110, HEIGHT - 30),
+                                   (100, 30), "Retract<", (0, 0, 0), (255, 255, 255))
+        self.retract_down = Button((WIDTH - WIDTH // 4 + 110, HEIGHT - 90),
+                                   (100, 30), "Retract\/", (0, 0, 0), (255, 255, 255))
+
+        self.delete_button = Button((WIDTH - WIDTH // 4 + 65, HEIGHT - 140),
+                                    (100, 30), "Despawn", (0, 0, 0), (255, 255, 255))
+        self.save_button = Button((WIDTH - WIDTH // 4 + 65, HEIGHT - 200),
+                                  (100, 30), "Save", (0, 0, 0), (255, 255, 255))
+        self.load_button = Button((WIDTH - WIDTH // 4 + 65, HEIGHT - 280),
+                                  (100, 30), "Load", (0, 0, 0), (255, 255, 255))
+
+        self.quit = Button((WIDTH - WIDTH // 4 + 65, HEIGHT - 340),
+                           (100, 30), "Quit", (0, 0, 0), (255, 255, 255))
+
+        self.buttons = [self.rectangle_button, self.sawblock_button, self.light_button, self.expand_up,
+                        self.expand_right, self.retract_down, self.retract_left, self.delete_button,
+                        self.save_button, self.load_button, self.quit]
+
+
+    def move_blocks_down(self):
+        for index, item in enumerate(self.world):
+            if index >= 4:
+                if isinstance(item, Block):
+                    item.rect.center = Vector(item.rect.center[0],
+                                              item.rect.center[1] + 32)
+                elif isinstance(item, SawBlock):
+                    item.y += 32
+                    item.rect.center = Vector(item.rect.center[0],
+                                              item.rect.center[1] + 32)
+                elif isinstance(item, Light):
+                    item.update_light_position(item.x, item.y + 32)
+
+
+    def resize_game_field(self, action):
+        if action == EXPAND_FIELD_RIGHT:
+            LevelDesign.GAME_MEASURES[0] += 32
+        elif action == EXPAND_FIELD_UP:
+            LevelDesign.GAME_MEASURES[1] += 32
+            self.move_blocks_down()
+        elif action == RETRACT_FIELD_LEFT:
+            LevelDesign.GAME_MEASURES[0] -= 32
+        elif action == RETRACT_FIELD_DOWN:
+            LevelDesign.GAME_MEASURES[1] -= 32
+        else:
+            return
+
+        self.camera = Camera(LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1],
+                             LevelDesign.GAME_MEASURES[2], LevelDesign.GAME_MEASURES[3])
+
+        #TODO FIX RETRACTION
+        #set_up()
+        # for i in range(4):
+        #     self.world[i] = self.world[len(self.world) - 1]
+        #     self.world.pop(len(self.world) - 1)
+
+
+    def save(self):
+        world = json.dumps(self.world, cls=Encoder)
+        light = json.dumps(self.lights, cls=Encoder)
+
+        try:
+            with open("level2.btmn", "w") as level:
+                level.write(world)
+                level.write("\n")
+                level.write(light)
+        except FileNotFoundError:
+            return
+
+    def load(self):
+        try:
+            with open("level2.btmn", "r") as level:
+                world = level.readline()
+                light = level.readline()
+                self.world = json.loads(world, cls=Decoder)
+                self.lights = json.loads(light, cls=Decoder)
+        except FileNotFoundError:
+            return
+
+    def spawn_block(self, information, camera, colour=(0, 0, 0)):
+        #information contains, width, height, tag
+        self.world.append(Block(colour, information[0], information[1], camera.reverse_apply((32, 32))[0],
+                                camera.reverse_apply((32, 32))[1], information[2]))
+        for light in self.lights:
+            light.update_obstacles(self.world)
+
+    def spawn_saw_block(self, length, camera):
+        self.world.append(SawBlock(camera.reverse_apply((50, 0))[0],
+                                   camera.reverse_apply((50, 0))[1], length))
+
+    def spawn_light(self, radius, camera):
+        self.lights.append(Light(camera.reverse_apply((50, 50))[0], camera.reverse_apply((50, 50))[1], radius,
+                                  LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1], self.world))
+
+
+    def de_spawn(self, index_object):
+        if index_object == NO_OBJECT_SELECTED:
+            return False
+        index = index_object[0]
+        object = index_object[1]
+        if object == OBJECT:
+            self.world.pop(index)
+        else:
+            self.lights.pop(index)
+        return True
+
+
+    def decode_textbox(self, textbox_input, context):
+        try:
+            value = textbox_input.value.split()
+            if context == OBJECT_BLOCK:
+                if len(value) == 3:
+                    return int(value[0]), int(value[1]), TAG_WALL
+                else:
+                    return int(value[0]), int(value[1]), TAG_GROUND
+            elif context == OBJECT_SAW_BLOCK or context == OBJECT_LIGHT:
+                return int(value[0])
+                #if we can't decode it
+        except ValueError:
+            raise DecodingFailure
+
+
+
+    def selector(self, mouse_position, events):
+        '''determine which object is selected'''
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for index, piece in enumerate(self.world):
+                    if index < 3:
+                        #first four are always boundaries
+                        continue
+                    if isinstance(piece, Light):
+                        if piece.collide(
+                                self.camera.reverse_apply(mouse_position)):
+                            return index, OBJECT
+                    elif piece.rect.is_point_in_body(mouse_position, self.camera):
+                        return index, OBJECT
+                for index, light in enumerate(self.lights):
+                    if light.collide(self.camera.reverse_apply(mouse_position)):
+                        return index, OBJECT_LIGHT
+        return NO_OBJECT_SELECTED
+
+
+    def draw_light(self):
+        Light.nullify_shadow()
+        Light.nullify_light()
+        for light in self.lights:
+            light.draw_shadow(self.camera)
+            light.draw_light(self.camera)
+        Light.draw_everything(screen)
+
+    def draw(self, screen):
+        screen.fill((51, 171, 240))
+
+        self.draw_light()
+        for piece in self.world:
+            piece.draw(screen, self.camera)
+        self.menu.draw(screen, (0, 255, 0))
+        for button in self.buttons:
+            button.draw(screen)
+        for textbox in self.textboxes:
+            textbox.draw(screen)
+
+            #rectangle_button.draw(screen)
+        self.block_textbox.draw(screen)
+        pygame.display.update()
+
+    def set_up_boundaries(self):
+        self.world.append(Block((0, 0, 0), LevelDesign.GAME_MEASURES[0], 32, 0, 0, TAG_GROUND))
+        self.world.append(Block((0, 0, 0), LevelDesign.GAME_MEASURES[0],
+                           32, 0, LevelDesign.GAME_MEASURES[1] - 32, TAG_GROUND))
+        self.world.append(Block((0, 0, 0), 32, LevelDesign.GAME_MEASURES[1],
+                       0, 0, TAG_WALL))
+        self.world.append(Block((0, 0, 0), 32, LevelDesign.GAME_MEASURES[1],
+                       LevelDesign.GAME_MEASURES[0] - 32, 0, TAG_WALL))
+
+
+    def move_block(self, index, position):
+        self.world[index].rect.position = \
+            Vector(self.camera.reverse_apply(position))
+        self.world[index].x = self.camera.reverse_apply(position)[0] - self.world[index].width / 2
+        self.world[index].y = self.camera.reverse_apply(position)[1] - self.world[index].height / 2
+
+        for light in self.lights:
+            light.update_obstacles(self.world)
+
+    def move_saw_block(self, index, position):
+        self.world[index].rect.center = Vector(self.camera.reverse_apply(position))
+        self.world[index].x = self.camera.reverse_apply(position)[0]
+        self.world[index].y = self.world[index].rect.position[1] - self.world[index].rope_height - 15
+
+    def move_lights(self, index, position):
+        self.lights[index].update_light_position(self.camera.reverse_apply(position)[0],
+                                                 self.camera.reverse_apply(position)[1])
+
+    def move(self, index_object, screen):
+        '''do the moving itself'''
+        if index_object == NO_OBJECT_SELECTED:
+            return
+        index = index_object[0]
+        object = index_object[1]
+        while True:
+            self.draw(screen)
+            events = pygame.event.get()
+            mouse_position = pygame.mouse.get_pos()
+
+            if object == OBJECT:
+                if isinstance(self.world[index], Block):
+                    self.move_block(index, mouse_position)
+                elif isinstance(self.world[index], SawBlock):
+                    self.move_saw_block(index, mouse_position)
+            else:
+                self.move_lights(index, mouse_position)
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    return
+
+    def set_focus(self, mouse_position):
+        '''set focus to a textbox so you write only in that one'''
+        for textbox in self.textboxes:
+            textbox.is_focused = False
+            if textbox.rect.is_point_in_body(mouse_position):
+                textbox.is_focused = True
+
+
+    def button_management(self, mouse_position, events):
+        try:
+            if self.rectangle_button.is_pressed(mouse_position, events):
+                self.spawn_block(self.decode_textbox(self.block_textbox, OBJECT_BLOCK), self.camera)
+            elif self.sawblock_button.is_pressed(mouse_position, events):
+                self.spawn_saw_block(self.decode_textbox(self.sawblock_textbox, OBJECT_SAW_BLOCK), self.camera)
+            elif self.light_button.is_pressed(mouse_position, events):
+                self.spawn_light(400, self.camera)
+            elif self.expand_up.is_pressed(mouse_position, events):
+                self.resize_game_field(EXPAND_FIELD_UP)
+            elif self.expand_right.is_pressed(mouse_position, events):
+                self.resize_game_field(EXPAND_FIELD_RIGHT)
+            elif self.retract_down.is_pressed(mouse_position, events):
+                self.resize_game_field(RETRACT_FIELD_DOWN)
+            elif self.retract_left.is_pressed(mouse_position, events):
+                self.resize_game_field(RETRACT_FIELD_LEFT)
+            elif self.quit.is_pressed(mouse_position, events):
+                sys.exit()
+            elif self.delete_button.is_pressed(mouse_position, events):
+                while True:
+                    mouse_position = pygame.mouse.get_pos()
+                    events = pygame.event.get()
+                    if self.de_spawn(self.selector(mouse_position, events)):
+                        return
+            elif self.save_button.is_pressed(mouse_position, events):
+                    self.save()
+            elif self.load_button.is_pressed(mouse_position, events):
+                    self.load()
+        except DecodingFailure:
+            return
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 timer = pygame.time.Clock()
-moving = Block((0, 0, 0), WIDTH, HEIGHT, 0, 0)
-
-#this is the menu bar
-menu = Rectangle(WIDTH // 4, HEIGHT,
-                 (WIDTH - WIDTH // 4 + (WIDTH // 4) // 2, HEIGHT // 2))
-camera = [Camera(GAME_MEASURES[0], GAME_MEASURES[1],
-                 WIDTH - WIDTH // 4, HEIGHT)]
-
-##############################
-##########text boxes##########
-block_textbox = eztext.Input(maxlength=15, color=(255, 0, 0),
-                             prompt='w, h, c: ', x=WIDTH - WIDTH // 4 + 10,
-                             y=0, font=pygame.font.Font(None, 30))
-sawblock_textbox = eztext.Input(maxlength=5, color=(255, 0, 0), prompt='l: ',
-                                x=WIDTH - WIDTH // 4 + 10,
-                                y=70, font=pygame.font.Font(None, 30))
-
-textboxes = [block_textbox, sawblock_textbox]
-##############################
-
-
-##############################
-##########butttons############
-rectangle_button = Button((WIDTH - WIDTH // 4 + 10, 30),
-                          (150, 30), "Spawn Rect", (0, 0, 0), (255, 0, 0))
-sawblock_button = Button((WIDTH - WIDTH // 4 + 10, 100),
-                         (150, 30), "Spawn Saw", (0, 0, 0), (255, 0, 0))
-shadow_button = Button((WIDTH - WIDTH // 4 + 10, 140),
-                       (180, 30), "Spawn Shadow", (0, 0, 0), (255, 0, 0))
-expand_up = Button((WIDTH - WIDTH // 4 + 10, HEIGHT - 90),
-                   (100, 30), "Expand^", (0, 0, 0), (255, 255, 255))
-expand_right = Button((WIDTH - WIDTH // 4 + 10, HEIGHT - 30),
-                      (100, 30), "Expand>", (0, 0, 0), (255, 255, 255))
-
-retract_left = Button((WIDTH - WIDTH // 4 + 110, HEIGHT - 30),
-                      (100, 30), "Retract<", (0, 0, 0), (255, 255, 255))
-retract_down = Button((WIDTH - WIDTH // 4 + 110, HEIGHT - 90),
-                      (100, 30), "Retract\/", (0, 0, 0), (255, 255, 255))
-
-delete_button = Button((WIDTH - WIDTH // 4 + 65, HEIGHT - 140),
-                       (100, 30), "Despawn", (0, 0, 0), (255, 255, 255))
-save_button = Button((WIDTH - WIDTH // 4 + 65, HEIGHT - 200),
-                     (100, 30), "Save", (0, 0, 0), (255, 255, 255))
-load_button = Button((WIDTH - WIDTH // 4 + 65, HEIGHT - 280),
-                     (100, 30), "Load", (0, 0, 0), (255, 255, 255))
-
-quit = Button((WIDTH - WIDTH // 4 + 65, HEIGHT - 340),
-              (100, 30), "Quit", (0, 0, 0), (255, 255, 255))
-
-buttons = [rectangle_button, sawblock_button, shadow_button, expand_up,
-           expand_right, retract_down, retract_left, delete_button,
-           save_button, load_button, quit]
-##############################
-
-
-def load():
-    level = pickle.load(open("level.btmn", "rb"))
-    return level
-
-
-def construct():
-    world.clear()
-    for item in load()["blocks"]:
-        print(item)
-        world.append(Block(*item))
-    for item in load()["sawblocks"]:
-        world.append(SawBlock(*item))
-    for item in load()["shadows"]:
-        world.append(Shadow(*item))
-    CONSTANTS.clear()
-    GAME_MEASURES.clear()
-    for item in load()["constants"]:
-        CONSTANTS.append(item)
-    for item in load()["game measures"]:
-        GAME_MEASURES.append(item)
-    camera.clear()
-    camera.append(Camera(GAME_MEASURES[0], GAME_MEASURES[1],
-                         WIDTH - WIDTH // 4, HEIGHT))
-    Shadow.set_up(GAME_MEASURES[0], GAME_MEASURES[1])
-
-
-def set_up():
-    Shadow.set_up(GAME_MEASURES[0], GAME_MEASURES[1])
-    world.append(Block((0, 0, 0), GAME_MEASURES[0],
-                       32, 0, 0))
-    world.append(Block((0, 0, 0), GAME_MEASURES[0],
-                       32, 0, GAME_MEASURES[1] - 32))
-    world.append(Block((0, 0, 0), 32, GAME_MEASURES[1],
-                       0, 0))
-    world.append(Block((0, 0, 0), 32, GAME_MEASURES[1],
-                       GAME_MEASURES[0] - 32, 0))
-
-
-def move_down():
-    for index, item in enumerate(world):
-        if index >= 4:
-            if isinstance(item, Block):
-                item.rect.center = Vector(item.rect.center[0],
-                                          item.rect.center[1] + 32)
-            elif isinstance(item, SawBlock):
-                item.y += 32
-                item.rect.center = Vector(item.rect.center[0],
-                                          item.rect.center[1] + 32)
-            elif isinstance(item, Shadow):
-                item.topleft = (item.topleft[0], item.topleft[1] + 32)
-                item.topright = (item.topright[0], item.topright[1] + 32)
-                item.bottomleft = (item.bottomleft[0],
-                                   item.bottomleft[1] + 32)
-                item.bottomright = (item.bottomright[0],
-                                    item.bottomright[1] + 32)
-
-
-def resize_game_field(action):
-    if action == "expand right":
-        GAME_MEASURES[0] += 32
-    elif action == "expand up":
-        GAME_MEASURES[1] += 32
-        move_down()
-    elif action == "retract left":
-        GAME_MEASURES[0] -= 32
-    elif action == "retract down":
-        GAME_MEASURES[1] -= 32
-    else:
-        return
-    #game_height += 0
-    camera[0] = Camera(GAME_MEASURES[0], GAME_MEASURES[1],
-                       GAME_MEASURES[2], GAME_MEASURES[3])
-    set_up()
-    for i in range(4):
-        world[i] = world[len(world) - 1]
-        world.pop(len(world) - 1)
-
-
-def save():
-    level = defaultdict(list)
-    for item in world:
-        if isinstance(item, SawBlock):
-            level["sawblocks"].append([item.x, item.y, item.rope_height])
-        elif isinstance(item, Block):
-            level["blocks"].append([item.colour, item.rect.width, item.rect.height,
-                                    item.rect.center[0] - item.rect.width / 2,
-                                    item.rect.center[1] - item.rect.height / 2])
-        elif isinstance(item, Shadow):
-            level["shadows"].append([item.topleft,
-                                     item.topright,
-                                     item.bottomright,
-                                     item.bottomleft])
-    level["constants"] = CONSTANTS
-    level["game measures"] = GAME_MEASURES
-    level["music"] = "ingame_1"
-    level["start_position"] = (50, 50)
-    pickle.dump(level, open("level.btmn", "wb"))
-
-
-def spawn(figure="none", size=(0, 0, (0, 0, 0))):
-    if size == -1:
-        return
-    elif figure == "none":
-        return
-    elif figure == "block":
-        world.append(Block((0, 0, 0), size[0], size[1],
-                           camera[0].reverse_apply((32, 32))[0],
-                           camera[0].reverse_apply((32, 32))[1]))
-    elif figure == "sawblock":
-        world.append(SawBlock(camera[0].reverse_apply((50, 0))[0],
-                              camera[0].reverse_apply((50, 0))[1], size))
-    elif figure == "shadow":
-        world.append(Shadow(camera[0].reverse_apply(size[0]),
-                            camera[0].reverse_apply(size[1]),
-                            camera[0].reverse_apply(size[2]),
-                            camera[0].reverse_apply(size[3])))
-
-
-def de_spawn(index):
-    if index == -1:
-        return False
-    world.pop(index)
-    return True
-
-
-def decode_textbox(textbox_input):
-    value = textbox_input.value.split()
-    if len(value) == 0:
-        return -1
-    elif len(value) == 1:
-        return int(value[0])
-    elif len(value) == 2:
-        return int(value[0]), int(value[1])
-    else:
-        return int(value[0]), int(value[1]), eval(value[2])
-
-
-def selector(mouse_position, events):
-    '''determine which object is selected'''
-    for event in events:
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            for index, piece in enumerate(world):
-                if isinstance(piece, Shadow):
-                    if piece.collide(
-                            [camera[0].reverse_apply(mouse_position)]):
-                        return index
-                elif piece.rect.is_point_in_body(mouse_position, camera[0]):
-                    return index
-    return -1
-
-
-def resize_shadow(shadow, mouse_position):
-    top_left_rect = Rectangle(20, 20, Vector(shadow.topleft))
-    top_right_rect = Rectangle(20, 20, Vector(shadow.topright))
-    bottom_left_rect = Rectangle(20, 20, Vector(shadow.bottomleft))
-    bottom_right_rect = Rectangle(20, 20, Vector(shadow.bottomright))
-    rects = [top_left_rect, top_right_rect,
-             bottom_left_rect, bottom_right_rect]
-    for rect in rects:
-        if rect.is_point_in_body(mouse_position, camera[0]):
-            rect.center = Vector(camera[0].reverse_apply(mouse_position))
-            shadow.topleft = top_left_rect.center[0], top_left_rect.center[1]
-            shadow.topright = top_right_rect.center[0], \
-                top_right_rect.center[1]
-            shadow.bottomleft = bottom_left_rect.center[0], \
-                bottom_left_rect.center[1]
-            shadow.bottomright = bottom_right_rect.center[0], \
-                bottom_right_rect.center[1]
-
-
-def draw():
-    screen.fill((51, 171, 240))
-    for piece in world:
-        piece.draw(screen, camera[0])
-    menu.draw(screen, (0, 255, 0))
-    for button in buttons:
-        button.draw(screen)
-    for textbox in textboxes:
-        textbox.draw(screen)
-
-   #rectangle_button.draw(screen)
-    block_textbox.draw(screen)
-    pygame.display.update()
-
-
-def move(index):
-    '''do the moving itself'''
-    # first four block are the border
-    if index <= 3:
-        return
-
-    while True:
-        draw()
-        events = pygame.event.get()
-        mouse_position = pygame.mouse.get_pos()
-
-        if isinstance(world[index], Block):
-            world[index].rect.position = \
-                Vector(camera[0].reverse_apply(mouse_position))
-
-        elif isinstance(world[index], SawBlock):
-            world[index].rect.center = \
-                Vector(camera[0].reverse_apply(mouse_position))
-            world[index].x = camera[0].reverse_apply(mouse_position)[0]
-            world[index].y = world[index].rect.position[1] - \
-                world[index].rope_height - 15
-        elif isinstance(world[index], Shadow):
-            resize_shadow(world[index], mouse_position)
-
-        for event in events:
-            if event.type == pygame.MOUSEBUTTONUP:
-                return
-
-
-def set_focus(mouse_position):
-    '''set focus to a textbox so you write only in that one'''
-    for textbox in textboxes:
-        textbox.is_focused = False
-        if textbox.rect.is_point_in_body(mouse_position):
-            textbox.is_focused = True
-
-
-def button_management(mouse_position, events):
-    if rectangle_button.is_pressed(mouse_position, events):
-        spawn("block", decode_textbox(block_textbox))
-    elif sawblock_button.is_pressed(mouse_position, events):
-        spawn("sawblock", decode_textbox(sawblock_textbox))
-    elif shadow_button.is_pressed(mouse_position, events):
-        number_of_clicks = 0
-        coordinates = []
-        while number_of_clicks < 4:
-            mouse_position = pygame.mouse.get_pos()
-            events = pygame.event.get()
-            for event in events:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    coordinates.append(mouse_position)
-                    number_of_clicks += 1
-        spawn("shadow", coordinates)
-    elif expand_up.is_pressed(mouse_position, events):
-        resize_game_field("expand up")
-    elif expand_right.is_pressed(mouse_position, events):
-        resize_game_field("expand right")
-    elif retract_down.is_pressed(mouse_position, events):
-        resize_game_field("retract down")
-    elif retract_left.is_pressed(mouse_position, events):
-        resize_game_field("retract left")
-    elif quit.is_pressed(mouse_position, events):
-        sys.exit()
-    elif delete_button.is_pressed(mouse_position, events):
-        while True:
-            mouse_position = pygame.mouse.get_pos()
-            events = pygame.event.get()
-            if de_spawn(selector(mouse_position, events)):
-                return
-    elif save_button.is_pressed(mouse_position, events):
-        save()
-    elif load_button.is_pressed(mouse_position, events):
-        construct()
-
-events = pygame.event.get()
-set_up()
+design = LevelDesign()
 while True:
 
     mouse_position = pygame.mouse.get_pos()
     events = pygame.event.get()
-    draw()
+    design.draw(screen)
 
     for event in events:
         if event.type == pygame.QUIT:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            set_focus(mouse_position)
+            design.set_focus(mouse_position)
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_RIGHT]:
-        moving.rect.center = (moving.rect.center[0] + 5, moving.rect.center[1])
+        design.observer.rect.center = (design.observer.rect.center[0] + 5, design.observer.rect.center[1])
     if keys[pygame.K_LEFT]:
-        moving.rect.center = (moving.rect.center[0] - 5, moving.rect.center[1])
+        design.observer.rect.center = (design.observer.rect.center[0] - 5, design.observer.rect.center[1])
     if keys[pygame.K_UP]:
-        moving.rect.center = (moving.rect.center[0], moving.rect.center[1] - 5)
+        design.observer.rect.center = (design.observer.rect.center[0], design.observer.rect.center[1] - 5)
     if keys[pygame.K_DOWN]:
-        moving.rect.center = (moving.rect.center[0], moving.rect.center[1] + 5)
+        design.observer.rect.center = (design.observer.rect.center[0], design.observer.rect.center[1] + 5)
 
-    button_management(mouse_position, events)
+    design.button_management(mouse_position, events)
 
-    camera[0].update(moving.rect)
+    design.camera.update(design.observer.rect)
 
-    for textbox in textboxes:
+    for textbox in design.textboxes:
         if textbox.is_focused:
             textbox.update(events)
 
-    move(selector(mouse_position, events))
+    design.move(design.selector(mouse_position, events), screen)
     timer.tick(FPS)
