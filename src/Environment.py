@@ -6,14 +6,18 @@ import math
 from Pendulum import Pendulum
 from BasicShapes import Rectangle
 from pixelperfect import get_hitmask
+from Constants import TAG_GROUND
 
 
 class Block():
-    def __init__(self, colour, width, height, x, y):
+    def __init__(self, colour, width, height, x, y, tag=TAG_GROUND):
         self.image = pygame.Surface((width, height))
         self.image.fill(colour)
         self.width = width
+        self.x = x
+        self.y = y
         self.height = height
+        self.tag = tag
         self.rect = Rectangle(width, height,
                               Vector(x + width / 2, y + height / 2))
         self.hitmask = get_hitmask(self.rect, self.image, 0)
