@@ -8,7 +8,7 @@ from pygame.math import Vector2 as Vector
 from Player import Player
 from Events import Events
 from Camera import Camera
-from GUI import GUI_SETTINGS, SOUND_SETTINGS, Menu
+from GUI import GUI_SETTINGS, SOUND_SETTINGS, Menu, SoundEffect
 from Environment import Block, SawBlock, Shadow
 
 
@@ -27,7 +27,7 @@ class Control(Events):
         self.last_time = 0
         self.take_screenshot = False
         self.ingame = False
-        self.play_music("menu")
+        SoundEffect.play_music("menu.mp3")
         self.next_step = self.menu_handler
         self.load_background("welcome")
 
@@ -71,9 +71,13 @@ class Control(Events):
         pygame.display.update()
 
     def init_sound(self):
+        global SOUND_SETTINGS
         self.sound_settings = SOUND_SETTINGS
-        self.sound_settings = self.load_settings(r"sound_settings")
-        pygame.mixer.music.set_volume(100 / self.sound_settings["music"])
+        self.sound_settings = self.load_settings("sound_settings")
+        SOUND_SETTINGS["effects"] = self.sound_settings["effects"]
+        SOUND_SETTINGS["music"] = self.sound_settings["music"]
+        SoundEffect.set_music_volume(SOUND_SETTINGS["music"])
+        delattr(self, "sound_settings")
 
     def init_level(self, level):
         with open(
@@ -86,12 +90,10 @@ class Control(Events):
                              self.level["game measures"][1],
                              self.gui_settings["resolution"][0],
                              self.gui_settings["resolution"][1])
-        self.play_music(self.level["music"])
+        SoundEffect.play_music(r"{0}.mp3".format(self.level["music"]))
+        self.player = Player(Vector(self.level["start_position"]))
+        self.player.equip("Batarangs", 3)
         # self.current_time = pygame.time.get_ticks()
-
-    def play_music(self, path):
-        pygame.mixer.music.load(r"../Files/Sounds/{0}.mp3".format(path))
-        pygame.mixer.music.play(-1)
 
     def load_background(self, path):
         try:
@@ -102,10 +104,6 @@ class Control(Events):
         except pygame.error:
             self.background = pygame.Surface(self.gui_settings["resolution"])
             self.background.fill((255, 255, 255))
-
-    def sync_volume(self):
-        pygame.mixer.music.set_volume(self.sound_settings["music"] / 100)
-        Menu.sync_volume(self)
 
     def refresh_screen(self):
         if self.take_screenshot:
@@ -155,12 +153,13 @@ class Control(Events):
             Menu.MENUS[
                 "sound_menu"].elements[2].value = SOUND_SETTINGS["music"]
         elif Menu.MENUS["sound_menu"].elements[4].clicked:
-            self.sound_settings["effects"] = Menu.MENUS[
+            SOUND_SETTINGS["effects"] = Menu.MENUS[
                 "sound_menu"].elements[1].value
-            self.sound_settings["music"] = Menu.MENUS[
-                "sound_menu"].elements[2].value
+            SoundEffect.set_music_volume(Menu.MENUS[
+                "sound_menu"].elements[2].value)
+            self.sound_settings = SOUND_SETTINGS
             self.save_settings("sound_settings")
-            self.sync_volume()
+            delattr(self, "sound_settings")
         elif Menu.MENUS["sound_menu"].elements[5].clicked:
             self.current_menu = "options_menu"
         Menu.MENUS["sound_menu"].reset_menu_buttons()
@@ -202,7 +201,6 @@ class Control(Events):
             self.difficulty = difficulty
             self.init_level("first")
             self.next_step = self.game_handler
-            self.player = Player(Vector(self.level["start_position"]))
             self.ingame = True
 
     def menu_handler(self):
@@ -231,17 +229,7 @@ class Control(Events):
         # self.update_velocity(self.player)
         current_time = pygame.time.get_ticks()
         time = current_time - self.last_time 
-        self.player.apply_physics(time) 
-        collide = [block.rect.check_if_collide(body_part) for block in self.level_blocks
-            for body_part in [self.player.body_parts["left_boot"], self.player.body_parts["right_boot"]]]
-        if any(_[0] for _ in collide):
-            max_MTV = [_[1] for _ in collide if _[0]][0]
-            for MTV in collide:
-                if MTV[0]:
-                    if max_MTV.length() < MTV[1].length():
-                        max_MTV = MTV[1]
-            self.player.move(max_MTV)
-            self.player.velocity[1] = 0
+        self.player.apply_physics(time, self) 
         self.last_time = current_time
 
 #    def cursor_controll(self):

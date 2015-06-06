@@ -1,6 +1,7 @@
 PHYSICS_SETTINGS = {
         "gravity" : 1, "terminal_velocity" : 30, # AKA: max downwards speed
-        "time_scale" : 10
+        "time_scale" : 10,
+        "touch_distance" : 1
         } 
 
 def apply_gravity(body, time):

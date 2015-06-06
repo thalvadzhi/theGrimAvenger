@@ -4,7 +4,6 @@ from pygame.math import Vector2 as Vector
 from RagDoll import HumanRagdoll
 from Motions import Motion
 
-
 class Player(HumanRagdoll):
 
     def __init__(self, position=Vector(0, 0)):
@@ -14,8 +13,13 @@ class Player(HumanRagdoll):
         #for motion in ["walk", "throw_batarang"]:
          #   self.motions[motion] = Motion(self)
           #  self.motions[motion].load_motion(motion)
-        self.utilities = []
+        self.utilities = {
+                "Batarangs" : 0
+                }
         self.moving = None
+
+    def equip(self, utility, amount):
+        self.utilities[utility] += amount
 
     def handle_input(self, control):
         for keyboard_input in control.keyboard_input:
@@ -33,13 +37,16 @@ class Player(HumanRagdoll):
                         self.motion.set_motion("walk")
                         self.motion.current_motion = self.motion.play_motion(control.time)
                 elif keyboard_input[0] in [pygame.K_UP, pygame.K_w]:
-                    self.velocity[1] -= 20
+                    if self.ground is not None:
+                        self.velocity[1] -= 20
                 
             else:
                 if keyboard_input[0] in [pygame.K_RIGHT, pygame.K_d]:
-                    self.moving = None
+                    if self.moving is "right":
+                        self.moving = None
                 elif keyboard_input[0] in [pygame.K_LEFT, pygame.K_a]:
-                    self.moving = None
+                    if self.moving is "left":
+                        self.moving = None
         control.camera.update((self.position.x, self.position.y))
         self.update(control)
 
@@ -49,4 +56,4 @@ class Player(HumanRagdoll):
            # if self.current_motion.name is not "walk":
            #     self.current_motion
             self.turn(self.moving)
-            self.move(Vector({"left": (-2, 0), "right": (2, 0)}[self.moving]))
+            self.move(Vector({"left": (-1, 0), "right": (1, 0)}[self.moving]))

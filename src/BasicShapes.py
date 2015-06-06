@@ -14,6 +14,7 @@ class RigitBody:
     The class is hashable which is being achieved by counting its objects.
     """
     __counter = 0
+    LOADED = {}
 
     def __init__(self, position=Vector(0, 0), density=0):
         """
@@ -118,9 +119,13 @@ class RigitBody:
         self.fix_joints()
 
     def load_avatar(self, path):
+        if path in RigitBody.LOADED:
+            self.image_master = RigitBody.LOADED[path]
+            return
         try:
             self.image_master = pygame.image.load(r"../ArtWork/{0}".format(
                 path)).convert_alpha()
+            RigitBody.LOADED[path] = self.image_master
         except pygame.error:
             self.image_master = None
 
