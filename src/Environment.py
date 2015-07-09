@@ -3,17 +3,22 @@ from pygame import *
 import pygame.gfxdraw
 from pygame.math import Vector2 as Vector
 import math
+from Camera import Camera
 from Pendulum import Pendulum
 from BasicShapes import Rectangle
 from pixelperfect import get_hitmask
+from Constants import TAG_GROUND, BOB_ANGLE, SWINGING_LIGHT_RADIUS, ROPE_WIDTH
 
 
 class Block():
-    def __init__(self, colour, width, height, x, y):
+    def __init__(self, colour, width, height, x, y, tag=TAG_GROUND):
         self.image = pygame.Surface((width, height))
         self.image.fill(colour)
         self.width = width
+        self.x = x
+        self.y = y
         self.height = height
+        self.tag = tag
         self.rect = Rectangle(width, height,
                               Vector(x + width / 2, y + height / 2))
         self.hitmask = get_hitmask(self.rect, self.image, 0)
@@ -151,67 +156,3 @@ class SawBlock():
             self.deploy()
 
 
-class Shadow:
-    #this class needs 4 points to use as coordinates
-    SHADOW_SURFACE = pygame.Surface((800, 600))
-    SHADOW_SURFACE.fill((0, 0, 0))
-    SHADOW_SURFACE.set_colorkey((0, 0, 0))
-    SHADOW_SURFACE.set_alpha(200)
-    SHADOWS = []
-
-    def __init__(self, topleft, topright, bottomright, bottomleft):
-        self.topleft = topleft
-        self.topright = topright
-        self.bottomleft = bottomleft
-        self.bottomright = bottomright
-
-        Shadow.SHADOWS.append((self.topleft, self.topright,
-                               self.bottomright, self.bottomleft))
-
-    @staticmethod
-    def set_up(width, height):
-        Shadow.SHADOW_SURFACE = pygame.Surface((width, height))
-        Shadow.SHADOW_SURFACE.set_colorkey((0, 0, 0))
-        Shadow.SHADOW_SURFACE.set_alpha(200)
-        Shadow.SHADOWS = []
-
-    def collide(self, player):
-        #def point_inside_polygon(x,y,poly):
-        #some raycasting algorithm here
-        shadow_coordinates = [self.topleft, self.topright,
-                              self.bottomright, self.bottomleft]
-        length = len(shadow_coordinates)
-        allpoints = []
-        for coordinate in player:
-            inside = False
-            #for coordinates in player:
-            point1X, point1Y = shadow_coordinates[0]
-            for i in range(length + 1):
-                point2X, point2Y = shadow_coordinates[i % length]
-                if coordinate[1] > min(point1Y, point2Y):
-                    if coordinate[1] <= max(point1Y, point2Y):
-                        if coordinate[0] <= max(point1X, point2X):
-                            if point1Y != point2Y:
-                                xintersection = (coordinate[1] - point1Y) * \
-                                                (point2X - point1X) / \
-                                                (point2Y - point1Y) + point1X
-                            if point1X == point2X or \
-                                    coordinate[0] <= xintersection:
-                                inside = not inside
-                point1X, point1Y = point2X, point2Y
-            allpoints.append(inside)
-        return all(allpoints)
-
-    def draw(self, surface, camera):
-        pygame.gfxdraw.filled_polygon(surface,
-                                      [camera.apply(self.topleft),
-                                       camera.apply(self.topright),
-                                       camera.apply(self.bottomright),
-                                       camera.apply(self.bottomleft)],
-                                      (0, 0, 0, 200))
-        pygame.gfxdraw.aapolygon(surface,
-                                 [camera.apply(self.topleft),
-                                  camera.apply(self.topright),
-                                  camera.apply(self.bottomright),
-                                  camera.apply(self.bottomleft)],
-                                 (0, 0, 0, 200))

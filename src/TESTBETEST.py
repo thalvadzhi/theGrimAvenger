@@ -1,6 +1,6 @@
 import pygame, sys
 from Camera import Camera
-from Vec2D import Vec2d as Vector
+from pygame.math import Vector2 as Vector
 from Environment import Block, SawBlock, Shadow
 from Motions import Motion
 from RagDoll import HumanRagdoll
