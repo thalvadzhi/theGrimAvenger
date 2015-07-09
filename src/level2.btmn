@@ -1,3 +1,3 @@
-[{"colour": [0, 0, 0], "type": "block", "width": 800, "height": 32, "y": 0, "x": 0, "tag": "ground"}, {"colour": [0, 0, 0], "type": "block", "width": 800, "height": 32, "y": 568, "x": 0, "tag": "ground"}, {"colour": [0, 0, 0], "type": "block", "width": 32, "height": 600, "y": 0, "x": 0, "tag": "wall"}, {"colour": [0, 0, 0], "type": "block", "width": 32, "height": 600, "y": 0, "x": 768, "tag": "wall"}, {"colour": [0, 0, 0], "type": "block", "width": 50, "height": 50, "y": 280.0, "x": 242.0, "tag": "ground"}]
-[{"y": 93.0, "type": "light", "x": 229.0, "radius": 400}]
-{"type": "settings", "level_width": 800, "start_position": [100, 100], "level_height": 600, "music": "ingame_1"}
+[{"x": 1440, "width": 32, "height": 600, "colour": [0, 0, 0], "tag": "wall", "type": "block", "y": 0}, {"x": 0, "width": 32, "height": 600, "colour": [0, 0, 0], "tag": "wall", "type": "block", "y": 0}, {"x": 0, "width": 1472, "height": 32, "colour": [0, 0, 0], "tag": "ground", "type": "block", "y": 568}, {"x": 0, "width": 1472, "height": 32, "colour": [0, 0, 0], "tag": "ground", "type": "block", "y": 0}]
+[{"x": 50.0, "type": "light", "radius": 400, "y": 50.0}]
+{"music": "ingame_1", "level_height": 600, "type": "settings", "level_width": 800, "start_position": [100, 100]}

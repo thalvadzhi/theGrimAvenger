@@ -112,11 +112,15 @@ class LevelDesign:
         self.settings.level_width = LevelDesign.GAME_MEASURES[0]
         self.settings.level_height = LevelDesign.GAME_MEASURES[1]
 
-        #TODO FIX RETRACTION
-        #set_up()
-        # for i in range(4):
-        #     self.world[i] = self.world[len(self.world) - 1]
-        #     self.world.pop(len(self.world) - 1)
+        self.set_up_boundaries()
+        print(len(self.world))
+        for i in range(4):
+            self.world[i] = self.world[len(self.world) - 1]
+            self.world.pop()
+        print(len(self.world))
+        for light in self.lights:
+            light.update_obstacles(self.world)
+
 
 
     def save(self):
@@ -220,7 +224,7 @@ class LevelDesign:
         Light.draw_everything(screen)
 
     def draw(self, screen):
-        screen.fill((51, 171, 240))
+        screen.fill((255, 255, 255))
 
         self.draw_light(screen)
         for piece in self.world:
