@@ -26,8 +26,8 @@ class Encoder(json.JSONEncoder):
                     "radius": obj.radius}
         elif isinstance(obj, Settings):
             return {"type": OBJECT_SETTINGS,
-                    "level_width": obj.level_width,
-                    "level_height": obj.level_height,
+                    "level_width": obj.width,
+                    "level_height": obj.height,
                     "music": obj.music,
                     "start_position": obj.start_position}
 
