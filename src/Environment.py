@@ -43,7 +43,7 @@ class SawBlock():
         ''' x and y should be the coordinates of the pivot '''
         self.rope_width = 10
         self.rope_height = length
-        self.saw_image_master = pygame.image.load("saw.png").convert_alpha()
+        self.saw_image_master = pygame.image.load("../ArtWork/Environment/saw.png").convert_alpha()
         self.saw_image_master = pygame.transform.scale(self.saw_image_master,
                                                        (50, 50))
         self.image = self.saw_image_master
