@@ -57,7 +57,7 @@ class Camera:
     def functionality(self, target):
         left, top = target[0], target[1]
         left = self.half_width - left
-        top = self.half_height - top 
+        top = self.half_height - top
         #this is to not scroll the camera outside the borders of the level
         left = min(0, left)
         left = max((self.window_width - self.state.width), left)
