@@ -8,6 +8,7 @@ from Environment import Block, SawBlock
 import pygame
 import sys
 from Serialize import *
+from Settings import Settings
 import json
 
 
@@ -28,6 +29,7 @@ class LevelDesign:
         self.setup_buttons()
         self.set_up_boundaries()
         Light.set_up_surfaces(LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1])
+        self.settings = Settings(LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1], MUSIC_IN_GAME1, (100, 100))
 
     def setup_menu_camera(self):
         #this is the menu bar
@@ -107,6 +109,8 @@ class LevelDesign:
 
         self.camera = Camera(LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1],
                              LevelDesign.GAME_MEASURES[2], LevelDesign.GAME_MEASURES[3])
+        self.settings.level_width = LevelDesign.GAME_MEASURES[0]
+        self.settings.level_height = LevelDesign.GAME_MEASURES[1]
 
         #TODO FIX RETRACTION
         #set_up()
@@ -118,12 +122,13 @@ class LevelDesign:
     def save(self):
         world = json.dumps(self.world, cls=Encoder)
         light = json.dumps(self.lights, cls=Encoder)
+        settings = json.dumps(self.settings, cls=Encoder)
 
         try:
             with open("level2.btmn", "w") as level:
-                level.write(world)
-                level.write("\n")
-                level.write(light)
+                print(world, file=level)
+                print(light, file=level)
+                print(settings, file=level)
         except FileNotFoundError:
             return
 
@@ -132,11 +137,12 @@ class LevelDesign:
             with open("level2.btmn", "r") as level:
                 world = level.readline()
                 light = level.readline()
+                settings = level.readline()
                 self.world = json.loads(world, cls=Decoder)
                 self.lights = json.loads(light, cls=Decoder)
-                for light in self.lights:
-                    light.update_obstacles(self.world)
-                print(self.lights)
+                self.settings = json.loads(settings, cls=Decoder)
+            for light in self.lights:
+                light.update_obstacles(self.world)
         except FileNotFoundError:
             return
 
