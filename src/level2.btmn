@@ -1,0 +1,2 @@
+[{"y": 0, "width": 800, "height": 32, "tag": "ground", "type": "block", "x": 0, "colour": [0, 0, 0]}, {"y": 568, "width": 800, "height": 32, "tag": "ground", "type": "block", "x": 0, "colour": [0, 0, 0]}, {"y": 0, "width": 32, "height": 600, "tag": "wall", "type": "block", "x": 0, "colour": [0, 0, 0]}, {"y": 0, "width": 32, "height": 600, "tag": "wall", "type": "block", "x": 768, "colour": [0, 0, 0]}, {"y": 151.0, "width": 50, "height": 50, "tag": "ground", "type": "block", "x": 427.0, "colour": [0, 0, 0]}]
+[{"radius": 400, "y": 293.0, "x": 364.0, "type": "light"}]

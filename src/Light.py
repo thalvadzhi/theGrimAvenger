@@ -29,7 +29,7 @@ class Light:
 
         self.light_image = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.HWSURFACE).convert_alpha()
         self.light_surface = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.HWSURFACE).convert_alpha()
-        self.light_texture = radial(radius, (255, 255, 255, 255), (0, 0, 0, 255))
+        self.light_texture = radial(radius, (255, 255, 255, 255), (0, 0, 0, 100))
         self.bg_surface = pygame.Surface((800, 600), pygame.HWSURFACE)
         self.lightSource = LightSource(self.x, self.y, self.generate_points_from_rects())
         self.visibility = self.lightSource.cast()
@@ -79,11 +79,11 @@ class Light:
 
     @classmethod
     def nullify_light(cls):
-        Light.LIGHT_SURFACE.fill((0, 0, 0))
+        Light.LIGHT_SURFACE.fill((0, 0, 0, 150))
 
     @classmethod
     def nullify_shadow(cls):
-        Light.SHADOW_SURFACE.fill((0, 0, 0, 255))
+        Light.SHADOW_SURFACE.fill((0, 0, 0, 100))
 
     def draw_shadow(self, camera):
         self.light_image.fill((255, 255, 255, 255))

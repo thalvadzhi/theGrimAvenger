@@ -134,6 +134,9 @@ class LevelDesign:
                 light = level.readline()
                 self.world = json.loads(world, cls=Decoder)
                 self.lights = json.loads(light, cls=Decoder)
+                for light in self.lights:
+                    light.update_obstacles(self.world)
+                print(self.lights)
         except FileNotFoundError:
             return
 
