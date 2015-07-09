@@ -9,7 +9,7 @@ from Player import Player
 from Events import Events
 from Camera import Camera
 from GUI import GUI_SETTINGS, SOUND_SETTINGS, Menu, SoundEffect
-from Environment import Block, SawBlock, Shadow
+from Environment import Block, SawBlock
 
 
 class Control(Events):
