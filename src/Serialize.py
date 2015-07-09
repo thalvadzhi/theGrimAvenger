@@ -22,9 +22,7 @@ class Encoder(json.JSONEncoder):
             return {"type": OBJECT_LIGHT,
                     "x": obj.x,
                     "y": obj.y,
-                    "radius": obj.radius,
-                    "screen_x": obj.screen_x,
-                    "screen_y": obj.screen_y}
+                    "radius": obj.radius}
 
 class Decoder(json.JSONDecoder):
     def __init__(self):
@@ -36,4 +34,4 @@ class Decoder(json.JSONDecoder):
         elif d["type"] == OBJECT_SAW_BLOCK:
             return SawBlock(d["x"], d["y"], d["length"])
         elif d["type"] == OBJECT_LIGHT:
-            return Light(d["x"], d["y"], d["radius"], d["screen_x"], d["screen_y"])
+            return Light(d["x"], d["y"], d["radius"])

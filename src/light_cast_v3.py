@@ -138,3 +138,4 @@ class LightSource:
         for intersection in intersections:
             visibility.append((intersection.x, intersection.y))
         return visibility
+

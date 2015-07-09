@@ -4,7 +4,7 @@ import eztext
 from Light import Light
 from Button import Button
 from Camera import Camera
-from Environment import Block, SawBlock, Shadow
+from Environment import Block, SawBlock
 import pygame
 import sys
 from Serialize import *
@@ -149,8 +149,9 @@ class LevelDesign:
                                    camera.reverse_apply((50, 0))[1], length))
 
     def spawn_light(self, radius, camera):
-        self.lights.append(Light(camera.reverse_apply((50, 50))[0], camera.reverse_apply((50, 50))[1], radius,
-                                  LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1], self.world))
+        self.lights.append(Light(camera.reverse_apply((50, 50))[0],
+                                 camera.reverse_apply((50, 50))[1],
+                                 radius, self.world))
 
 
     def de_spawn(self, index_object):
@@ -201,7 +202,7 @@ class LevelDesign:
         return NO_OBJECT_SELECTED
 
 
-    def draw_light(self):
+    def draw_light(self, screen):
         Light.nullify_shadow()
         Light.nullify_light()
         for light in self.lights:
@@ -212,7 +213,7 @@ class LevelDesign:
     def draw(self, screen):
         screen.fill((51, 171, 240))
 
-        self.draw_light()
+        self.draw_light(screen)
         for piece in self.world:
             piece.draw(screen, self.camera)
         self.menu.draw(screen, (0, 255, 0))
