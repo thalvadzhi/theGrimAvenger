@@ -57,3 +57,12 @@ class Player(HumanRagdoll):
            #     self.current_motion
             self.turn(self.moving)
             self.move(Vector({"left": (-1, 0), "right": (1, 0)}[self.moving]))
+
+
+class Equipment:
+
+    def __init__(self):
+        pass
+
+    def draw(self):
+        pass

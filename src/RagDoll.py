@@ -163,7 +163,7 @@ class HumanRagdoll:
         elapsed_time = 0
         bent_fraction = 0
         while elapsed_time < duration:
-            facing = {"left": -1, "right": 1}[self.facing]
+            facing = -1 if self.facing is "left" else 1
             elapsed_time = clock.get_ticks() - start_time
             fraction = elapsed_time / duration - bent_fraction
             if elapsed_time > duration:
