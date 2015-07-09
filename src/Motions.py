@@ -1,6 +1,7 @@
 import os
 from pickle import dump, load
 
+import pygame
 
 class Motion:
 
@@ -12,6 +13,7 @@ class Motion:
         self.is_repetitive = False
         self.name = ""
         self.current_motion = None
+        self.paused = True
 
     @property
     def item(self):
@@ -43,6 +45,7 @@ class Motion:
         if name not in Motion.LOADED:
             Motion.load_motion(name)
         self.read_motion_data(Motion.LOADED[name])
+        self.paused = False
 
     def save_motion(self, path):
         motion_data = {
@@ -63,15 +66,15 @@ class Motion:
     def set_duration(self, frame, duration):
         self.frames[frame]["duration"] = duration
 
-    def play_motion(self, clock, start_time=0):
+    def play_motion(self, start_time=0):
         yield
         if not start_time:
-            start_time = clock.get_ticks()
+            start_time = pygame.time.get_ticks()
         for frame in self.frames:
-            for _ in self.item.shift_to_frame(frame, start_time, clock):
+            for _ in self.item.shift_to_frame(frame, start_time, self):
                 yield
             start_time += frame["duration"]
-        return (clock, start_time)
+        return start_time
 
     def play(self):
         if self.current_motion is None:
@@ -80,6 +83,6 @@ class Motion:
             next(self.current_motion)
         except StopIteration as finish_time:
             if self.is_repetitive:
-                self.current_motion = self.play_motion(*finish_time.value)
+                self.current_motion = self.play_motion(finish_time.value)
             else:
                 self.current_motion = None

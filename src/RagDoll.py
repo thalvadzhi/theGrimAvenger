@@ -157,22 +157,25 @@ class HumanRagdoll:
             self.joints[joint].bent_keeping_angles(frame[joint] * facing)
         self.rotate(frame["slope"] * -facing)
 
-    def shift_to_frame(self, frame, start_time, clock):
+    def shift_to_frame(self, frame, start_time, motion):
         duration = frame["duration"]
         frame = self.calculate_frame_difference(frame)
         elapsed_time = 0
         bent_fraction = 0
         while elapsed_time < duration:
-            facing = -1 if self.facing is "left" else 1
-            elapsed_time = clock.get_ticks() - start_time
+            yield
+            elapsed_time = pygame.time.get_ticks() - start_time
             fraction = elapsed_time / duration - bent_fraction
             if elapsed_time > duration:
                 fraction = 1 - bent_fraction
             bent_fraction += fraction
+            if motion.paused:
+                start_time += fraction
+                continue
+            facing = -1 if self.facing is "left" else 1
             for joint in self.joints:
                 self.joints[joint].bent_keeping_angles(frame[joint] * fraction * facing)
             self.rotate(frame["slope"] * fraction * -facing)
-            yield
         raise StopIteration
 
     def rotate(self, angle):
@@ -197,13 +200,12 @@ class HumanRagdoll:
         boots = [self.body_parts["left_boot"], self.body_parts["right_boot"]]
         if self.ground is not None:
             collisions = [self.ground.rect.check_if_collide(boot) for boot in boots]
-            if any(collision[1].length() < PHYSICS_SETTINGS["touch_distance"] 
+            if all(collision[1].length() < PHYSICS_SETTINGS["touch_distance"] 
                     for collision in collisions):
-                return
-            else:
                 self.ground = None
         
-        Physics.apply_gravity(self, time)
+        if self.ground is not None:
+            Physics.apply_gravity(self, time)
         self.move(self.velocity)
 
         collisions = {block: block.rect.check_if_collide(body_part) for block in world.level_blocks

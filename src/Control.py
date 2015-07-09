@@ -1,10 +1,13 @@
 import sys
+import json
 from os import listdir
 
 import pygame
 from pickle import load, dump
 from pygame.math import Vector2 as Vector
 
+from Serialize import Encoder, Decoder
+from Light import Light
 from Player import Player
 from Events import Events
 from Camera import Camera
@@ -65,7 +68,7 @@ class Control(Events):
                 self.gui_settings["resolution"], pygame.FULLSCREEN)
         else:
             self.screen = pygame.display.set_mode(
-                self.gui_settings["resolution"])
+                self.gui_settings["resolution"], pygame.HWSURFACE)
         self.load_background("loading")
         self.screen.blit(self.background, (0, 0))
         pygame.display.update()
@@ -80,18 +83,31 @@ class Control(Events):
         delattr(self, "sound_settings")
 
     def init_level(self, level):
+        world = ""
         with open(
-                r"../Files/Levels/{0}.btmn".format(level), "rb") as level_file:
-            self.level = load(level_file)
-        self.level_blocks = [Block(*item) for item in self.level["blocks"]]
-        self.level_saws = [SawBlock(*item) for item in self.level["sawblocks"]]
-        self.level_shadows = [Shadow(*item) for item in self.level["shadows"]]
-        self.camera = Camera(self.level["game measures"][0],
-                             self.level["game measures"][1],
+                r"../Files/Levels/{0}.btmn".format(level), "r") as level_file:
+            world = level_file.readline()
+            self.lights = level_file.readline()
+            self.level_settings = level_file.readline()
+
+        world = json.loads(world, cls=Decoder)
+        self.lights = json.loads(self.lights, cls=Decoder)
+        self.level_settings = json.loads(self.level_settings, cls=Decoder)
+        
+        self.level_blocks = list(filter(lambda item : isinstance(item, Block), world))
+        self.level_saws = list(filter(lambda item : isinstance(item, SawBlock), world))
+        
+        for light in self.lights:
+            light.update_obstacles(self.level_blocks)
+        Light.set_up_surfaces(self.level_settings.width,
+                             self.level_settings.height)
+
+        self.camera = Camera(self.level_settings.width,
+                             self.level_settings.height,
                              self.gui_settings["resolution"][0],
                              self.gui_settings["resolution"][1])
-        SoundEffect.play_music(r"{0}.mp3".format(self.level["music"]))
-        self.player = Player(Vector(self.level["start_position"]))
+        SoundEffect.play_music(r"{0}.mp3".format(self.level_settings.music))
+        self.player = Player(Vector(self.level_settings.start_position))
         self.player.equip("Batarangs", 3)
         # self.current_time = pygame.time.get_ticks()
 
@@ -109,14 +125,21 @@ class Control(Events):
         if self.take_screenshot:
             self.background.blit(self.screen, (0, 0))
         if self.ingame:
-            self.screen.fill((255, 255, 255))
-            for needle in self.level_saws:
-                needle.draw(self.screen, self.camera)
-            for needle in self.level_blocks:
-                needle.draw(self.screen, self.camera)
+            self.screen.fill((255, 255, 255)) 
+            Light.nullify_shadow()
+            Light.nullify_light()
+
+            for light in self.lights:
+                light.draw_shadow(self.camera)
+                light.draw_light(self.camera)
+            Light.draw_everything(self.screen)
+            
+            for saw in self.level_saws:
+                saw.draw(self.screen, self.camera)
+            for block in self.level_blocks:
+                block.draw(self.screen, self.camera)
+
             self.player.display_avatar(self.screen, self.camera)
-            for needle in self.level_shadows:
-                needle.draw(self.screen, self.camera)
         else:
             if self.current_menu in ["save_game_menu", "pause_menu",
                                      "end_game_menu"]:
@@ -199,7 +222,7 @@ class Control(Events):
         Menu.MENUS["welcome_menu"].reset_menu_buttons()
         if difficulty is not None:
             self.difficulty = difficulty
-            self.init_level("first")
+            self.init_level("level2")
             self.next_step = self.game_handler
             self.ingame = True
 

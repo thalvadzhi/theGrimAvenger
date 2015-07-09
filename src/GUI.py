@@ -20,9 +20,6 @@ RESOLUTIONS = [(1280, 1024), (1366, 768), (1600, 1024),
                (1600, 1200), (1920, 1080), (1920, 1200)]
 
 class SoundEffect:
-    """
-    Fix settings not being loaded/saved maybe not using global SOUND_SETTINGS
-    """
     LOADED = {}
 
     def __init__(self, sound):

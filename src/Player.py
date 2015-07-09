@@ -16,7 +16,19 @@ class Player(HumanRagdoll):
         self.utilities = {
                 "Batarangs" : 0
                 }
-        self.moving = None
+        self._moving = None
+
+    @property
+    def moving(self):
+        return self._moving
+
+    @moving.setter
+    def moving(self, value):
+        self._moving = value
+        if value is None:
+            self.motion.paused = True
+        else:
+            self.motion.paused = False
 
     def equip(self, utility, amount):
         self.utilities[utility] += amount
@@ -29,7 +41,7 @@ class Player(HumanRagdoll):
                     self.turn("right")
                     if self.motion.name is not "walk":
                         self.motion.set_motion("walk")
-                        self.motion.current_motion = self.motion.play_motion(control.time)
+                        self.motion.current_motion = self.motion.play_motion()
                 elif keyboard_input[0] in [pygame.K_LEFT, pygame.K_a]:
                     self.moving = "left"
                     self.turn("left")
@@ -51,8 +63,8 @@ class Player(HumanRagdoll):
         self.update(control)
 
     def update(self, control):
+        self.motion.play()
         if self.moving:
-            self.motion.play()
            # if self.current_motion.name is not "walk":
            #     self.current_motion
             self.turn(self.moving)
