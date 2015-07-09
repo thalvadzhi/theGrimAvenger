@@ -109,15 +109,13 @@ class LevelDesign:
 
         self.camera = Camera(LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1],
                              LevelDesign.GAME_MEASURES[2], LevelDesign.GAME_MEASURES[3])
-        self.settings.level_width = LevelDesign.GAME_MEASURES[0]
-        self.settings.level_height = LevelDesign.GAME_MEASURES[1]
+        self.settings.width = LevelDesign.GAME_MEASURES[0]
+        self.settings.height = LevelDesign.GAME_MEASURES[1]
 
         self.set_up_boundaries()
-        print(len(self.world))
         for i in range(4):
             self.world[i] = self.world[len(self.world) - 1]
             self.world.pop()
-        print(len(self.world))
         for light in self.lights:
             light.update_obstacles(self.world)
 
