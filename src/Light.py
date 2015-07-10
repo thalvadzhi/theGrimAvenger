@@ -128,3 +128,29 @@ class Light:
     def collide(self, position):
        #for moving purposes
        return math.sqrt((self.x - position[0]) ** 2 + (self.y - position[1]) ** 2) <= 30
+
+    def is_illuminated(self, points):
+        ''' returns true if every point is in the light '''
+
+        shadow_coordinates = self.visibility
+        length = len(shadow_coordinates)
+        allpoints = []
+        for coordinate in points:
+            inside = False
+            #for coordinates in player:
+            point1X, point1Y = shadow_coordinates[0]
+            for i in range(length + 1):
+                point2X, point2Y = shadow_coordinates[i % length]
+                if coordinate[1] > min(point1Y, point2Y):
+                    if coordinate[1] <= max(point1Y, point2Y):
+                        if coordinate[0] <= max(point1X, point2X):
+                            if point1Y != point2Y:
+                                xintersection = (coordinate[1] - point1Y) * \
+                                                (point2X - point1X) / \
+                                                (point2Y - point1Y) + point1X
+                            if point1X == point2X or \
+                                    coordinate[0] <= xintersection:
+                                inside = not inside
+                point1X, point1Y = point2X, point2Y
+            allpoints.append(inside)
+        return all(allpoints)

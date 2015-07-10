@@ -150,10 +150,17 @@ class LevelDesign:
                 light = level.readline()
                 settings = level.readline()
                 swinging_lights = level.readline()
+                self.settings = json.loads(settings, cls=Decoder)
+                LevelDesign.GAME_MEASURES[0] = self.settings.width
+                LevelDesign.GAME_MEASURES[1] = self.settings.height
+                Light.set_up_surfaces(LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1])
+                self.camera = Camera(LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1],
+                             LevelDesign.GAME_MEASURES[2], LevelDesign.GAME_MEASURES[3])
                 self.world = json.loads(world, cls=Decoder)
                 self.lights = json.loads(light, cls=Decoder)
-                self.settings = json.loads(settings, cls=Decoder)
                 self.swinging_lights = json.loads(swinging_lights, cls=Decoder)
+
+
             for light in self.lights:
                 light.update_obstacles(self.world)
             for swinging_light in self.swinging_lights:
@@ -279,8 +286,9 @@ class LevelDesign:
         self.world[index].x = self.camera.reverse_apply(position)[0] - self.world[index].width / 2
         self.world[index].y = self.camera.reverse_apply(position)[1] - self.world[index].height / 2
 
-        for light in self.lights:
+        for light in self.lights + self.swinging_lights:
             light.update_obstacles(self.world)
+
 
     def move_saw_block(self, index, position):
         self.world[index].rect.center = Vector(self.camera.reverse_apply(position))
