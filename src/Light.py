@@ -4,6 +4,7 @@ from Environment import Block
 from light_cast_v3 import LightSource, Point
 from gradients import radial
 from pygame import gfxdraw
+from Constants import BLOCK_SIZE
 import pygame
 class Light:
 
@@ -26,14 +27,27 @@ class Light:
         self.radius = radius
         self.obstacles = obstacles
 
+        self.shadow_surface = pygame.Surface((1500, 1500)).convert_alpha()
+        self.light_surface = pygame.Surface((1500, 1500)).convert_alpha()
 
-        self.light_image = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.HWSURFACE).convert_alpha()
-        self.light_surface = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.HWSURFACE).convert_alpha()
+
+        self.light_image = pygame.Surface((Light.WIDTH, Light.HEIGHT), pygame.HWSURFACE).convert_alpha()
+        self.light_surface = pygame.Surface((Light.WIDTH, Light.HEIGHT), pygame.HWSURFACE).convert_alpha()
         self.light_texture = radial(radius, (255, 255, 255, 255), (0, 0, 0, 100))
-        self.bg_surface = pygame.Surface((800, 600), pygame.HWSURFACE)
+
         self.lightSource = LightSource(self.x, self.y, self.generate_points_from_rects())
         self.visibility = self.lightSource.cast()
 
+    def update_local_surfaces(self):
+        self.light_image = pygame.Surface((Light.WIDTH, Light.HEIGHT), pygame.HWSURFACE).convert_alpha()
+        self.light_surface = pygame.Surface((Light.WIDTH, Light.HEIGHT), pygame.HWSURFACE).convert_alpha()
+
+    @classmethod
+    def update_surfaces(cls, width, height):
+        Light.SHADOW_SURFACE = pygame.Surface((width, height), pygame.HWSURFACE).convert_alpha()
+        Light.LIGHT_SURFACE = pygame.Surface((width, height), pygame.HWSURFACE).convert_alpha()
+        Light.WIDTH = width
+        Light.HEIGHT = height
 
     def generate_points_from_rects(self):
         all_points = []
@@ -44,8 +58,8 @@ class Light:
                     current_points.append(Point(vertex.x, vertex.y))
                 all_points.append(current_points)
         #also add dimensions of screen
-        all_points.append([Point(0, 0), Point(self.WIDTH, 0),
-                           Point(self.WIDTH, self.HEIGHT), Point(0, self.HEIGHT)])
+        all_points.append([Point(BLOCK_SIZE, BLOCK_SIZE), Point(self.WIDTH - BLOCK_SIZE, BLOCK_SIZE),
+                           Point(self.WIDTH - BLOCK_SIZE, self.HEIGHT - BLOCK_SIZE), Point(BLOCK_SIZE, self.HEIGHT - BLOCK_SIZE)])
         return all_points
 
     def update(self):
@@ -97,6 +111,19 @@ class Light:
     def draw_everything(cls, surface):
         surface.blit(Light.LIGHT_SURFACE, (0, 0))
         surface.blit(Light.SHADOW_SURFACE, (0, 0))
+
+    def draw_be(self, camera, surface):
+        self.light_surface.fill((0, 0, 0, 150))
+        self.shadow_surface.fill((0, 0, 0, 100))
+
+        self.light_image.fill((255, 255, 255, 255))
+        pygame.draw.polygon(self.light_image, (0, 0, 0, 0), camera.apply(self.visibility))
+        self.shadow_surface.blit(self.light_image, (0, 0), None, pygame.BLEND_RGBA_MIN)
+
+        self.light_surface.blit(self.light_texture, camera.apply((self.x - self.radius, self.y - self.radius)), None, pygame.BLEND_RGB_MAX)
+
+        surface.blit(self.light_surface, (0, 0))
+        surface.blit(self.shadow_surface, (0, 0))
 
     def collide(self, position):
        #for moving purposes

@@ -22,6 +22,7 @@ class LevelDesign:
     def __init__(self):
         self.world = []
         self.lights = []
+        self.swinging_lights = []
         #this is the block according to which the view will move
         self.observer = Block((0, 0, 0), WIDTH, HEIGHT, 0, 0)
         self.setup_menu_camera()
@@ -55,6 +56,11 @@ class LevelDesign:
                                       (150, 30), "Spawn Saw", (0, 0, 0), (255, 0, 0))
         self.light_button = Button((WIDTH - WIDTH // 4 + 10, 140),
                                    (180, 30), "Spawn Light", (0, 0, 0), (255, 0, 0))
+
+        self.swinginglight_button = Button((WIDTH - WIDTH // 4 + 10, 180),
+                                   (180, 30), "Swinging Light", (0, 0, 0), (255, 0, 0))
+
+
         self.expand_up = Button((WIDTH - WIDTH // 4 + 10, HEIGHT - 90),
                                 (100, 30), "Expand^", (0, 0, 0), (255, 255, 255))
         self.expand_right = Button((WIDTH - WIDTH // 4 + 10, HEIGHT - 30),
@@ -77,7 +83,7 @@ class LevelDesign:
 
         self.buttons = [self.rectangle_button, self.sawblock_button, self.light_button, self.expand_up,
                         self.expand_right, self.retract_down, self.retract_left, self.delete_button,
-                        self.save_button, self.load_button, self.quit]
+                        self.save_button, self.load_button, self.quit, self.swinginglight_button]
 
 
     def move_blocks_down(self):
@@ -116,8 +122,10 @@ class LevelDesign:
         for i in range(4):
             self.world[i] = self.world[len(self.world) - 1]
             self.world.pop()
+        Light.update_surfaces(LevelDesign.GAME_MEASURES[0], LevelDesign.GAME_MEASURES[1])
         for light in self.lights:
             light.update_obstacles(self.world)
+            light.update_local_surfaces()
 
 
 
@@ -125,9 +133,9 @@ class LevelDesign:
         world = json.dumps(self.world, cls=Encoder)
         light = json.dumps(self.lights, cls=Encoder)
         settings = json.dumps(self.settings, cls=Encoder)
-
+        swinging_lights = json.dumps(self.swingin_lights, cls=Encoder)
         try:
-            with open("level2.btmn", "w") as level:
+            with open("../Files/Levels/level2.btmn", "w") as level:
                 print(world, file=level)
                 print(light, file=level)
                 print(settings, file=level)
@@ -136,15 +144,19 @@ class LevelDesign:
 
     def load(self):
         try:
-            with open("level2.btmn", "r") as level:
+            with open("../Files/Levels/level2.btmn", "r") as level:
                 world = level.readline()
                 light = level.readline()
                 settings = level.readline()
+                swinging_lights = level.readline()
                 self.world = json.loads(world, cls=Decoder)
                 self.lights = json.loads(light, cls=Decoder)
                 self.settings = json.loads(settings, cls=Decoder)
+                self.swinging_lights = json.loads(swinging_lights, cls=Decoder)
             for light in self.lights:
                 light.update_obstacles(self.world)
+            for swinging_light in self.swinging_lights:
+                swinging_light.update_obstacles(self.world)
         except FileNotFoundError:
             return
 
@@ -164,6 +176,9 @@ class LevelDesign:
                                  camera.reverse_apply((50, 50))[1],
                                  radius, self.world))
 
+    def spawn_swinging_light(self, rope_length, camera):
+        coordinates = camera.reverse_apply((50, 50))
+        self.swinging_lights.append(SwingingLight(coordinates[0], coordinates[1], rope_length, self.world))
 
     def de_spawn(self, index_object):
         if index_object == NO_OBJECT_SELECTED:
@@ -185,7 +200,7 @@ class LevelDesign:
                     return int(value[0]), int(value[1]), TAG_WALL
                 else:
                     return int(value[0]), int(value[1]), TAG_GROUND
-            elif context == OBJECT_SAW_BLOCK or context == OBJECT_LIGHT:
+            elif context == OBJECT_SAW_BLOCK or context == OBJECT_LIGHT or context == OBJECT_SWINGING_LIGHT:
                 return int(value[0])
                 #if we can't decode it
         except ValueError:
@@ -208,32 +223,42 @@ class LevelDesign:
                     elif piece.rect.is_point_in_body(mouse_position, self.camera):
                         return index, OBJECT
                 for index, light in enumerate(self.lights):
-                    if light.collide(self.camera.reverse_apply(mouse_position)):
+                    if light.collide(self.camera.apply(mouse_position)):
                         return index, OBJECT_LIGHT
+                for index, swinging_light in enumerate(self.swinging_lights):
+                    if swinging_light.collide(self.camera.apply(mouse_position)):
+                        return index, OBJECT_SWINGING_LIGHT
         return NO_OBJECT_SELECTED
 
 
     def draw_light(self, screen):
-        Light.nullify_shadow()
-        Light.nullify_light()
+
         for light in self.lights:
             light.draw_shadow(self.camera)
             light.draw_light(self.camera)
-        Light.draw_everything(screen)
+
+
+
 
     def draw(self, screen):
         screen.fill((255, 255, 255))
 
+        Light.nullify_shadow()
+        Light.nullify_light()
+
         self.draw_light(screen)
         for piece in self.world:
             piece.draw(screen, self.camera)
+
+        for swinging_light in self.swinging_lights:
+            swinging_light.draw(screen, self.camera)
+            #rectangle_button.draw(screen)
+        Light.draw_everything(screen)
         self.menu.draw(screen, (0, 255, 0))
         for button in self.buttons:
             button.draw(screen)
         for textbox in self.textboxes:
             textbox.draw(screen)
-
-            #rectangle_button.draw(screen)
         self.block_textbox.draw(screen)
         pygame.display.update()
 
@@ -265,6 +290,10 @@ class LevelDesign:
         self.lights[index].update_light_position(self.camera.reverse_apply(position)[0],
                                                  self.camera.reverse_apply(position)[1])
 
+    def move_swinging_lights(self, index, position):
+        self.swinging_lights[index].update_position(self.camera.reverse_apply(position)[0],
+                                                    self.camera.reverse_apply(position)[1])
+
     def move(self, index_object, screen):
         '''do the moving itself'''
         if index_object == NO_OBJECT_SELECTED:
@@ -281,8 +310,10 @@ class LevelDesign:
                     self.move_block(index, mouse_position)
                 elif isinstance(self.world[index], SawBlock):
                     self.move_saw_block(index, mouse_position)
-            else:
+            elif object == OBJECT_LIGHT:
                 self.move_lights(index, mouse_position)
+            elif object == OBJECT_SWINGING_LIGHT:
+                self.move_swinging_lights(index, mouse_position)
             for event in events:
                 if event.type == pygame.MOUSEBUTTONUP:
                     return
@@ -294,6 +325,9 @@ class LevelDesign:
             if textbox.rect.is_point_in_body(mouse_position):
                 textbox.is_focused = True
 
+    def update(self):
+        for swinging_light in self.swinging_lights:
+            swinging_light.update()
 
     def button_management(self, mouse_position, events):
         try:
@@ -301,6 +335,8 @@ class LevelDesign:
                 self.spawn_block(self.decode_textbox(self.block_textbox, OBJECT_BLOCK), self.camera)
             elif self.sawblock_button.is_pressed(mouse_position, events):
                 self.spawn_saw_block(self.decode_textbox(self.sawblock_textbox, OBJECT_SAW_BLOCK), self.camera)
+            elif self.swinginglight_button.is_pressed(mouse_position, events):
+                self.spawn_swinging_light(self.decode_textbox(self.sawblock_textbox, OBJECT_SAW_BLOCK), self.camera)
             elif self.light_button.is_pressed(mouse_position, events):
                 self.spawn_light(400, self.camera)
             elif self.expand_up.is_pressed(mouse_position, events):
@@ -359,6 +395,6 @@ while True:
     for textbox in design.textboxes:
         if textbox.is_focused:
             textbox.update(events)
-
+    design.update()
     design.move(design.selector(mouse_position, events), screen)
     timer.tick(FPS)
