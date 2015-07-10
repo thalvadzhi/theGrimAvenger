@@ -1,6 +1,6 @@
-from BasicShapes import Rectangle
-import pygame
+from pygame import MOUSEBUTTONUP, font
 from pygame.math import Vector2 as Vector
+from BasicShapes import Rectangle
 
 
 class Button:
@@ -11,12 +11,12 @@ class Button:
         self.message = message
         self.colour = colour
         self.text_colour = text_colour
-        self.font = pygame.font.Font(None, 32)
+        self.font = font.Font(None, 32)
         self.position = position
 
     def is_pressed(self, mouse_position, events):
         for event in events:
-            if event.type == pygame.MOUSEBUTTONUP:
+            if event.type == MOUSEBUTTONUP:
                 if self.rect.is_point_in_body(mouse_position):
                     return True
         return False

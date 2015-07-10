@@ -65,7 +65,7 @@ class GraplingHook():
         self.current_time = pygame.time.get_ticks()
         if self.current_time - self.last_time >= 17:
             self.bob.recompute_angle()
-            self.step = self.bob.dtheta
+            self.step = self.bob.d_theta
             self.rope = self.rope.rotate(self.step)
             self.rect = Rectangle.get_rect(self.image, self.bob.rect.center)
             self.x = self.rect.x
@@ -154,7 +154,7 @@ class GraplingHook():
         self.calculate_rope()
 
         self.rect.advance((- self.rope.x * 10 - (sin(self.bob.theta) *
-                                                 int(self.bob.dtheta))) *
+                                                 int(self.bob.d_theta))) *
                           40 * (timer / 1000),
                           (- self.rope.y * 10 + self.rope.y *
                            (30 - self.time)) * 15 * (timer / 1000))
