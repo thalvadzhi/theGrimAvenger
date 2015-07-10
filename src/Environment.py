@@ -5,7 +5,7 @@ from pygame.math import Vector2 as Vector
 import math
 from Camera import Camera
 from Pendulum import Pendulum
-from BasicShapes import Rectangle
+from BasicShapes import Rectangle, Circle
 from light_cast_v3 import Point, Line
 from pixelperfect import get_hitmask
 from Constants import TAG_GROUND, BOB_ANGLE, SWINGING_LIGHT_RADIUS, ROPE_WIDTH
@@ -65,6 +65,7 @@ class SawBlock():
 
         self.rect_center = Vector(x, y + self.rope_height + 15)
         self.rect = Rectangle.get_rect(self.image, self.rect_center)
+        self.collision_circle = Circle(25, self.rect_center) 
         self.x = x
         self.y = y
 
@@ -94,7 +95,8 @@ class SawBlock():
             self.bob.recompute_angle()
             self.rect_center = self.bob.rect.center
             self.rect.center = self.rect_center
-
+            self.collision_circle.move(
+                    self.rect_center - self.collision_circle.position)
             self.last_time = self.current_time
 
     def deploy(self):
