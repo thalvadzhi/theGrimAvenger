@@ -68,6 +68,7 @@ class Player(HumanRagdoll):
                         self.turn("left" if self.position[0] > mouse_input[1][0] else "right")
                         self.moving = "throw_batarang"
                         self.motion.set_motion("throw_batarang", 1)
+                        self.motion.on_action_frame = lambda : print("yes")
                         self.motion.current_motion = self.motion.play_motion()
                 
         control.camera.update((self.position.x, self.position.y))
@@ -79,7 +80,8 @@ class Player(HumanRagdoll):
             self.move(Vector(-3, 0))
         elif self.moving == "right":
             self.move(Vector(3, 0))
-
+        elif self.moving == "throw_batarang":
+            pass
 
 class Equipment:
 

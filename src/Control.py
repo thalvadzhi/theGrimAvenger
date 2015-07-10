@@ -90,18 +90,19 @@ class Control(Events):
             self.lights = level_file.readline()
             self.level_settings = level_file.readline()
 
+        self.level_settings = json.loads(self.level_settings, cls=Decoder)
+        Light.set_up_surfaces(self.level_settings.width,
+                             self.level_settings.height)
+
         world = json.loads(world, cls=Decoder)
         self.lights = json.loads(self.lights, cls=Decoder)
-        self.level_settings = json.loads(self.level_settings, cls=Decoder)
         
         self.level_blocks = list(filter(lambda item : isinstance(item, Block), world))
         self.level_saws = list(filter(lambda item : isinstance(item, SawBlock), world))
         
         for light in self.lights:
             light.update_obstacles(self.level_blocks)
-        Light.set_up_surfaces(self.level_settings.width,
-                             self.level_settings.height)
-
+        
         self.camera = Camera(self.level_settings.width,
                              self.level_settings.height,
                              self.gui_settings["resolution"][0],
