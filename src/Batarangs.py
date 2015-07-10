@@ -96,6 +96,15 @@ class Batarang():
         else:
             surface.blit(self.image, (self.x, self.y))
 
+    def collide_saw(self, saw):
+        rope = Line(Point(saw.x, saw.y), Point(saw.collision_circle.position.x, saw.collision_circle.position.y))
+        next_position = self.get_next_position()
+        path = Line(Point(self.x, self.y), Point(next_position[0], next_position[1]))
+        intersection = Line.get_intersection(rope, path)
+        if intersection is not None:
+            return True
+        return False
+
     def collides(self, world):
         next_position = self.get_next_position()
 
@@ -105,7 +114,8 @@ class Batarang():
                 self.should_fly = False
                 break
         for saw in self.saws:
-            saw.collide(self)
+            if not saw.is_severed and self.collide_saw(saw):
+                saw.deploy()
             # for line in obstacle.walls:
             #     intersection = Line.get_intersection(line, collision_line)
             #     if intersection is not None:

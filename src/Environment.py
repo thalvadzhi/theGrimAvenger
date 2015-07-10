@@ -167,6 +167,7 @@ class SawBlock():
                 return True
         return False
 
+
     def collide(self, bat):
         #implement list of bats
         if self.collide_line(bat.rect.x, bat.rect.y) and not self.is_severed:
