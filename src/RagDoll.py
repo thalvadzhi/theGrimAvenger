@@ -28,7 +28,6 @@ class HumanRagdoll:
         self.__facing = "right"
         self.ground = None
         self.velocity = Vector(0.0, 0.0)
-        self.impulse = Vector(0.0, 0.0)
         self.__mass = sum([body_part.mass
                            for body_part in self.body_parts.values()])
         self.motion = Motion(self)
@@ -201,7 +200,7 @@ class HumanRagdoll:
     def apply_physics(self, time, world):
         boots = [self.body_parts["left_boot"], self.body_parts["right_boot"]]
         if self.ground is not None:
-            collisions = [self.ground.rect.check_if_collide(boot) for boot in boots]
+            collisions = map(self.ground.rect.check_if_collide, boots)
             if all(collision[1].length() > PHYSICS_SETTINGS["touch_distance"] 
                     for collision in collisions):
                 self.ground = None
@@ -211,12 +210,16 @@ class HumanRagdoll:
         self.move(self.velocity)
 
         for block in world.level_blocks: 
-            for MTV in [block.rect.check_if_collide(boot) for boot in boots]:
+            max_MTV = None
+            for MTV in map(block.rect.check_if_collide, boots):
                 if MTV[0]:
-                    self.move(MTV[1])
+                    if max_MTV is None or MTV[1].length() > max_MTV.length():
+                        max_MTV = MTV[1]
                     if block.tag == TAG_GROUND:
                         self.velocity[1] = 0
                         self.ground = block
+            if max_MTV is not None:
+                self.move(max_MTV)
 
     def draw(self, surface, camera=0):
         for body_part in self.body_parts.values():

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from pygame.math import Vector2 as Vector
 
 from VectorMath import calculate_centroid, Line
@@ -95,11 +97,11 @@ class RevoluteJoint(Joint):
         # self.__motor = False
         self.apply_constraints(body_A)
 
-    def __hash__(self):
-        return Joint.__hash__(self)
-
-    def __eq__(self, other):
-        return Joint.__eq__(self, other)
+#    def __hash__(self):
+#        return Joint.__hash__(self)
+#
+#    def __eq__(self, other):
+#        return Joint.__eq__(self, other)
 
 #    @property
 #    def limit(self):
@@ -131,24 +133,23 @@ class RevoluteJoint(Joint):
         This function preserves the angles between all RevoluteJoints related
         to the current.
         """
-        joints_to_fix = set()
+        joints_to_fix = OrderedDict()
 
         def find_messed(previous):
             for messed in previous.mobile.joints:
-                if messed is not self and messed not in joints_to_fix and \
+                if messed is not self and messed not in list(joints_to_fix.keys()) and \
                         messed is not previous and \
                         isinstance(messed, RevoluteJoint):
-                    joints_to_fix.add((messed,
-                                       messed.calculate_angle_to_base()))
+                    joints_to_fix[messed] = messed.calculate_angle_to_base()
                     find_messed(messed)
         for messed in self.mobile.joints:
-            if messed is not self and messed not in joints_to_fix and \
+            if messed is not self and messed not in list(joints_to_fix.keys()) and \
                isinstance(messed, RevoluteJoint):
-                joints_to_fix.add((messed, messed.calculate_angle_to_base()))
+                joints_to_fix[messed] = messed.calculate_angle_to_base()
                 find_messed(messed)
         self.bent(angle)
-        for joint, new_angle in joints_to_fix:
-            joint.set_bent(new_angle)
+        for joint in list(joints_to_fix.keys()):
+            joint.set_bent(joints_to_fix[joint])
             joint.move_to_joint(joint.mobile)
 
     def calculate_angle_to_base(self):

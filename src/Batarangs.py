@@ -17,7 +17,8 @@ class Batarang():
         self.image_master = pygame.image.load("batarang2.png").convert_alpha()
         self.image_master = pygame.transform.scale(self.image_master,
                                                    (self.width, self.height))
-        self.world = world
+        self.world = world.level_blocks
+        self.saws = world.level_saws
 
         self.image = self.image_master
         self.rect_center = (x, y)
@@ -103,6 +104,8 @@ class Batarang():
             if self.triangle.check_if_collide(obstacle.rect)[0]:
                 self.should_fly = False
                 break
+        for saw in self.saws:
+            saw.collide(self)
             # for line in obstacle.walls:
             #     intersection = Line.get_intersection(line, collision_line)
             #     if intersection is not None:

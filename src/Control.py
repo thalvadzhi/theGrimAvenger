@@ -89,10 +89,12 @@ class Control(Events):
             world = level_file.readline()
             self.lights = level_file.readline()
             self.level_settings = level_file.readline()
+            self.swinging_lights = level_file.readline()
 
         self.level_settings = json.loads(self.level_settings, cls=Decoder)
         Light.set_up_surfaces(self.level_settings.width,
                              self.level_settings.height)
+        self.swinging_lights = json.loads(self.swinging_lights, cls=Decoder)
 
         world = json.loads(world, cls=Decoder)
         self.lights = json.loads(self.lights, cls=Decoder)
@@ -100,9 +102,9 @@ class Control(Events):
         self.level_blocks = list(filter(lambda item : isinstance(item, Block), world))
         self.level_saws = list(filter(lambda item : isinstance(item, SawBlock), world))
         
-        for light in self.lights:
+        for light in self.lights + self.swinging_lights:
             light.update_obstacles(self.level_blocks)
-        
+
         self.camera = Camera(self.level_settings.width,
                              self.level_settings.height,
                              self.gui_settings["resolution"][0],
@@ -133,6 +135,8 @@ class Control(Events):
             for light in self.lights:
                 light.draw_shadow(self.camera)
                 light.draw_light(self.camera)
+            for swinging_light in self.swinging_lights:
+                swinging_light.draw(self.screen, self.camera)
             Light.draw_everything(self.screen)
             
             for saw in self.level_saws:
@@ -237,6 +241,8 @@ class Control(Events):
     def game_handler(self):
         for saw in self.level_saws:
             saw.update(self.timer)
+        for swinging_light in self.swinging_lights:
+            swinging_light.update()
         self.get_user_input()
         self.player.handle_input()
         self.apply_physics()

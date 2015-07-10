@@ -122,9 +122,10 @@ class Equipment:
 
     @holding.setter
     def holding(self, value):
+        self._holding = None
         if self.utilities[value] > 0:
              self._holding = Equipment.UTILITY_CLASSES[value](
-                    0, 0, self.player.control.level_blocks)
+                    0, 0, self.player.control)
 
     def update(self):
         if isinstance(self.using, Batarang):
@@ -148,7 +149,7 @@ class Equipment:
     def use(self):
         if self.using is None:
             self.using = self.holding
-            self._holding = None
+            self.holding = "Nothing"
             self.using.take_action(self.player.control.camera)
 
     def draw(self, screen, camera):
