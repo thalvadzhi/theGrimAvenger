@@ -12,8 +12,8 @@ from light_cast_v3 import Line, Point
 class Batarang():
     def __init__(self, x, y, world):
         #x and y are the coordinates of player's hand
-        self.width = 65
-        self.height = 45
+        self.width = 35
+        self.height = 15
         self.image_master = pygame.image.load("batarang2.png").convert_alpha()
         self.image_master = pygame.transform.scale(self.image_master,
                                                    (self.width, self.height))
