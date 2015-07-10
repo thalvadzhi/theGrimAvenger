@@ -86,6 +86,11 @@ while True:
         if len(motion.frames) - 1 > frame and frame >= 0:
             ragdoll.set_frame(motion.frames[frame])
 
+    # set action frame
+    if keys[pygame.K_a]:
+        frame = int(input("frame: "))
+        motion.action_frame = frame
+
     # set joint to manipulate
     if keys[pygame.K_b]:
         current_part = input("joint: ")
