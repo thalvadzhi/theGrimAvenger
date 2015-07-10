@@ -110,12 +110,12 @@ class Batarang():
                         self.triangle.move(self.direction * 2)
                     self.should_fly = False
 
-    def reposition(self, coordinates, direction=None):
+    def reposition(self, coordinates, orientation, direction=None):
         self.rect.center = Vector(coordinates)
         self.x = coordinates[0]
         self.y = coordinates[1]
         self.triangle.move(self.rect.center - self.triangle.position)
-
+        self.triangle.direction = orientation.normalize()
         if direction is None:
             self.rotation = 0
         else:
