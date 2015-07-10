@@ -7,12 +7,12 @@ import pygame
 from pickle import load, dump
 from pygame.math import Vector2 as Vector
 
-from Serialize import Encoder, Decoder
+from Serialize import Decoder
 from Light import Light
 from Player import Player
-from Events import Events
+from events import Events
 from Camera import Camera
-from GUI import GUI_SETTINGS, SOUND_SETTINGS, Menu, SoundEffect
+from gui import GUI_SETTINGS, SOUND_SETTINGS, Menu, SoundEffect
 from Environment import Block, SawBlock
 
 
@@ -28,7 +28,7 @@ class Control(Events):
         Menu.init_menus(self)
         self.current_menu = "welcome_menu"
         self.camera = 0
-        self.clock = pygame.time.Clock()        
+        self.clock = pygame.time.Clock()
         self.time = pygame.time
         self.last_time = 0
         self.take_screenshot = False
@@ -96,15 +96,25 @@ class Control(Events):
 
         self.level_settings = json.loads(self.level_settings, cls=Decoder)
         Light.set_up_surfaces(self.level_settings.width,
-                             self.level_settings.height)
+                              self.level_settings.height)
         self.swinging_lights = json.loads(self.swinging_lights, cls=Decoder)
 
         world = json.loads(world, cls=Decoder)
         self.lights = json.loads(self.lights, cls=Decoder)
-        
-        self.level_blocks = list(filter(lambda item : isinstance(item, Block), world))
-        self.level_saws = list(filter(lambda item : isinstance(item, SawBlock), world))
-        
+
+        self.level_blocks = list(
+            filter(
+                lambda item: isinstance(
+                    item,
+                    Block),
+                world))
+        self.level_saws = list(
+            filter(
+                lambda item: isinstance(
+                    item,
+                    SawBlock),
+                world))
+
         for light in self.lights + self.swinging_lights:
             light.update_obstacles(self.level_blocks)
 
@@ -133,7 +143,7 @@ class Control(Events):
 
     def refresh_screen(self):
         if self.ingame or self.take_screenshot:
-            self.screen.fill((255, 255, 255)) 
+            self.screen.fill((255, 255, 255))
             Light.nullify_shadow()
             Light.nullify_light()
 
@@ -143,19 +153,19 @@ class Control(Events):
             for swinging_light in self.swinging_lights:
                 swinging_light.draw(self.screen, self.camera)
             Light.draw_everything(self.screen)
-            
+
             for saw in self.level_saws:
                 saw.draw(self.screen, self.camera)
             for block in self.level_blocks:
                 block.draw(self.screen, self.camera)
 
             self.player.display_avatar(self.screen, self.camera)
-            self.player.equipment.draw(self.screen, self.camera) 
-        if not self.ingame: 
+            self.player.equipment.draw(self.screen, self.camera)
+        if not self.ingame:
             if self.take_screenshot:
                 self.background.blit(self.screen, (0, 0))
                 self.take_screenshot = False
-            
+
             self.screen.blit(self.background, (0, 0))
             Menu.MENUS[self.current_menu].draw(self.screen)
         pygame.display.update()
@@ -239,7 +249,10 @@ class Control(Events):
 
     def game_over_menu_control(self):
         if Menu.MENUS["game_over_menu"].elements[1].clicked:
-            self.player = Player(Vector(self.level_settings.start_position), self)
+            self.player = Player(
+                Vector(
+                    self.level_settings.start_position),
+                self)
             self.next_step = self.game_handler
             self.ingame = True
         elif Menu.MENUS["game_over_menu"].elements[2].clicked:
@@ -269,19 +282,19 @@ class Control(Events):
         self.player.equipment.update()
         self.refresh_screen()
 
-   # def update_velocity(self, body):
-   #     dt_s = self.timer / 1000
-   #     # Net resulting force on the puck.
-   #     forces_on_body = self.gravity * body.mass + body.impulse / dt_s
+#    def update_velocity(self, body):
+#        dt_s = self.timer / 1000
+#    Net resulting force on the puck.
+#        forces_on_body = self.gravity * body.mass + body.impulse / dt_s
 
-   #     # Acceleration from Newton's law.
-   #     acceleration = forces_on_body / body.mass
+#    Acceleration from Newton's law.
+#        acceleration = forces_on_body / body.mass
 
     def apply_physics(self):
         # self.update_velocity(self.player)
         current_time = pygame.time.get_ticks()
-        time = current_time - self.last_time 
-        self.player.apply_physics(time, self) 
+        time = current_time - self.last_time
+        self.player.apply_physics(time, self)
         self.last_time = current_time
 
 #    def cursor_controll(self):

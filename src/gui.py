@@ -3,7 +3,7 @@ from os import listdir
 import pygame
 from pygame.math import Vector2 as Vector
 
-from BasicShapes import Rectangle, Circle
+from basicshapes import Rectangle, Circle
 
 GUI_SETTINGS = {
     "fps": 60,
@@ -18,6 +18,7 @@ SOUND_SETTINGS = {
 
 RESOLUTIONS = [(1280, 1024), (1366, 768), (1600, 1024),
                (1600, 1200), (1920, 1080), (1920, 1200)]
+
 
 class SoundEffect:
     LOADED = {}
@@ -56,6 +57,7 @@ class SoundEffect:
             self.volume = SOUND_SETTINGS["effects"]
             self.reset_volume()
         self.sound.play()
+
 
 class TextBox(Rectangle):
 
@@ -292,7 +294,8 @@ class Checkbox(Rectangle):
             self.state = "checked"
         else:
             self.state = "unchecked"
-        self.sound_effect = SoundEffect(r"checkbox_{0}.wav".format(checkbox_type))
+        self.sound_effect = SoundEffect(
+            r"checkbox_{0}.wav".format(checkbox_type))
         self.text_box = TextBox(
             text_box_width, text_box_height, self.position +
             Vector((self.width + text_box_width) / 2, 0),

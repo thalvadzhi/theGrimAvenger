@@ -1,6 +1,6 @@
 import pygame
 
-from Control import Control
+from control import Control
 
 pygame.init()
 while True:
