@@ -30,7 +30,7 @@ class Motion:
 #                motion.frames = load(motion_frames)
     
     @classmethod
-    def load_motion(cls, path):
+    def load(cls, path):
         motion_data = {}
         with open("../Files/Motions/{0}.motion".format(path), "rb") as motion:
             motion_data = load(motion)
@@ -43,11 +43,11 @@ class Motion:
     def set_motion(self, name):
         self.name = name
         if name not in Motion.LOADED:
-            Motion.load_motion(name)
+            Motion.load(name)
         self.read_motion_data(Motion.LOADED[name])
         self.paused = False
 
-    def save_motion(self, path):
+    def save(self, path):
         motion_data = {
                 "frames": self.frames,
                 "is_repetitive": self.is_repetitive
@@ -72,8 +72,9 @@ class Motion:
             start_time = pygame.time.get_ticks()
         for frame in self.frames:
             for _ in self.item.shift_to_frame(frame, start_time, self):
+                start_time = _
                 yield
-            start_time += frame["duration"]
+            start_time += frame["duration"] // 2.5
         return start_time
 
     def play(self):

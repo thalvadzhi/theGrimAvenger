@@ -47,7 +47,7 @@ class Player(HumanRagdoll):
                     self.turn("left")
                     if self.motion.name is not "walk":
                         self.motion.set_motion("walk")
-                        self.motion.current_motion = self.motion.play_motion(control.time)
+                        self.motion.current_motion = self.motion.play_motion()
                 elif keyboard_input[0] in [pygame.K_UP, pygame.K_w]:
                     if self.ground is not None:
                         self.velocity[1] -= 20
@@ -65,16 +65,17 @@ class Player(HumanRagdoll):
     def update(self, control):
         self.motion.play()
         if self.moving:
-           # if self.current_motion.name is not "walk":
-           #     self.current_motion
             self.turn(self.moving)
-            self.move(Vector({"left": (-1, 0), "right": (1, 0)}[self.moving]))
+            self.move(Vector({"left": (-3, 0), "right": (3, 0)}[self.moving]))
 
 
-class Equipment:
-
-    def __init__(self):
-        pass
-
-    def draw(self):
-        pass
+# class Equipment:
+# 
+#     BACKGROUND = None
+# 
+#     def __init__(self):
+#         if Equipment.BACKGROUND is None:
+# 
+# 
+#     def draw(self, screen):
+#         pass

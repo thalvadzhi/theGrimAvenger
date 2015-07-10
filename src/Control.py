@@ -65,7 +65,7 @@ class Control(Events):
         pygame.display.set_caption("theGrimAvenger", "theGrimAvenger")
         if self.gui_settings["fullscreen"]:
             self.screen = pygame.display.set_mode(
-                (800, 600), pygame.FULLSCREEN)
+                self.gui_settings["resolution"], pygame.FULLSCREEN)
         else:
             self.screen = pygame.display.set_mode(
                 self.gui_settings["resolution"], pygame.HWSURFACE)
@@ -102,8 +102,6 @@ class Control(Events):
         Light.set_up_surfaces(self.level_settings.width,
                              self.level_settings.height)
 
-        print(self.level_settings.width, self.level_settings.height, self.gui_settings["resolution"][0],
-                             self.gui_settings["resolution"][1])
         self.camera = Camera(self.level_settings.width,
                              self.level_settings.height,
                              self.gui_settings["resolution"][0],

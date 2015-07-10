@@ -51,70 +51,89 @@ while True:
             if event.button == 1:
                 cursor_left_button_is_down = False
 
+    # control with cursor
     keys = pygame.key.get_pressed()
     if cursor_left_button_is_down and cursor_selected_body is not None:
         cursor_location = Vector(pygame.mouse.get_pos())
         cursor_selected_body.pull_on_anchor(anchor, cursor_location - anchor)
         anchor = cursor_location
-    
+
+    # bent current joint
     if keys[pygame.K_UP] and current_part:
         ragdoll.joints[current_part].bent_keeping_angles(1)
 
+    # bent current joint
     if keys[pygame.K_DOWN] and current_part:
         ragdoll.joints[current_part].bent_keeping_angles(-1)    
         
+    # next frame
     if keys[pygame.K_RIGHT] and motion.frames:
         if len(motion.frames) - 1 > current_frame:
             current_frame += 1
         ragdoll.set_frame(motion.frames[current_frame])
         time.sleep(0.1)
-       
+    
+    # previous frame
     if keys[pygame.K_LEFT] and motion.frames:
         if current_frame > 0:
             current_frame -= 1
         ragdoll.set_frame(motion.frames[current_frame])
         time.sleep(0.3) 
 
+    # set frame
+    if keys[pygame.K_x]:
+        frame = int(input("frame: "))
+        if len(motion.frames) - 1 > frame and frame >= 0:
+            ragdoll.set_frame(motion.frames[frame])
 
+    # set joint to manipulate
     if keys[pygame.K_b]:
         current_part = input("joint: ")
 
+    # print current frame
     if keys[pygame.K_f]:
         print("current frame: {0}".format(current_frame))
+        print(motion.frames[current_frame])
+        time.sleep(0.3)
 
+    # make motion repetetive
     if keys[pygame.K_e]:
         motion.is_repetitive = True
 
-    if keys[pygame.K_r]:
-        motion.current_motion = motion.play_motion(pygame.time)
-
+    # play motion
     if keys[pygame.K_p]:
         motion.play()
 
+    # move right
     if keys[pygame.K_o]:
         ragdoll.turn("right")
         ragdoll.move(Vector((2, 0)))
 
+    # move left
     if keys[pygame.K_i]:
         ragdoll.turn("left")
         ragdoll.move(Vector((-2, 0)))
 
+    # set duration
     if keys[pygame.K_d]:
         frame = int(input("frame: "))
         duration = int(input("duration: "))
         motion.set_duration(frame, duration)
 
+    # capture frame
     if keys[pygame.K_c]:
         frame = int(input("frame: "))
         motion.capture_frame(frame)
 
+    # save
     if keys[pygame.K_s]:
         motion_name = input("motion name: ")
-        motion.save_motion(motion_name)
+        motion.save(motion_name)
 
+    # load
     if keys[pygame.K_l]:
         motion_name = input("motion name: ")
-        motion.load_motion(motion_name)
+        motion.set_motion(motion_name)
 
     ragdoll_velosity = ragdoll_velosity + Vector(0, 2)
 
