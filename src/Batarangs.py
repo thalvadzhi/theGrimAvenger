@@ -77,12 +77,15 @@ class Batarang():
         self.mouse_position = camera.apply(pygame.mouse.get_pos())
         self.direct(self.mouse_position[0], self.mouse_position[1])
         self.should_fly = True
+        self.last_update = pygame.time.get_ticks()
 
-    def update(self, timer, surface, camera):
+    def update(self):
+        timer = pygame.time.get_ticks() - self.last_update + 1
+        self.last_update += timer
         if self.should_fly:
             self.move(timer)
             self.rotate(timer)
-            self.collides(self.world, surface, camera)
+            self.collides(self.world)
         self.hitmask = get_hitmask(self.rect, self.image, 0)
         return self.should_fly
 
@@ -92,7 +95,7 @@ class Batarang():
         else:
             surface.blit(self.image, (self.x, self.y))
 
-    def collides(self, world, surface, camera):
+    def collides(self, world):
         next_position = self.get_next_position()
 
         collision_line = Line(Point(self.x, self.y), Point(next_position[0], next_position[1]))
