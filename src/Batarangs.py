@@ -103,16 +103,16 @@ class Batarang():
             if self.triangle.check_if_collide(obstacle.rect)[0]:
                 self.should_fly = False
                 break
-            for line in obstacle.walls:
-                intersection = Line.get_intersection(line, collision_line)
-                if intersection is not None:
-
-                    while not self.triangle.check_if_collide(obstacle.rect)[0]:
-                        self.x += self.direction.x
-                        self.y += self.direction.y
-                        self.rect.center = Vector((self.x, self.y))
-                        self.triangle.move(self.direction * 2)
-                    self.should_fly = False
+            # for line in obstacle.walls:
+            #     intersection = Line.get_intersection(line, collision_line)
+            #     if intersection is not None:
+            #
+            #         while not self.triangle.check_if_collide(obstacle.rect)[0]:
+            #             self.x += self.direction.x
+            #             self.y += self.direction.y
+            #             self.rect.center = Vector((self.x, self.y))
+            #             self.triangle.move(self.direction * 2)
+            #         self.should_fly = False
 
     def reposition(self, coordinates, orientation, direction=None):
         self.rect.center = Vector(coordinates)
