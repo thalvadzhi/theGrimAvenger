@@ -159,7 +159,7 @@ class HumanRagdoll:
         self.rotate(frame["slope"] * -facing)
 
     def shift_to_frame(self, frame, start_time, motion):
-        duration = frame["duration"] // 2.5
+        duration = frame["duration"] // motion.speed_multiplier
         frame = self.calculate_frame_difference(frame)
         elapsed_time = 0
         bent_fraction = 0

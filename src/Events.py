@@ -46,6 +46,8 @@ class Events:
                 elif event.button == 3:
                     self.cursor_right_button_is_down = True
                     self.mouse_input.append((3, Vector(event.pos), True))
+                elif event.button == 4 or event.button == 5:
+                    self.mouse_input.append((event.button, Vector(event.pos), True))
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
