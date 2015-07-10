@@ -110,13 +110,18 @@ class Batarang():
                         self.triangle.move(self.direction * 2)
                     self.should_fly = False
 
-    def reposition(self, coordinates, direction):
+    def reposition(self, coordinates, direction=None):
         self.rect.center = Vector(coordinates)
         self.x = coordinates[0]
         self.y = coordinates[1]
-        self.rotation = direction.angle_to(Vector(1, 0))
+        self.triangle.move(self.rect.center - self.triangle.position)
+
+        if direction is None:
+            self.rotation = 0
+        else:
+            self.rotation = direction.angle_to(Vector(1, 0))
         self.image = pygame.transform.rotate(self.image_master,
                                              self.rotation)
         self.rect = Rectangle.get_rect(self.image, self.rect.center)
 
-        self.hitmask = get_hitmask(self.rect, self.image, 0)
+        #self.hitmask = get_hitmask(self.rect, self.image, 0)
