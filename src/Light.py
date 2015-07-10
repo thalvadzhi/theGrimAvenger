@@ -1,6 +1,6 @@
 import math
 from pygame import draw, Surface, HWSURFACE, BLEND_RGBA_MIN, BLEND_RGB_MAX
-from еnvironment import Block
+from environment import Block
 from lightcaster import LightSource, Point
 from gradients import radial
 from constants import BLOCK_SIZE

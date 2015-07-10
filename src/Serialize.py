@@ -1,7 +1,7 @@
 import json
 from constants import OBJECT_BLOCK, OBJECT_SAW_BLOCK, OBJECT_LIGHT, \
     OBJECT_SWINGING_LIGHT, OBJECT_SETTINGS
-from еnvironment import Block, SawBlock
+from environment import Block, SawBlock
 from light import Light
 from swinginglight import SwingingLight
 from settings import Settings

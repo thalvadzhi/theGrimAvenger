@@ -1,6 +1,6 @@
 import unittest
 import pygame
-from еnvironment import Block, SawBlock, Shadow
+from environment import Block, SawBlock, Shadow
 from batarangs import Batarang
 from pygame.math import Vector2 as Vector
 pygame.init()

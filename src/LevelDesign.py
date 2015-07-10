@@ -12,7 +12,7 @@ from swinginglight import SwingingLight
 from light import Light
 from button import Button
 from camera import Camera
-from еnvironment import Block, SawBlock
+from environment import Block, SawBlock
 from serialize import Encoder, Decoder
 from settings import Settings
 
