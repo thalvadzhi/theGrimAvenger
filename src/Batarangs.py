@@ -74,7 +74,7 @@ class Batarang():
         self.direction = self.direction.normalize()
 
     def take_action(self, camera):
-        self.mouse_position = camera.apply(pygame.mouse.get_pos())
+        self.mouse_position = camera.reverse_apply(pygame.mouse.get_pos())
         self.direct(self.mouse_position[0], self.mouse_position[1])
         self.should_fly = True
         self.last_update = pygame.time.get_ticks()
