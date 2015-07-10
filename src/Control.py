@@ -108,7 +108,7 @@ class Control(Events):
                              self.gui_settings["resolution"][0],
                              self.gui_settings["resolution"][1])
         SoundEffect.play_music(r"{0}.mp3".format(self.level_settings.music))
-        self.player = Player(Vector(self.level_settings.start_position))
+        self.player = Player(Vector(self.level_settings.start_position), self)
         self.player.equipment.equip("Batarang", 3)
         # self.current_time = pygame.time.get_ticks()
 
@@ -141,7 +141,7 @@ class Control(Events):
                 block.draw(self.screen, self.camera)
 
             self.player.display_avatar(self.screen, self.camera)
-            self.player.equipment.draw(self.screen)
+            self.player.equipment.draw(self.screen, self.camera)
         else:
             if self.current_menu in ["save_game_menu", "pause_menu",
                                      "end_game_menu"]:
@@ -238,8 +238,9 @@ class Control(Events):
         for saw in self.level_saws:
             saw.update(self.timer)
         self.get_user_input()
-        self.player.handle_input(self)
+        self.player.handle_input()
         self.apply_physics()
+        self.player.equipment.update()
         self.refresh_screen()
 
    # def update_velocity(self, body):

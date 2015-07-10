@@ -78,7 +78,7 @@ class Motion:
             start_time = pygame.time.get_ticks()
         for index, frame in enumerate(self.frames):
             if index == self.action_frame:
-                self.on_action_frame()
+                self.on_action_frame(self.item)
             for _ in self.item.shift_to_frame(frame, start_time, self):
                 start_time = _
                 yield

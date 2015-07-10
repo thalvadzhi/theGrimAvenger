@@ -109,8 +109,9 @@ class HumanRagdoll:
             self.load_dimensions()
 
     def hand_position(self, leftedness):
-        forearm = self.body_parts["{0}_forearm".format(leftedness)]
-        return (forearm.vertices[0] + forearm.vertices[1]) / 2 
+        hand = self.body_parts["{0}_hand".format(leftedness)]
+        return hand.position, hand.direction 
+        # (forearm.vertices[0] + forearm.vertices[1]) / 2 
         # bone = (forearm.vertices[0] +
         #        forearm.vertices[1]) / 2 - forearm.position
         # return forearm.position + bone + bone.normalize() * 5
