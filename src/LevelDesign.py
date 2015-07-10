@@ -133,12 +133,13 @@ class LevelDesign:
         world = json.dumps(self.world, cls=Encoder)
         light = json.dumps(self.lights, cls=Encoder)
         settings = json.dumps(self.settings, cls=Encoder)
-        swinging_lights = json.dumps(self.swingin_lights, cls=Encoder)
+        swinging_lights = json.dumps(self.swinging_lights, cls=Encoder)
         try:
             with open("../Files/Levels/level2.btmn", "w") as level:
                 print(world, file=level)
                 print(light, file=level)
                 print(settings, file=level)
+                print(swinging_lights, file=level)
         except FileNotFoundError:
             return
 
@@ -216,17 +217,17 @@ class LevelDesign:
                     if index < 3:
                         #first four are always boundaries
                         continue
-                    if isinstance(piece, Light):
-                        if piece.collide(
-                                self.camera.reverse_apply(mouse_position)):
-                            return index, OBJECT
+                    # if isinstance(piece, Light):
+                    #     if piece.collide(
+                    #             self.camera.reverse_apply(mouse_position)):
+                    #         return index, OBJECT
                     elif piece.rect.is_point_in_body(mouse_position, self.camera):
                         return index, OBJECT
                 for index, light in enumerate(self.lights):
-                    if light.collide(self.camera.apply(mouse_position)):
+                    if light.collide(self.camera.reverse_apply(mouse_position)):
                         return index, OBJECT_LIGHT
                 for index, swinging_light in enumerate(self.swinging_lights):
-                    if swinging_light.collide(self.camera.apply(mouse_position)):
+                    if swinging_light.collide(self.camera.reverse_apply(mouse_position)):
                         return index, OBJECT_SWINGING_LIGHT
         return NO_OBJECT_SELECTED
 
@@ -395,6 +396,6 @@ while True:
     for textbox in design.textboxes:
         if textbox.is_focused:
             textbox.update(events)
-    design.update()
+   #design.update()
     design.move(design.selector(mouse_position, events), screen)
     timer.tick(FPS)

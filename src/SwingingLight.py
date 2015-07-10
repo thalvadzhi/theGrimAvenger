@@ -31,7 +31,7 @@ class SwingingLight:
         self.x = x
         self.y = y
         self.bob = Pendulum(BOB_ANGLE, self.rope_length, (self.x, self.y))
-        self.light.update_light_position(self.x, self.y)
+        self.light.update_light_position(self.x, self.y + self.rope_length)
         self.light.update()
 
     def update_obstacles(self, obstacles):
@@ -43,9 +43,11 @@ class SwingingLight:
         return math.sqrt((self.x - position[0]) ** 2 + (self.y - position[1]) ** 2) <= 30
 
     def draw(self, surface, camera):
-        line = [(self.x, self.y), (self.x + 10, self.y),
-                (self.bob.rect.center[0] + 10, self.bob.rect.center[1]),
-                (self.bob.rect.center[0], self.bob.rect.center[1])]
-        pygame.draw.polygon(surface, (0, 0, 0), line)
+        # line = [(self.x, self.y), (self.x + 10, self.y),
+        #         (self.bob.rect.center[0] + 10, self.bob.rect.center[1]),
+        #         (self.bob.rect.center[0], self.bob.rect.center[1])]
+        # pygame.draw.polygon(surface, (0, 0, 0), line)
+        pygame.draw.line(surface, (0, 0, 0), camera.apply((self.x, self.y)),
+                         camera.apply((self.bob.rect.center[0], self.bob.rect.center[1])), 5)
         self.light.draw_light(camera)
         self.light.draw_shadow(camera)
