@@ -1,7 +1,7 @@
 import unittest
 import pygame
-from Environment import Block, SawBlock, Shadow
-from Batarangs import Batarang
+from еnvironment import Block, SawBlock, Shadow
+from batarangs import Batarang
 from pygame.math import Vector2 as Vector
 pygame.init()
 screen = pygame.display.set_mode((0, 0))

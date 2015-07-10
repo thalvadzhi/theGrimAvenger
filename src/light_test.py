@@ -2,9 +2,9 @@ import pygame, sys, time, math, gradients
 import pygame.gfxdraw
 from pygame import surfarray
 from basicshapes import Rectangle
-from Light import Light
+from light import Light
 from pygame.math import Vector2 as Vector
-from Camera import Camera
+from camera import Camera
 pygame.init()
 screen = pygame.display.set_mode((800, 600), pygame.HWSURFACE)
 timer = pygame.time.Clock()

@@ -6,7 +6,7 @@ import pygame
 from pygame.math import Vector2 as Vector
 
 import physics
-from Constants import TAG_GROUND
+from constants import TAG_GROUND
 from physics import PHYSICS_SETTINGS
 from joints import RevoluteJoint
 from motions import Motion

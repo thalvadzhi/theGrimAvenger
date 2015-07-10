@@ -1,5 +1,5 @@
 import unittest
-from Button import Button
+from button import Button
 import pygame
 pygame.init()
 

@@ -3,7 +3,7 @@ from collections import OrderedDict
 import pygame
 from pygame.math import Vector2 as Vector
 
-from Batarangs import Batarang
+from batarangs import Batarang
 from basicshapes import Circle
 from gui import GUI_SETTINGS
 from ragdoll import HumanRagdoll

@@ -4,17 +4,17 @@ import sys
 from pygame.math import Vector2 as Vector
 import eztext
 from basicshapes import Rectangle
-from Constants import WIDTH, HEIGHT, MUSIC_IN_GAME1, EXPAND_FIELD_RIGHT, \
+from constants import WIDTH, HEIGHT, MUSIC_IN_GAME1, EXPAND_FIELD_RIGHT, \
     EXPAND_FIELD_UP, RETRACT_FIELD_LEFT, RETRACT_FIELD_DOWN, NO_OBJECT_SELECTED, \
     OBJECT, OBJECT_BLOCK, TAG_WALL, TAG_GROUND, OBJECT_SAW_BLOCK, OBJECT_LIGHT, \
     OBJECT_SWINGING_LIGHT, FPS, DEFAULT_START_POSITION, LIGHT_RADIUS
-from SwingingLight import SwingingLight
-from Light import Light
-from Button import Button
-from Camera import Camera
-from Environment import Block, SawBlock
-from Serialize import Encoder, Decoder
-from Settings import Settings
+from swinginglight import SwingingLight
+from light import Light
+from button import Button
+from camera import Camera
+from еnvironment import Block, SawBlock
+from serialize import Encoder, Decoder
+from settings import Settings
 
 
 class DecodingFailure(Exception):

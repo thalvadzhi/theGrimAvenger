@@ -1,10 +1,10 @@
 import json
-from Constants import OBJECT_BLOCK, OBJECT_SAW_BLOCK, OBJECT_LIGHT, \
+from constants import OBJECT_BLOCK, OBJECT_SAW_BLOCK, OBJECT_LIGHT, \
     OBJECT_SWINGING_LIGHT, OBJECT_SETTINGS
-from Environment import Block, SawBlock
-from Light import Light
-from SwingingLight import SwingingLight
-from Settings import Settings
+from еnvironment import Block, SawBlock
+from light import Light
+from swinginglight import SwingingLight
+from settings import Settings
 
 
 class Encoder(json.JSONEncoder):

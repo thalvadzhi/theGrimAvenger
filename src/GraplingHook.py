@@ -1,6 +1,6 @@
 import pygame
 from pygame.math import Vector2 as Vector
-from Pendulum import Pendulum
+from pendulum import Pendulum
 from basicshapes import Rectangle
 from pixelperfect import get_hitmask, collide
 from math import *

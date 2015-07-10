@@ -1,8 +1,8 @@
 import math
 import pygame
-from Constants import BOB_ANGLE, ROPE_WIDTH, SWINGING_LIGHT_RADIUS
-from Light import Light
-from Pendulum import Pendulum
+from constants import BOB_ANGLE, ROPE_WIDTH, SWINGING_LIGHT_RADIUS
+from light import Light
+from pendulum import Pendulum
 
 
 class SwingingLight:

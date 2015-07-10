@@ -1,5 +1,5 @@
 import unittest
-from Batarangs import Batarang
+from batarangs import Batarang
 from pygame.math import Vector2 as Vector
 import pygame
 pygame.init()

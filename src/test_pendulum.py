@@ -1,5 +1,5 @@
 import unittest
-from Pendulum import Pendulum
+from pendulum import Pendulum
 
 
 class PendulumTest(unittest.TestCase):
