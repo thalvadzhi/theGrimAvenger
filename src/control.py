@@ -9,7 +9,7 @@ from pygame.math import Vector2 as Vector
 
 from Serialize import Decoder
 from Light import Light
-from Player import Player
+from player import Player
 from events import Events
 from Camera import Camera
 from gui import GUI_SETTINGS, SOUND_SETTINGS, Menu, SoundEffect

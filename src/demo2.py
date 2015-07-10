@@ -2,11 +2,11 @@ import pygame
 
 from pygame.math import Vector2 as Vector
 from Batarangs import Batarang
-from Control import Control
-from Motions import Motion
-from RagDoll import HumanRagdoll
+from control import Control
+from motions import Motion
+from ragdoll import HumanRagdoll
 from Camera import Camera
-from BasicShapes import *
+from basicshapes import *
 from Environment import Block, SawBlock
 from pixelperfect import collide as pixel
 import sys

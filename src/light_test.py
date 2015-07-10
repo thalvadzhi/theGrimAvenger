@@ -1,7 +1,7 @@
 import pygame, sys, time, math, gradients
 import pygame.gfxdraw
 from pygame import surfarray
-from BasicShapes import Rectangle
+from basicshapes import Rectangle
 from Light import Light
 from pygame.math import Vector2 as Vector
 from Camera import Camera

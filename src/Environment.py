@@ -3,7 +3,7 @@ import pygame.gfxdraw
 import math
 from pygame.math import Vector2 as Vector
 from Pendulum import Pendulum
-from BasicShapes import Rectangle, Circle
+from basicshapes import Rectangle, Circle
 from Constants import TAG_GROUND, SAW_IMAGE, SAW_DIMENSION, TICKS_FOR_60_FPS,\
     SAW_ROPE_ANGLE, ROTATION_STEP, SAW_ROPE_WIDTH
 

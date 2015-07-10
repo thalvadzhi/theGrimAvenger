@@ -1,6 +1,6 @@
 from pygame import time, mouse
 from pygame.math import Vector2 as Vector
-from BasicShapes import Triangle
+from basicshapes import Triangle
 from light_cast_v3 import Line, Point
 from Constants import ROTATION_STEP, BATARANG_IMAGE, \
     BATARANG_HEIGHT, BATARANG_WIDTH

@@ -1,5 +1,5 @@
 from pygame.math import Vector2 as Vector
-from BasicShapes import Rectangle
+from basicshapes import Rectangle
 
 
 class Camera:

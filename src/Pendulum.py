@@ -1,5 +1,5 @@
 from math import sin, cos, radians
-from BasicShapes import Rectangle
+from basicshapes import Rectangle
 
 
 class Pendulum:

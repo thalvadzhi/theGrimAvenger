@@ -3,8 +3,8 @@ import unittest
 from pygame.math import Vector2 as Vector
 import pygame
 
-from GUI import *
-from Control import Control
+from gui import *
+from control import Control
 pygame.init()
 
 

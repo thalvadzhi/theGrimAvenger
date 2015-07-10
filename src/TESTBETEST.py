@@ -1,9 +1,9 @@
 import pygame, sys
 from Camera import Camera
 from pygame.math import Vector2 as Vector
-from Environment import Block, SawBlock, Shadow
-from Motions import Motion
-from RagDoll import HumanRagdoll
+from Environment import Block, SawBlock
+from motions import Motion
+from ragdoll import HumanRagdoll
 
 import pickle
 

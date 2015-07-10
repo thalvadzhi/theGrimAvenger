@@ -3,7 +3,7 @@ import json
 import sys
 from pygame.math import Vector2 as Vector
 import eztext
-from BasicShapes import Rectangle
+from basicshapes import Rectangle
 from Constants import WIDTH, HEIGHT, MUSIC_IN_GAME1, EXPAND_FIELD_RIGHT, \
     EXPAND_FIELD_UP, RETRACT_FIELD_LEFT, RETRACT_FIELD_DOWN, NO_OBJECT_SELECTED, \
     OBJECT, OBJECT_BLOCK, TAG_WALL, TAG_GROUND, OBJECT_SAW_BLOCK, OBJECT_LIGHT, \
