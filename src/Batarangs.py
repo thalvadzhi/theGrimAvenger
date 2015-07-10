@@ -84,6 +84,7 @@ class Batarang():
             self.rotate(timer)
             self.collides(self.world, surface, camera)
         self.hitmask = get_hitmask(self.rect, self.image, 0)
+        return self.should_fly
 
     def draw(self, surface, camera=0):
         if camera != 0:
