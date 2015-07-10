@@ -1,5 +1,6 @@
 import sys
 import json
+from copy import copy
 from os import listdir
 
 import pygame
@@ -16,6 +17,8 @@ from Environment import Block, SawBlock
 
 
 class Control(Events):
+
+    BACKGROUNDS = {}
 
     def __init__(self):
         Events.__init__(self)
@@ -115,6 +118,9 @@ class Control(Events):
         # self.current_time = pygame.time.get_ticks()
 
     def load_background(self, path):
+        if path in Control.BACKGROUNDS:
+            self.background = Control.BACKGROUNDS[path]
+            return
         try:
             self.background = pygame.image.load(
                 r"../ArtWork/GUI/Backgrounds/{0}.jpg".format(path))
@@ -123,11 +129,10 @@ class Control(Events):
         except pygame.error:
             self.background = pygame.Surface(self.gui_settings["resolution"])
             self.background.fill((255, 255, 255))
+        Control.BACKGROUNDS[path] = copy(self.background)
 
     def refresh_screen(self):
-        if self.take_screenshot:
-            self.background.blit(self.screen, (0, 0))
-        if self.ingame:
+        if self.ingame or self.take_screenshot:
             self.screen.fill((255, 255, 255)) 
             Light.nullify_shadow()
             Light.nullify_light()
@@ -145,13 +150,13 @@ class Control(Events):
                 block.draw(self.screen, self.camera)
 
             self.player.display_avatar(self.screen, self.camera)
-            self.player.equipment.draw(self.screen, self.camera)
-        else:
-            if self.current_menu in ["save_game_menu", "pause_menu",
-                                     "end_game_menu"]:
+            self.player.equipment.draw(self.screen, self.camera) 
+        if not self.ingame: 
+            if self.take_screenshot:
+                self.background.blit(self.screen, (0, 0))
                 self.take_screenshot = False
-            else:
-                self.screen.blit(self.background, (0, 0))
+            
+            self.screen.blit(self.background, (0, 0))
             Menu.MENUS[self.current_menu].draw(self.screen)
         pygame.display.update()
 
@@ -225,27 +230,42 @@ class Control(Events):
             difficulty = "insane"
         elif Menu.MENUS["new_game_menu"].elements[5].clicked:
             self.current_menu = "welcome_menu"
-        Menu.MENUS["welcome_menu"].reset_menu_buttons()
+        Menu.MENUS["new_game_menu"].reset_menu_buttons()
         if difficulty is not None:
             self.difficulty = difficulty
             self.init_level("level2")
             self.next_step = self.game_handler
             self.ingame = True
 
+    def game_over_menu_control(self):
+        if Menu.MENUS["game_over_menu"].elements[1].clicked:
+            self.player = Player(Vector(self.level_settings.start_position), self)
+            self.next_step = self.game_handler
+            self.ingame = True
+        elif Menu.MENUS["game_over_menu"].elements[2].clicked:
+            self.load_background("welcome")
+            self.current_menu = "welcome_menu"
+        Menu.MENUS["game_over_menu"].reset_menu_buttons()
+
     def menu_handler(self):
-        self.refresh_screen()
         self.get_user_input()
         Menu.MENUS[self.current_menu].handle_input(self)
         getattr(self, self.current_menu + "_control")()
+        self.refresh_screen()
 
     def game_handler(self):
-        for saw in self.level_saws:
-            saw.update(self.timer)
         for swinging_light in self.swinging_lights:
             swinging_light.update()
         self.get_user_input()
         self.player.handle_input()
         self.apply_physics()
+        for saw in self.level_saws:
+            saw.update(self.timer)
+            if self.player.check_if_collide(saw.collision_circle):
+                self.take_screenshot = True
+                self.next_step = self.menu_handler
+                self.current_menu = "game_over_menu"
+                self.ingame = False
         self.player.equipment.update()
         self.refresh_screen()
 

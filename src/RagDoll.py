@@ -221,6 +221,10 @@ class HumanRagdoll:
             if max_MTV is not None:
                 self.move(max_MTV)
 
+    def check_if_collide(self, body):
+        return any([collision for collision, _ in map(
+            body.check_if_collide, self.body_parts.values())])
+
     def draw(self, surface, camera=0):
         for body_part in self.body_parts.values():
             body_part.draw(surface, camera)

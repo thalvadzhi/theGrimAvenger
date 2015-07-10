@@ -500,6 +500,14 @@ class Menu(Rectangle):
             20, Button, 400, 50, "QUIT", (0, 0, 0), (None, 50))
         cls.MENUS["pause_menu"] = pause_menu
 
+        pause_menu = cls(600, 240, screen_centre, "GAME OVER",
+                         (0, 0, 0), (None, 50), 400, 50)
+        pause_menu.add_element(
+            20, Button, 400, 50, "RETRY", (0, 0, 0), (None, 50))
+        pause_menu.add_element(
+            20, Button, 400, 50, "QUIT", (0, 0, 0), (None, 50))
+        cls.MENUS["game_over_menu"] = pause_menu
+
     def draw(self, surface):
         elements = pygame.Surface((self.width, self.height))
         elements.blit(self.image_master, Vector(0, 0))
