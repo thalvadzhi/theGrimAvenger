@@ -25,19 +25,17 @@ class SwingingLight:
         x = self.bob.rect.center[0]
         y = self.bob.rect.center[1]
         self.light.update_light_position(x, y)
-        self.light.update()
+
 
     def update_position(self, x, y):
         self.x = x
         self.y = y
         self.bob = Pendulum(BOB_ANGLE, self.rope_length, (self.x, self.y))
         self.light.update_light_position(self.x, self.y + self.rope_length)
-        self.light.update()
 
     def update_obstacles(self, obstacles):
         self.obstacles = obstacles
         self.light.update_obstacles(self.obstacles)
-        self.light.update()
 
     def collide(self, position):
         return math.sqrt((self.x - position[0]) ** 2 + (self.y - position[1]) ** 2) <= 30
