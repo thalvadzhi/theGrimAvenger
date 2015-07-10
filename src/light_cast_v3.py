@@ -18,6 +18,49 @@ class Line:
         self.point1 = point1
         self.point2 = point2
 
+    @classmethod
+    def get_intersection(cls, ray, obstacle):
+        #ray in parametric
+        r_px = ray.point1.x
+        r_py = ray.point1.y
+        r_dx = ray.point2.x - ray.point1.x
+        r_dy = ray.point2.y - ray.point1.y
+
+        #obstacle in parametric
+        s_px = obstacle.point1.x
+        s_py = obstacle.point1.y
+        s_dx = obstacle.point2.x - obstacle.point1.x
+        s_dy = obstacle.point2.y - obstacle.point1.y
+
+
+        r_mag = math.sqrt(r_dx*r_dx+r_dy*r_dy);
+        s_mag = math.sqrt(s_dx*s_dx+s_dy*s_dy);
+        try:
+            if r_dx/r_mag == s_dx/s_mag and r_dy/r_mag == s_dy/s_mag:
+                #Unit vectors are the same.
+                return None
+
+            T2 = (r_dx*(s_py-r_py) + r_dy*(r_px-s_px))/(s_dx*r_dy - s_dy*r_dx)
+            T1 = (s_px+s_dx*T2-r_px)/r_dx
+        except ZeroDivisionError:
+            return None
+
+        if T1 < 0:
+            return None
+        if T2 < 0 or T2 > 1:
+            return None
+        # Return the POINT OF INTERSECTION
+        return Point(r_px+r_dx*T1, r_py+r_dy*T1, 0, T1)
+
+    def is_between_points(self, target):
+        dot_product = (target.x - self.point1.x) * (self.point2.x - self.point1.x) + (target.y - self.point1.y) * (self.point2.y - self.point1.y)
+        if dot_product < 0:
+            return False
+
+        squared_length = (self.point2.x - self.point1.x) ** 2 + (self.point2.y - self.point2.y) ** 2
+        if dot_product > squared_length:
+            return False
+        return True
 class LightSource:
     def __init__(self, x, y, obstacles):
         self.x = x
@@ -53,41 +96,6 @@ class LightSource:
         # will generate the lines of the sides
         for obstacle in self.obstacles:
             self.segments.extend(self.generate_walls(obstacle))
-        #self.walls.extend(self.generate_walls(self.boundaries))
-
-
-    def get_intersection(self, ray, obstacle):
-        #ray in parametric
-        r_px = ray.point1.x
-        r_py = ray.point1.y
-        r_dx = ray.point2.x - ray.point1.x
-        r_dy = ray.point2.y - ray.point1.y
-
-        #obstacle in parametric
-        s_px = obstacle.point1.x
-        s_py = obstacle.point1.y
-        s_dx = obstacle.point2.x - obstacle.point1.x
-        s_dy = obstacle.point2.y - obstacle.point1.y
-
-
-        r_mag = math.sqrt(r_dx*r_dx+r_dy*r_dy);
-        s_mag = math.sqrt(s_dx*s_dx+s_dy*s_dy);
-        try:
-            if r_dx/r_mag == s_dx/s_mag and r_dy/r_mag == s_dy/s_mag:
-                #Unit vectors are the same.
-                return None
-
-            T2 = (r_dx*(s_py-r_py) + r_dy*(r_px-s_px))/(s_dx*r_dy - s_dy*r_dx)
-            T1 = (s_px+s_dx*T2-r_px)/r_dx
-        except ZeroDivisionError:
-            return None
-
-        if T1 < 0:
-            return None
-        if T2 < 0 or T2 > 1:
-            return None
-        # Return the POINT OF INTERSECTION
-        return Point(r_px+r_dx*T1, r_py+r_dy*T1, 0, T1)
 
     def uniquify(self):
         #unique points
@@ -117,7 +125,7 @@ class LightSource:
 
             closest = None
             for segment in self.segments:
-                intersection = self.get_intersection(ray, segment)
+                intersection = Line.get_intersection(ray, segment)
                 if intersection is None:
                     continue
                 if closest is None or intersection.distance < closest.distance:

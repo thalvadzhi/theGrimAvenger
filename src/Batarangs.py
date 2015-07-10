@@ -1,7 +1,7 @@
 import pygame
 from pygame.math import Vector2 as Vector
 import sys
-from BasicShapes import Rectangle
+from BasicShapes import Rectangle, Triangle
 from Camera import Camera
 from Constants import BLOCK_SIZE
 from Environment import Block
@@ -12,8 +12,8 @@ from light_cast_v3 import Line, Point
 class Batarang():
     def __init__(self, x, y, world):
         #x and y are the coordinates of player's hand
-        self.width = 25
-        self.height = 15
+        self.width = 65
+        self.height = 45
         self.image_master = pygame.image.load("batarang2.png").convert_alpha()
         self.image_master = pygame.transform.scale(self.image_master,
                                                    (self.width, self.height))
@@ -26,6 +26,9 @@ class Batarang():
         #coordinates of topleft vertex
         self.x = x - self.width // 2
         self.y = y - self.height // 2
+        self.triangle = Triangle([Vector(self.x, self.y), Vector(self.x + self.width, self.y), Vector(self.x + self.width // 2, self.y + self.height)], self.rect_center)
+        self.triangle.load_avatar("/Environment/batarang2.png")
+        self.triangle.scale_avatar(self.width, self.height)
         self.direction = Vector(0, 0)
         self.rotation = 0
         self.gravity = 0
@@ -40,7 +43,8 @@ class Batarang():
         self.rect = Rectangle.get_rect(self.image, self.rect.center)
 
         self.hitmask = get_hitmask(self.rect, self.image, 0)
-
+        self.triangle.rotate(self.rotation * (1000 / timer))
+        self.triangle.move(self.rect.center - self.triangle.position)
         self.rotation += self.step
         if self.rotation > 360:
             self.rotation = self.step
@@ -50,6 +54,7 @@ class Batarang():
         self.x += self.direction.x * self.speed
         self.y += self.direction.y * self.speed
 
+        self.triangle.move(self.direction * self.speed)
         old_center = self.rect_center
         self.rect_center = (old_center[0] + self.direction.x * self.speed,
                             old_center[1] + self.direction.y * self.speed)
@@ -73,48 +78,37 @@ class Batarang():
         self.direct(self.mouse_position[0], self.mouse_position[1])
         self.should_fly = True
 
-    def update(self, timer):
+    def update(self, timer, surface, camera):
         if self.should_fly:
             self.move(timer)
             self.rotate(timer)
-        self.collide(self.world)
+            self.collides(self.world, surface, camera)
         self.hitmask = get_hitmask(self.rect, self.image, 0)
 
     def draw(self, surface, camera=0):
         if camera != 0:
-            surface.blit(self.image, camera.apply((self.x, self.y)))
-
+            self.triangle.display_avatar(surface, camera)
         else:
             surface.blit(self.image, (self.x, self.y))
 
-    def collide(self, world):
+    def collides(self, world, surface, camera):
         next_position = self.get_next_position()
 
         collision_line = Line(Point(self.x, self.y), Point(next_position[0], next_position[1]))
         for obstacle in world:
-
+            if self.triangle.check_if_collide(obstacle.rect)[0]:
+                self.should_fly = False
+                break
             for line in obstacle.walls:
                 intersection = Line.get_intersection(line, collision_line)
                 if intersection is not None:
 
-                    # while not collide(self, obstacle):
-                    #     print("YEAH")
-                    #     amount = 2
-                    #     self.x += self.direction.x * amount
-                    #     self.y += self.direction.y * amount
-                    #     old_center = self.rect_center
-                    #
-                    #     self.rect_center = (old_center[0] + self.direction.x * amount,
-                    #                         old_center[1] + self.direction.y * amount)
-                    #     self.rect.center = self.rect_center
-                    #     self.rect = Rectangle.get_rect(self.image, self.rect.center)
-                    #     self.hitmask = get_hitmask(self.rect, self.image, 0)
-                    self.rect.center = Vector(intersection.x, intersection.y)
-                    self.x = intersection.x
-                    self.y = intersection.y
+                    while not self.triangle.check_if_collide(obstacle.rect)[0]:
+                        self.x += self.direction.x
+                        self.y += self.direction.y
+                        self.rect.center = Vector((self.x, self.y))
+                        self.triangle.move(self.direction * 2)
                     self.should_fly = False
-
-
 
     def reposition(self, coordinates, direction):
         self.rect.center = Vector(coordinates)
@@ -126,27 +120,3 @@ class Batarang():
         self.rect = Rectangle.get_rect(self.image, self.rect.center)
 
         self.hitmask = get_hitmask(self.rect, self.image, 0)
-
-
-
-pygame.init()
-screen = pygame.display.set_mode((800, 600))
-timer = pygame.time.Clock()
-x = [Block((0, 0, 0), 100, 100, 300, 100)]
-b = Batarang(100, 400, x)
-c = Camera(800, 600, 800, 600)
-while True:
-
-    mouse_position = pygame.mouse.get_pos()
-    events = pygame.event.get()
-    screen.fill((255, 255, 255))
-    for event in events:
-        if event.type == pygame.QUIT:
-            sys.exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            b.take_action()
-    b.draw(screen, c)
-    x[0].draw(screen, c)
-    z = timer.tick(60)
-    b.update(z)
-    pygame.display.update()

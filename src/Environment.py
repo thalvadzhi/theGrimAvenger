@@ -6,6 +6,7 @@ import math
 from Camera import Camera
 from Pendulum import Pendulum
 from BasicShapes import Rectangle
+from light_cast_v3 import Point, Line
 from pixelperfect import get_hitmask
 from Constants import TAG_GROUND, BOB_ANGLE, SWINGING_LIGHT_RADIUS, ROPE_WIDTH
 
@@ -19,11 +20,25 @@ class Block():
         self.y = y
         self.height = height
         self.tag = tag
+        self.walls = []
         self.rect = Rectangle(width, height,
                               Vector(x + width / 2, y + height / 2))
         self.hitmask = get_hitmask(self.rect, self.image, 0)
         self.image = 0
         self.colour = colour
+        self.generate_walls()
+
+    def generate_walls(self):
+        points = []
+        for vertex in self.rect.vertices:
+            points.append(Point(vertex.x, vertex.y))
+        index = 0
+        while index < len(points) - 1:
+            point1 = points[index]
+            point2 = points[index + 1]
+            self.walls.append(Line(point1, point2))
+            index += 1
+        self.walls.append(Line(points[0], points[3]))
 
     def draw(self, screen, camera=0):
         self.rect.draw(screen, self.colour, camera)

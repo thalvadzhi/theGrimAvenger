@@ -141,7 +141,7 @@ class RigitBody:
         if camera != 0:
             centre = camera.apply([centre])[0]
         if self.image_master is None:
-            Rectangle.draw(self, surface)
+            self.draw( surface)
             return
         image = pygame.transform.rotate(
             self.image_master, self.direction.angle_to(Vector(1, 0)))
