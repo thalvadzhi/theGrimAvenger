@@ -15,6 +15,7 @@ class Motion:
         self.current_motion = None
         self.paused = True
         self.action_frame = None
+        self.on_action_frame = lambda : None
         self.speed_multiplier = 1
 
     @property
@@ -41,6 +42,7 @@ class Motion:
     def read_motion_data(self, data): 
         self.frames = data["frames"]
         self.is_repetitive = data["is_repetitive"]
+        self.action_frame = data["action_frame"]
 
     def set_motion(self, name, speed_multiplier=1):
         self.name = name
@@ -71,13 +73,15 @@ class Motion:
         self.frames[frame]["duration"] = duration
 
     def play_motion(self, start_time=0):
-        yield 0
+        yield
         if not start_time:
             start_time = pygame.time.get_ticks()
         for index, frame in enumerate(self.frames):
+            if index == self.action_frame:
+                self.on_action_frame()
             for _ in self.item.shift_to_frame(frame, start_time, self):
                 start_time = _
-                yield index
+                yield
             start_time += frame["duration"] // self.speed_multiplier
         return start_time
 
