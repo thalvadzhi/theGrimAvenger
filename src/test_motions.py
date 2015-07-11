@@ -1,25 +1,21 @@
 import unittest
 
-from ragdoll import HumanRagDoll
+from ragdoll import HumanRagdoll
 from motions import Motion
 
 
 class MotionTests(unittest.TestCase):
 
-    def setUp(self):
-        self.item = HumanRagDoll()
-        self.motion = Motion(self.item)
+    pass
+    # def setUp(self):
+    #     self.item = HumanRagdoll()
+    #     self.motion = Motion(self.item)
 
     # def test_capture_frame(self):
-    #     body = RigitBody()
-    #     apply_gravity(body, PHYSICS_SETTINGS["time_scale"])
-    #     self.assertAlmostEqual(body.velocity.y, PHYSICS_SETTINGS["gravity"])
-
-    # def test_apply_gravity_terminal_velocity(self):
-    #     body = RigitBody()
-    #     apply_gravity(body, PHYSICS_SETTINGS["time_scale"] * 1000000)
-    #     self.assertAlmostEqual(
-    #         body.velocity.y, PHYSICS_SETTINGS["terminal_velocity"])
+    #     self.item.set_slope(10)
+    #     self.motion.capture_frame(3, 3)
+    #     self.assertEqual(self.motion.duration, 3)
+    #     self.assertNotEqual(len(self.motion.frames), 0)
 
 
 if __name__ == "__main__":
