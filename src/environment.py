@@ -90,6 +90,9 @@ class SawBlock():
                                math.sin(math.fabs(self.bob.theta))),
                               (self.velocity.y * 8 * Vector(0, 1).x * 10 +
                                self.time))
+            self.collision_circle.move(
+                self.rect.center - self.collision_circle.position)
+
             self.center_old = self.rect.center
         else:
             self.rotate_saw(time)
