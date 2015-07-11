@@ -258,6 +258,7 @@ class Control(Events):
         elif Menu.MENUS["game_over_menu"].elements[2].clicked:
             self.load_background("welcome")
             self.current_menu = "welcome_menu"
+            SoundEffect.play_music("menu.mp3")
         Menu.MENUS["game_over_menu"].reset_menu_buttons()
 
     def menu_handler(self):

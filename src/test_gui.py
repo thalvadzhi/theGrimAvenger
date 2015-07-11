@@ -12,11 +12,61 @@ def round_vector(vector, decimal=0):
     return Vector(round(vector.x, decimal), round(vector.y, decimal))
 
 
+class SoundEffectTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(ls):
+        SoundEffect.play_music("menu.mp3")
+
+    def setUp(self):
+        self.sound = SoundEffect("button_default.wav")
+
+    def test_if_sounds_are_cached(self):
+        self.assertNotEqual(len(SoundEffect.LOADED), 0)
+        self.assertIn("button_default.wav", SoundEffect.LOADED)
+
+    def test_reset_volume(self):
+        self.sound.volume = 40
+        self.sound.reset_volume()
+        self.assertAlmostEqual(
+            round(self.sound.sound.get_volume(), 1), 40 / 100)
+
+    def test_reset_volume_with_zero(self):
+        self.sound.volume = 0
+        self.sound.reset_volume()
+        self.assertEqual(self.sound.sound.get_volume(), 0)
+
+    def test_set_music_volume(self):
+        SoundEffect.set_music_volume(40)
+        self.assertAlmostEqual(
+            round(pygame.mixer.music.get_volume(), 1), 40 / 100)
+
+    def test_set_music_volume_with_zero(self):
+        SoundEffect.set_music_volume(0)
+        self.assertEqual(pygame.mixer.music.get_volume(), 0)
+
+    def test_if_play_fixes_volume(self):
+        previous_volume = self.sound.volume
+        self.sound.volume = (self.sound.volume + 50) // 2
+        self.sound.play()
+        self.assertEqual(self.sound.volume, previous_volume)
+
+
 class TextBoxTest(unittest.TestCase):
 
     def setUp(self):
         self.text_box = TextBox(
             20, 20, Vector(0, 0), "Very long text!!!", (255, 0, 0), (None, 50))
+
+    def test_update_state_does_nothing(self):
+        self.text_box.update_state(None, None)
+        self.assertEqual(self.text_box.width, 20)
+        self.assertEqual(self.text_box.width, 20)
+        self.assertEqual(self.text_box.text, "Very long text!!!")
+        self.assertEqual(self.text_box.text_font, (None, 50))
+        self.assertEqual(self.text_box.text_colour, (255, 0, 0))
+        self.assertAlmostEqual(self.text_box.position[0], 0)
+        self.assertAlmostEqual(self.text_box.position[1], 0)
 
     def test_if_avatar_is_created_correctly(self):
         self.assertEqual(self.text_box.width, 20)
@@ -117,12 +167,105 @@ class SliderTest(unittest.TestCase):
             self.sliders[0].puck.position + Vector(1000, 0), False)
         self.assertEqual(self.sliders[0].state, "normal")
 
+    def test_move_puck_out_of_left_boundary(self):
+        slider = self.sliders[0]
+        slider.move_puck(Vector(-5000, 0))
+        self.assertAlmostEqual(
+            slider.puck.position.x,
+            slider.position.x - slider.width / 2)
+        self.assertAlmostEqual(slider.puck.position.y, slider.position.y)
+
+    def test_move_puck_out_of_right_boundary(self):
+        slider = self.sliders[0]
+        slider.move_puck(Vector(5000, 0))
+        self.assertAlmostEqual(
+            slider.puck.position.x,
+            slider.position.x + slider.width / 2)
+        self.assertAlmostEqual(slider.puck.position.y, slider.position.y)
+
+    def test_value_after_move_puck(self):
+        slider = self.sliders[0]
+        slider_on_list = Slider(
+            Vector(0, 0), 2, [1, 2, 3], 100, 10, 5, "B",
+            (0, 0, 0), (None, 32), 100, 100)
+        slider.move_puck(Vector(-5000, 0))
+        self.assertEqual(slider.value, 0)
+        slider.move_puck(Vector(slider.width // 2 + 15, -34))
+        self.assertEqual(slider.value, slider.width // 2 + 15)
+        slider_on_list.move_puck(Vector(-5000, -34))
+        self.assertEqual(slider_on_list.value, 1)
+        slider_on_list.move_puck(Vector(slider.width // 2 + 4, -34))
+        self.assertEqual(slider_on_list.value, 2)
+        slider_on_list.move_puck(Vector(slider.width // 2 - 10, -34))
+        self.assertEqual(slider_on_list.value, 3)
+
+    def test_value_setter(self):
+        slider = Slider(Vector(0, 0), 2, [1, 2, 3], 100, 10, 5, "B",
+                        (0, 0, 0), (None, 32), 100, 100)
+        slider.value = 2
+        self.assertAlmostEqual(slider.puck.position.x, slider.position.x)
+        slider.value = 1
+        self.assertAlmostEqual(
+            slider.puck.position.x, slider.position.x - slider.width // 2)
+        slider.value = 3
+        self.assertAlmostEqual(
+            slider.puck.position.x, slider.position.x + slider.width // 2)
+
 
 class CheckboxTest(unittest.TestCase):
 
     def setUp(self):
         self.checkbox = Checkbox(Vector(0, 0), True, 100, 10, "B",
                                  (0, 0, 0), (None, 32), 100, 100)
+
+    def test_if_state_updates_properly(self):
+        self.checkbox.update_state(self.checkbox.position, None)
+        self.assertEqual(self.checkbox.state, "checked_hover")
+        self.checkbox.update_state(self.checkbox.position, True)
+        self.assertEqual(self.checkbox.state, "unchecked_hover")
+        self.checkbox.update_state(self.checkbox.position, False)
+        self.assertEqual(self.checkbox.state, "unchecked_hover")
+        self.checkbox.update_state(
+            self.checkbox.position + Vector(1000, 0), None)
+        self.assertEqual(self.checkbox.state, "unchecked")
+        self.checkbox.update_state(self.checkbox.position, False)
+        self.assertEqual(self.checkbox.state, "unchecked_hover")
+        self.checkbox.update_state(
+            self.checkbox.position + Vector(1000, 0), False)
+        self.assertEqual(self.checkbox.state, "unchecked")
+        self.checkbox.update_state(
+            self.checkbox.position + Vector(1000, 0), True)
+        self.assertEqual(self.checkbox.state, "unchecked")
+        self.checkbox.update_state(self.checkbox.position, True)
+        self.assertEqual(self.checkbox.state, "checked_hover")
+        self.checkbox.update_state(
+            self.checkbox.position + Vector(1000, 0), False)
+        self.assertEqual(self.checkbox.state, "checked")
+
+    def test_value_getter(self):
+        self.checkbox.update_state(
+            self.checkbox.position + Vector(1000, 0), False)
+        self.assertTrue(self.checkbox.value)
+        self.checkbox.update_state(self.checkbox.position, None)
+        self.assertTrue(self.checkbox.value)
+        self.checkbox.update_state(self.checkbox.position, True)
+        self.assertFalse(self.checkbox.value)
+        self.checkbox.update_state(
+            self.checkbox.position + Vector(1000, 0), None)
+        self.assertFalse(self.checkbox.value)
+
+    def test_value_setter(self):
+        self.checkbox.update_state(self.checkbox.position, None)
+        self.checkbox.value = True
+        self.assertEqual(self.checkbox.state, "checked_hover")
+        self.checkbox.value = False
+        self.assertEqual(self.checkbox.state, "unchecked_hover")
+        self.checkbox.update_state(
+            self.checkbox.position + Vector(1000, 0), None)
+        self.checkbox.value = True
+        self.assertEqual(self.checkbox.state, "checked")
+        self.checkbox.value = False
+        self.assertEqual(self.checkbox.state, "unchecked")
 
     def test_if_initialized_properly(self):
         self.assertEqual(self.checkbox.state, "checked")
@@ -135,15 +278,34 @@ class CheckboxTest(unittest.TestCase):
 
 class MenuTest(unittest.TestCase):
 
-    def setUp(self):
-        Menu.init_menus(Control())
+    @classmethod
+    def setUpClass(cls):
+        MenuTest.control = Control()
+        Menu.init_menus(MenuTest.control)
 
     def test_if_menues_are_correctly_initialized(self):
         for menu in ["welcome_menu", "options_menu", "sound_menu",
                      "video_menu", "new_game_menu", "load_game_menu",
-                     "save_game_menu", "pause_menu"]:
+                     "save_game_menu", "pause_menu", "game_over_menu"]:
             self.assertTrue(menu in Menu.MENUS.keys())
 
+    def test_reset_menu_buttons(self):
+        MenuTest.control.mouse_input = \
+            [(1, Menu.MENUS["welcome_menu"].elements[2].position +
+                Menu.MENUS["welcome_menu"].vertices[3], None)]
+        Menu.MENUS["welcome_menu"].handle_input(MenuTest.control)
+        MenuTest.control.mouse_input = \
+            [(1, Menu.MENUS["welcome_menu"].elements[2].position +
+                Menu.MENUS["welcome_menu"].vertices[3], True)]
+        Menu.MENUS["welcome_menu"].handle_input(MenuTest.control)
+        MenuTest.control.mouse_input = \
+            [(1, Menu.MENUS["welcome_menu"].elements[2].position +
+                Menu.MENUS["welcome_menu"].vertices[3], False)]
+        Menu.MENUS["welcome_menu"].handle_input(MenuTest.control)
+        self.assertFalse(Menu.MENUS["welcome_menu"].elements[1].clicked)
+        Menu.MENUS["welcome_menu"].reset_menu_buttons()
+        self.assertFalse(Menu.MENUS["welcome_menu"].elements[2].clicked)
+        self.assertFalse(Menu.MENUS["welcome_menu"].elements[1].clicked)
 
 if __name__ == "__main__":
     unittest.main()

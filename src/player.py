@@ -5,11 +5,18 @@ from pygame.math import Vector2 as Vector
 
 from batarangs import Batarang
 from basicshapes import Circle
+from motions import Motion
 from gui import GUI_SETTINGS
 from ragdoll import HumanRagdoll
 
 
 class Player(HumanRagdoll):
+    MOVEMENT_PRIORITIES = {
+        "": 0,
+        "walk": 1,
+        "throw_batarang": 2,
+        "jump": 3
+    }
 
     def __init__(self, position=Vector(0, 0), control=None):
         HumanRagdoll.__init__(self, "Batman")
@@ -17,6 +24,7 @@ class Player(HumanRagdoll):
         self._moving = None
         self.control = control
         self.equipment = Equipment(self)
+        self.motion = Motion(self)
 
     @property
     def moving(self):
@@ -25,7 +33,7 @@ class Player(HumanRagdoll):
     @moving.setter
     def moving(self, value):
         self._moving = value
-        if value is None:
+        if value is None and self.motion.is_repetitive:
             self.motion.paused = True
         else:
             self.motion.paused = False
@@ -36,18 +44,24 @@ class Player(HumanRagdoll):
                 if keyboard_input[0] in [pygame.K_RIGHT, pygame.K_d]:
                     self.moving = "right"
                     self.turn("right")
-                    if self.motion.name is not "walk":
+                    if self.has_higher_priority("walk") and \
+                            self.ground is not None:
                         self.motion.set_motion("walk", 2.5)
                         self.motion.current_motion = self.motion.play_motion()
                 elif keyboard_input[0] in [pygame.K_LEFT, pygame.K_a]:
                     self.moving = "left"
                     self.turn("left")
-                    if self.motion.name is not "walk":
+                    if self.has_higher_priority("walk") and \
+                            self.ground is not None:
                         self.motion.set_motion("walk", 2.5)
                         self.motion.current_motion = self.motion.play_motion()
-                elif keyboard_input[0] in [pygame.K_UP, pygame.K_w]:
-                    if self.ground is not None:
-                        self.velocity[1] -= 20
+                elif keyboard_input[0] in [pygame.K_UP,
+                                           pygame.K_w,
+                                           pygame.K_SPACE] and \
+                        self.has_higher_priority("jump"):
+                    self.motion.set_motion("jump")
+                    self.motion.on_action_frame = Player.jump
+                    self.motion.current_motion = self.motion.play_motion()
                 elif keyboard_input[0] >= pygame.K_0 and \
                         keyboard_input[0] <= pygame.K_9:
                     self.equipment.equipped = keyboard_input[0] - pygame.K_0
@@ -69,18 +83,32 @@ class Player(HumanRagdoll):
             else:
                 if mouse_input[0] == 1:
                     if self.equipment.equipped == "Batarang" and \
-                            self.moving != "throw_batarang":
+                            self.has_higher_priority("throw_batarang") and \
+                            self.equipment.using is None:
                         self.turn(
                             "left" if self.position[0] > mouse_input[1][0]
                             else "right")
-                        self.moving = "throw_batarang"
-                        self.motion.set_motion("throw_batarang", 1)
+                        self.motion.set_motion("throw_batarang")
                         self.motion.on_action_frame = \
                             lambda player: player.equipment.use()
                         self.motion.current_motion = self.motion.play_motion()
 
+            if self.moving in ["left", "right"] and \
+                    self.motion.name == "":
+                self.motion.set_motion("walk", 2.5)
+                self.motion.current_motion = self.motion.play_motion()
+
         self.control.camera.update((self.position.x, self.position.y))
         self.update()
+
+    def has_higher_priority(self, motion):
+        return motion != self.motion.name and \
+            Player.MOVEMENT_PRIORITIES[self.motion.name] < \
+            Player.MOVEMENT_PRIORITIES[motion]
+
+    def jump(self):
+        if self.ground is not None:
+            self.velocity[1] -= 30
 
     def update(self):
         self.motion.play()
@@ -88,8 +116,8 @@ class Player(HumanRagdoll):
             self.move(Vector(-3, 0))
         elif self.moving == "right":
             self.move(Vector(3, 0))
-        elif self.moving == "throw_batarang":
-            pass
+        # elif self.motion.current_motion is None:
+        #    self.moving = None
 
 
 class Equipment:

@@ -123,7 +123,7 @@ class Button(Rectangle):
 
     def update_state(self, mouse_position, event):
         mouse_on_button = self.is_point_in_body(mouse_position)
-        if self.state is "active":
+        if self.state == "active":
             if not event:
                 if mouse_on_button:
                     self.state = "hover"
@@ -131,7 +131,7 @@ class Button(Rectangle):
                     self.sound_effect.play()
                 else:
                     self.state = "normal"
-        elif self.state is "hover":
+        elif self.state == "hover":
             if event and mouse_on_button:
                 self.state = "active"
             elif not mouse_on_button:
@@ -202,7 +202,7 @@ class Slider(Rectangle):
 
     def update_state(self, mouse_position, event):
         mouse_on_puck = self.puck.is_point_in_body(mouse_position)
-        if self.state is "active":
+        if self.state == "active":
             if event is False:
                 if mouse_on_puck:
                     self.state = "hover"
@@ -216,7 +216,7 @@ class Slider(Rectangle):
                     self.text_box.position, str(self.value),
                     self.text_box.text_colour, self.text_box.text_font)
                 self.timer = pygame.time.get_ticks() + 1000
-        elif self.state is "hover":
+        elif self.state == "hover":
             if event and mouse_on_puck:
                 self.state = "active"
                 self.sound_effect.play()
@@ -304,19 +304,19 @@ class Checkbox(Rectangle):
 
     @property
     def value(self):
-        if self.state is "checked" or self.state is "checked_hover":
+        if self.state == "checked" or self.state == "checked_hover":
             return True
         return False
 
     @value.setter
     def value(self, value):
         if value:
-            if self.state[-5:] is "hover":
+            if self.state[-5:] == "hover":
                 self.state = "checked_hover"
             else:
                 self.state = "checked"
         else:
-            if self.state[-5:] is "hover":
+            if self.state[-5:] == "hover":
                 self.state = "unchecked_hover"
             else:
                 self.state = "unchecked"
@@ -336,7 +336,7 @@ class Checkbox(Rectangle):
         mouse_on_checkbox = self.is_point_in_body(mouse_position)
         if event:
             if mouse_on_checkbox:
-                if self.state is "checked_hover" or self.state is "checked":
+                if self.state == "checked_hover" or self.state == "checked":
                     self.state = "unchecked_hover"
                     self.sound_effect.play()
                 else:
@@ -344,14 +344,14 @@ class Checkbox(Rectangle):
                     self.sound_effect.play()
         else:
             if mouse_on_checkbox:
-                if self.state is "checked":
+                if self.state == "checked":
                     self.state = "checked_hover"
-                elif self.state is "unchecked":
+                elif self.state == "unchecked":
                     self.state = "unchecked_hover"
             else:
-                if self.state is "checked_hover":
+                if self.state == "checked_hover":
                     self.state = "checked"
-                elif self.state is "unchecked_hover":
+                elif self.state == "unchecked_hover":
                     self.state = "unchecked"
 
     def draw(self, surface):
@@ -479,11 +479,11 @@ class Menu(Rectangle):
                              "LOAD GAME", (0, 0, 0), (None, 50), 400, 50)
         save_game_menu = cls(600, 170 + 70 * len(saves), screen_centre,
                              "SAVE", (0, 0, 0), (None, 50), 400, 50)
-        for save in saves:
-            load_game_menu.add_element(
-                20, Button, 400, 50, save[:-5], (0, 0, 0), (None, 50))
-            save_game_menu.add_element(
-                20, Button, 400, 50, save[:-5], (0, 0, 0), (None, 50))
+        # for save in saves:
+        #     load_game_menu.add_element(
+        #         20, Button, 400, 50, save[:-5], (0, 0, 0), (None, 50))
+        #     save_game_menu.add_element(
+        #         20, Button, 400, 50, save[:-5], (0, 0, 0), (None, 50))
         save_game_menu.add_element(
             20, Button, 400, 50, "NEW SAVE", (0, 0, 0), (None, 50))
         load_game_menu.add_element(
