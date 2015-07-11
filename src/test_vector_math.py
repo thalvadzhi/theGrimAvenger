@@ -2,7 +2,7 @@ import unittest
 
 from pygame.math import Vector2 as Vector
 
-from VectorMath import *
+from vectormath import *
 
 
 def round_vector(vector, decimal=0):

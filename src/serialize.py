@@ -1,9 +1,10 @@
 import json
-from Environment import *
-from Constants import *
-from Light import Light
-from SwingingLight import SwingingLight
-from Settings import Settings
+from constants import OBJECT_BLOCK, OBJECT_SAW_BLOCK, OBJECT_LIGHT, \
+    OBJECT_SWINGING_LIGHT, OBJECT_SETTINGS
+from environment import Block, SawBlock
+from light import Light
+from swinginglight import SwingingLight
+from settings import Settings
 
 
 class Encoder(json.JSONEncoder):
@@ -45,13 +46,14 @@ class Decoder(json.JSONDecoder):
 
     def deserialize(self, d):
         if d["type"] == OBJECT_BLOCK:
-            return Block(d["colour"], d["width"], d["height"], d["x"], d["y"], d["tag"])
+            return Block(d["colour"], d["width"], d["height"], d["x"], d["y"],
+                         d["tag"])
         elif d["type"] == OBJECT_SAW_BLOCK:
             return SawBlock(d["x"], d["y"], d["length"])
         elif d["type"] == OBJECT_LIGHT:
             return Light(d["x"], d["y"], d["radius"])
         elif d["type"] == OBJECT_SETTINGS:
-            return Settings(d["level_width"], d["level_height"], d["music"], d["start_position"])
+            return Settings(d["level_width"], d["level_height"], d["music"],
+                            d["start_position"])
         elif d["type"] == OBJECT_SWINGING_LIGHT:
             return SwingingLight(d["x"], d["y"], d["rope_length"])
-

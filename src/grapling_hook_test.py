@@ -1,9 +1,9 @@
 import unittest
-from GraplingHook import GraplingHook
-from Environment import Block
+from graplinghook import GraplingHook
+from environment import Block
 from pygame.math import Vector2 as Vector
-from Pendulum import Pendulum
-from Camera import Camera
+from pendulum import Pendulum
+from camera import Camera
 import pygame
 pygame.init()
 screen = pygame.display.set_mode((0, 0))

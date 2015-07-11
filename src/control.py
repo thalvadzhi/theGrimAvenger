@@ -7,13 +7,13 @@ import pygame
 from pickle import load, dump
 from pygame.math import Vector2 as Vector
 
-from Serialize import Decoder
-from Light import Light
-from Player import Player
+from serialize import Decoder
+from light import Light
+from player import Player
 from events import Events
-from Camera import Camera
+from camera import Camera
 from gui import GUI_SETTINGS, SOUND_SETTINGS, Menu, SoundEffect
-from Environment import Block, SawBlock
+from environment import Block, SawBlock
 
 
 class Control(Events):

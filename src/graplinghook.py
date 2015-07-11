@@ -1,18 +1,22 @@
 import pygame
 from pygame.math import Vector2 as Vector
-from Pendulum import Pendulum
-from BasicShapes import Rectangle
+from pendulum import Pendulum
+from basicshapes import Rectangle
 from pixelperfect import get_hitmask, collide
 from math import *
 
 
 class GraplingHook():
     def __init__(self, x, y):
-        self.image_master = pygame.image.load("graple.png").convert_alpha()
+        self.image_master = \
+            pygame.image.load("../ArtWork/Environment/graple.png")\
+            .convert_alpha()
         self.image_master = pygame.transform.scale(self.image_master, (80, 40))
         self.image = self.image_master
 
-        self.hook_image_master = pygame.image.load("hook2.png").convert_alpha()
+        self.hook_image_master = \
+            pygame.image.load("../ArtWork/Environment/hook2.png")\
+            .convert_alpha()
         self.hook_image_master = pygame.transform.scale(self.hook_image_master,
                                                         (40, 40))
         self.hook_image = self.hook_image_master
@@ -65,7 +69,7 @@ class GraplingHook():
         self.current_time = pygame.time.get_ticks()
         if self.current_time - self.last_time >= 17:
             self.bob.recompute_angle()
-            self.step = self.bob.dtheta
+            self.step = self.bob.d_theta
             self.rope = self.rope.rotate(self.step)
             self.rect = Rectangle.get_rect(self.image, self.bob.rect.center)
             self.x = self.rect.x
@@ -154,7 +158,7 @@ class GraplingHook():
         self.calculate_rope()
 
         self.rect.advance((- self.rope.x * 10 - (sin(self.bob.theta) *
-                                                 int(self.bob.dtheta))) *
+                                                 int(self.bob.d_theta))) *
                           40 * (timer / 1000),
                           (- self.rope.y * 10 + self.rope.y *
                            (30 - self.time)) * 15 * (timer / 1000))

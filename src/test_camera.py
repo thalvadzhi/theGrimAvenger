@@ -1,5 +1,5 @@
 import unittest
-from Camera import Camera
+from camera import Camera
 from pygame.math import Vector2 as Vector
 
 

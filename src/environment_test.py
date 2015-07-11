@@ -1,7 +1,7 @@
 import unittest
 import pygame
-from Environment import Block, SawBlock, Shadow
-from Batarangs import Batarang
+from environment import Block, SawBlock, Shadow
+from batarangs import Batarang
 from pygame.math import Vector2 as Vector
 pygame.init()
 screen = pygame.display.set_mode((0, 0))
@@ -30,7 +30,7 @@ class EnvironmentTest(unittest.TestCase):
 
     def test_deployment(self):
         saw = SawBlock(50, 50, 150)
-        saw.bob.dtheta = 10
+        saw.bob.d_theta = 10
         saw.deploy()
         self.assertEqual(saw.is_severed, True)
         self.assertEqual(saw.direction, Vector(0.0, -1.0))
@@ -68,7 +68,7 @@ class EnvironmentTest(unittest.TestCase):
         saw = SawBlock(10, 0, 5)
 
 
-        saw.bob.dtheta = 20
+        saw.bob.d_theta = 20
         saw.collide(Batarang(2, 1))
 
     def test_shadow(self):

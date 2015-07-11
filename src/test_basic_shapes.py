@@ -3,8 +3,8 @@ from itertools import combinations
 
 from pygame.math import Vector2 as Vector
 
-from VectorMath import Line, check_if_parallel
-from BasicShapes import *
+from vectormath import Line, check_if_parallel
+from basicshapes import *
 
 
 class RigitBodyTest(unittest.TestCase):

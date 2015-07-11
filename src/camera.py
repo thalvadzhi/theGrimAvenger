@@ -1,6 +1,5 @@
-from pygame import *
-from BasicShapes import Rectangle
 from pygame.math import Vector2 as Vector
+from basicshapes import Rectangle
 
 
 class Camera:
@@ -26,7 +25,8 @@ class Camera:
                     result.append(Vector((vertex.x + self.state.x,
                                           vertex.y + self.state.y)))
                 elif isinstance(vertex, tuple):
-                    result.append((vertex[0] + self.state.x, vertex[1] + self.state.y))
+                    result.append((vertex[0] + self.state.x,
+                                   vertex[1] + self.state.y))
                 else:
                     raise TypeError
             return result
@@ -55,10 +55,13 @@ class Camera:
             return result
 
     def functionality(self, target):
+        """defines how the camera will move,
+        also makes sure it doesn't go outside level space
+        """
         left, top = target[0], target[1]
         left = self.half_width - left
         top = self.half_height - top
-        #this is to not scroll the camera outside the borders of the level
+
         left = min(0, left)
         left = max((self.window_width - self.state.width), left)
         top = max((self.window_height - self.state.height), top)

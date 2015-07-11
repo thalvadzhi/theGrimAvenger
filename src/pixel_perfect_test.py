@@ -1,6 +1,6 @@
 import unittest
 from pixelperfect import collide, get_hitmask
-from BasicShapes import Rectangle
+from basicshapes import Rectangle
 import pygame
 pygame.init()
 
