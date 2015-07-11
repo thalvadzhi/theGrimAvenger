@@ -1,4 +1,3 @@
-import os
 from pickle import dump, load
 
 import pygame
@@ -9,11 +8,11 @@ class Motion:
     LOADED = {}
 
     def __init__(self, item):
-        self.__item = item
+        self._item = item
         self.frames = []
         self.is_repetitive = False
         self.name = ""
-        self.current_motion = None
+        self._current_motion = None
         self.paused = True
         self.action_frame = None
         self.on_action_frame = lambda: None
@@ -21,7 +20,17 @@ class Motion:
 
     @property
     def item(self):
-        return self.__item
+        return self._item
+
+    @property
+    def current_motion(self):
+        return self._current_motion
+
+    @current_motion.setter
+    def current_motion(self, value):
+        self._current_motion = value
+        if value is None:
+            self.name = ""
 
 #    @classmethod
 #    def load_motions(cls, folder):

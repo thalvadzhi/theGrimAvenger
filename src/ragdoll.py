@@ -9,7 +9,6 @@ import physics
 from constants import TAG_GROUND
 from physics import PHYSICS_SETTINGS
 from joints import RevoluteJoint
-from motions import Motion
 from basicshapes import SHAPES
 from vectormath import Line
 
@@ -31,7 +30,6 @@ class HumanRagdoll:
         self.velocity = Vector(0.0, 0.0)
         self.__mass = sum([body_part.mass
                            for body_part in self.body_parts.values()])
-        self.motion = Motion(self)
 
     @property
     def mass(self):

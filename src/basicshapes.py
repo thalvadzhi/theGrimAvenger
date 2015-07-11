@@ -38,8 +38,7 @@ class RigitBody:
     @position.setter
     def position(self, value):
         self.__position = value
-        if hasattr(self, "sync_position"):
-            self.sync_position()
+        self.sync_position()
 
     @property
     def direction(self):
@@ -48,8 +47,7 @@ class RigitBody:
     @direction.setter
     def direction(self, value):
         self.__direction = value
-        if hasattr(self, "sync_position"):
-            self.sync_position()
+        self.sync_position()
 
     @property
     def mass(self):
@@ -67,6 +65,9 @@ class RigitBody:
     def fix_joints(self):
         for joint in self.joints:
             joint.apply_constraints(self)
+
+    def sync_position(self):
+        pass
 
     def reflect(self, line):
         new_joint_positions = {}
@@ -213,9 +214,6 @@ class Circle(RigitBody):
         if abs((point - self.position).length()) < self.radius:
             return True
         return False
-
-    def sync_position(self):
-        pass
 
     def calculate_surface(self):
         return pi * pow(self.radius, 2)

@@ -82,6 +82,62 @@ class RigitBodyTest(unittest.TestCase):
             round(body.position_in_world(Vector(0, 1)).y)),
             Vector(250, 251))
 
+    def test_loading_nonexisting_avatar(self):
+        self.rigit_bodies[0].load_avatar("lkjhhjk.kjk")
+        self.assertIs(self.rigit_bodies[0].image_master, None)
+
+    def test_if_load_avatar_cashes(self):
+        self.rigit_bodies[0].load_avatar(
+            r"Environment/GUI/Button/default/normal.png")
+        previous_size = len(RigitBody.LOADED)
+        self.rigit_bodies[1].load_avatar("Environment/hook2.png")
+        self.assertEqual(len(RigitBody.LOADED), previous_size)
+        self.assertIs(self.rigit_bodies[0].image_master,
+                      self.rigit_bodies[1].image_master)
+
+
+class CollisionTest(unittest.TestCase):
+
+    def test_circle_with_rectangle_collision(self):
+        rectangle = Rectangle(10, 10, Vector(0, 0), 1)
+        circle = Circle(20, Vector(20, 20))
+        circle_rectangle_collision = circle.check_if_collide(rectangle)
+        rectangle_circle_collision = rectangle.check_if_collide(circle)
+        self.assertTrue(circle_rectangle_collision[0])
+        self.assertTrue(rectangle_circle_collision[0])
+        self.assertTupleEqual(tuple(circle_rectangle_collision[1]), (0, -5))
+        self.assertTupleEqual(tuple(rectangle_circle_collision[1]), (0, 5))
+
+    def test_circle_with_rectangle_not_colliding(self):
+        rectangle = Rectangle(10, 10, Vector(0, 0), 1)
+        circle = Circle(20, Vector(220, 20))
+        circle_rectangle_collision = circle.check_if_collide(rectangle)
+        rectangle_circle_collision = rectangle.check_if_collide(circle)
+        self.assertFalse(circle_rectangle_collision[0])
+        self.assertFalse(rectangle_circle_collision[0])
+
+    def test_triangle_with_rectangle_not_colliding(self):
+        rectangle = Rectangle(10, 10, Vector(200, 0), 1)
+        triangle = Triangle([Vector(0, 0), Vector(1, 0), Vector(0, 1)],
+                            Vector(0, 0), 1)
+        triangle_rectangle_collision = triangle.check_if_collide(rectangle)
+        rectangle_triangle_collision = rectangle.check_if_collide(triangle)
+        self.assertFalse(triangle_rectangle_collision[0])
+        self.assertFalse(rectangle_triangle_collision[0])
+
+    def test_circle_with_circle_collision(self):
+        circle1 = Circle(40, Vector(20, 20))
+        circle2 = Circle(40, Vector(-20, 20))
+        collision = circle1.check_if_collide(circle2)
+        self.assertTrue(collision[0])
+        self.assertTupleEqual(tuple(collision[1]), (-40, 0))
+
+    def test_circle_with_circle_not_colliding(self):
+        circle1 = Circle(10, Vector(20, 20))
+        circle2 = Circle(10, Vector(-20, 20))
+        collision = circle1.check_if_collide(circle2)
+        self.assertFalse(collision[0])
+
 
 class CircleTest(unittest.TestCase):
 
@@ -241,7 +297,7 @@ class TriangleTest(unittest.TestCase):
         self.assertTrue(self.triangles[0] == self.triangles[0])
         self.assertFalse(self.triangles[0] == self.triangles[1])
 
-    #def test_get_SAT_axis(self):
+    # def test_get_SAT_axis(self):
     #    result = self.rectangle.get_SAT_axis()
     #    self.assertTrue(2 == len(result))
     #    self.assertTrue(check_if_parallel(result[0].direction,
@@ -251,7 +307,7 @@ class TriangleTest(unittest.TestCase):
     #                                      self.rectangle.vertices[2] -
     #                                      self.rectangle.vertices[1]))
 
-    #def test_get_SAT_projections(self):
+    # def test_get_SAT_projections(self):
     #    result = self.triangles.get_SAT_projections(
     #        Line(Vector(0, 0), Vector(1, 0)))
     #    self.assertEqual(round(result[0]), -5)
