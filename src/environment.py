@@ -49,7 +49,7 @@ class SawBlock():
 
     def rotate_saw(self, time):
         self.image = transform.rotate(self.saw_image_master,
-                                             self.rotation)
+                                      self.rotation)
         self.rect = Rectangle.get_rect(self.image, self.center_old)
         self.rotation += 300 * time / 1000
         if self.rotation > 360:
@@ -72,7 +72,8 @@ class SawBlock():
         self.direction = self.direction.normalize()
 
         # pseudo velocity vector - defines only direction not speed
-        self.velocity = self.direction.rotate(-90 * self.sign(self.bob.d_theta))
+        self.velocity = self.direction.rotate(
+            -90 * self.sign(self.bob.d_theta))
         self.velocity = self.velocity.normalize()
 
     def sign(self, number):

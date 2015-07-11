@@ -7,6 +7,7 @@ from environment import Block, SawBlock
 pygame.init()
 pygame.display.set_mode((1, 1))
 
+
 class EnvironmentTest(unittest.TestCase):
     def setUp(self):
         self.saw = SawBlock(50, 50, 150)

@@ -9,6 +9,10 @@ from environment_test import *
 from pixel_perfect_test import *
 from test_vector_math import *
 from test_basic_shapes import *
+from test_physics import *
+from test_light import *
+from test_lightcaster import *
+from test_serialize import *
 from test_gui import *
 
 if __name__ == '__main__':

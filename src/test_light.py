@@ -6,6 +6,7 @@ from light import Light
 pygame.init()
 pygame.display.set_mode((1, 1))
 
+
 class LightTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
