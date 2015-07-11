@@ -8,11 +8,15 @@ from math import *
 
 class GraplingHook():
     def __init__(self, x, y):
-        self.image_master = pygame.image.load("graple.png").convert_alpha()
+        self.image_master = \
+            pygame.image.load("../ArtWork/Environment/graple.png")\
+            .convert_alpha()
         self.image_master = pygame.transform.scale(self.image_master, (80, 40))
         self.image = self.image_master
 
-        self.hook_image_master = pygame.image.load("hook2.png").convert_alpha()
+        self.hook_image_master = \
+            pygame.image.load("../ArtWork/Environment/hook2.png")\
+            .convert_alpha()
         self.hook_image_master = pygame.transform.scale(self.hook_image_master,
                                                         (40, 40))
         self.hook_image = self.hook_image_master
