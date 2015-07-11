@@ -1,9 +1,9 @@
 import pygame
+from math import sin
 from pygame.math import Vector2 as Vector
 from pendulum import Pendulum
 from basicshapes import Rectangle
 from pixelperfect import get_hitmask, collide
-from math import *
 
 
 class GraplingHook():

@@ -1,6 +1,5 @@
-from pygame import image, transform
-import pygame.gfxdraw
 import math
+from pygame import image, transform, draw, time
 from pygame.math import Vector2 as Vector
 from pendulum import Pendulum
 from basicshapes import Rectangle, Circle
@@ -49,7 +48,7 @@ class SawBlock():
         self.is_severed = False
 
     def rotate_saw(self, time):
-        self.image = pygame.transform.rotate(self.saw_image_master,
+        self.image = transform.rotate(self.saw_image_master,
                                              self.rotation)
         self.rect = Rectangle.get_rect(self.image, self.center_old)
         self.rotation += 300 * time / 1000
@@ -57,7 +56,7 @@ class SawBlock():
             self.rotation = self.step
 
     def swing_rope(self):
-        self.current_time = pygame.time.get_ticks()
+        self.current_time = time.get_ticks()
         if self.current_time - self.last_time >= TICKS_FOR_60_FPS:
             self.bob.recompute_angle()
             self.center_old = self.bob.rect.center
@@ -104,8 +103,7 @@ class SawBlock():
 
         else:
             surface.blit(self.image, camera.apply((self.rect.x, self.rect.y)))
-            pygame.draw.line(surface, (0, 0, 0),
-                             camera.apply((self.x, self.y)),
-                             camera.apply((self.rect.center[0],
-                                           self.rect.center[1])),
-                             self.rope_width)
+            draw.line(surface, (0, 0, 0),
+                      camera.apply((self.x, self.y)),
+                      camera.apply((self.rect.center[0], self.rect.center[1])),
+                      self.rope_width)

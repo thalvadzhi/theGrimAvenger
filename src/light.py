@@ -114,24 +114,6 @@ class Light:
         surface.blit(Light.LIGHT_SURFACE, (0, 0))
         surface.blit(Light.SHADOW_SURFACE, (0, 0))
 
-    def draw_be(self, camera, surface):
-        self.light_surface.fill((0, 0, 0, 150))
-        self.shadow_surface.fill((0, 0, 0, 100))
-
-        self.light_image.fill((255, 255, 255, 255))
-        draw.polygon(self.light_image, (0, 0, 0, 0),
-                     camera.apply(self.visibility))
-        self.shadow_surface.blit(self.light_image, (0, 0),
-                                 None, BLEND_RGBA_MIN)
-
-        self.light_surface.blit(self.light_texture,
-                                camera.apply((self.x - self.radius,
-                                              self.y - self.radius)),
-                                None, BLEND_RGB_MAX)
-
-        surface.blit(self.light_surface, (0, 0))
-        surface.blit(self.shadow_surface, (0, 0))
-
     def collide(self, position):
         # for moving purposes
         return math.sqrt((self.x - position[0]) ** 2 +

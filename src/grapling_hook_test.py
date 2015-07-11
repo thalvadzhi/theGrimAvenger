@@ -53,24 +53,6 @@ class GraplingHookTest(unittest.TestCase):
         self.assertEqual(self.graple.y, -20.0)
         self.assertEqual(self.graple.last_time, self.graple.current_time)
 
-    def test_shooting(self):
-        self.graple.stop_rect = [Block((0, 0, 0), 3, 3, 0, 0)]
-        just_block = Block((0, 0, 0), 3, 3, 1, 1)
-        self.graple.hook_rect = just_block.rect
-        self.graple.hitmask = just_block.hitmask
-        self.graple.shoot(17)
-        self.assertEqual(self.graple.calculate_pivot, False)
-        self.assertEqual(self.graple.shooter, False)
-        self.assertEqual(self.graple.aim, (1.0, 2.0))
-
-        self.graple.stop_rect = [Block((0, 0, 0), 3, 3, 0, 0)]
-        just_block = Block((0, 0, 0), 3, 3, 15, 15)
-        self.graple.hook_rect = just_block.rect
-        self.graple.hitmask = just_block.hitmask
-        self.graple.rope = Vector(1, 0)
-        self.graple.shoot(17)
-        self.assertEqual(self.graple.hook_rect.center, (25.0, 16.5))
-
     def test_update(self):
         self.graple.shooter = True
         self.graple.should_retract = False
