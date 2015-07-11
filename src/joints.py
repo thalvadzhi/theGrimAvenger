@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from pygame.math import Vector2 as Vector
 
-from VectorMath import calculate_centroid, Line
+from vectormath import calculate_centroid
 
 
 class Joint:

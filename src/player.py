@@ -1,12 +1,13 @@
-import pygame
 from collections import OrderedDict
+
+import pygame
 from pygame.math import Vector2 as Vector
 
 from Batarangs import Batarang
-from BasicShapes import Circle
-from GUI import GUI_SETTINGS
-from RagDoll import HumanRagdoll
-from Motions import Motion
+from basicshapes import Circle
+from gui import GUI_SETTINGS
+from ragdoll import HumanRagdoll
+
 
 class Player(HumanRagdoll):
 
@@ -28,7 +29,7 @@ class Player(HumanRagdoll):
             self.motion.paused = True
         else:
             self.motion.paused = False
-    
+
     def handle_input(self):
         for keyboard_input in self.control.keyboard_input:
             if keyboard_input[2]:
@@ -47,9 +48,10 @@ class Player(HumanRagdoll):
                 elif keyboard_input[0] in [pygame.K_UP, pygame.K_w]:
                     if self.ground is not None:
                         self.velocity[1] -= 20
-                elif keyboard_input[0] >= pygame.K_0 and keyboard_input[0] <= pygame.K_9:
+                elif keyboard_input[0] >= pygame.K_0 and \
+                        keyboard_input[0] <= pygame.K_9:
                     self.equipment.equipped = keyboard_input[0] - pygame.K_0
-                
+
             else:
                 if keyboard_input[0] in [pygame.K_RIGHT, pygame.K_d]:
                     if self.moving is "right":
@@ -66,13 +68,17 @@ class Player(HumanRagdoll):
                     self.equipment.switch_left()
             else:
                 if mouse_input[0] == 1:
-                    if self.equipment.equipped == "Batarang" and self.moving != "throw_batarang":
-                        self.turn("left" if self.position[0] > mouse_input[1][0] else "right")
+                    if self.equipment.equipped == "Batarang" and \
+                            self.moving != "throw_batarang":
+                        self.turn(
+                            "left" if self.position[0] > mouse_input[1][0]
+                            else "right")
                         self.moving = "throw_batarang"
                         self.motion.set_motion("throw_batarang", 1)
-                        self.motion.on_action_frame = lambda player : player.equipment.use()
+                        self.motion.on_action_frame = \
+                            lambda player: player.equipment.use()
                         self.motion.current_motion = self.motion.play_motion()
-                
+
         self.control.camera.update((self.position.x, self.position.y))
         self.update()
 
@@ -85,15 +91,17 @@ class Player(HumanRagdoll):
         elif self.moving == "throw_batarang":
             pass
 
+
 class Equipment:
 
     UTILITY_CLASSES = {
-                "Nothing": lambda : None,
-                "Batarang": Batarang
-            }
+        "Nothing": lambda: None,
+        "Batarang": Batarang
+    }
 
     def __init__(self, player):
-        self.background = Circle(45, Vector(GUI_SETTINGS["resolution"][0] - 75, 75))
+        self.background = Circle(
+            45, Vector(GUI_SETTINGS["resolution"][0] - 75, 75))
         self.background.load_avatar(r"../ArtWork/GUI/InGame/equipped.png")
         self.background.scale_avatar(90, 90)
         self.player = player
@@ -102,9 +110,9 @@ class Equipment:
         self.using = None
         self.used = []
         self.utilities = OrderedDict([
-                ("Nothing", 0),
-                ("Batarang", 0)
-                ])
+            ("Nothing", 0),
+            ("Batarang", 0)
+        ])
 
     @property
     def equipped(self):
@@ -112,7 +120,8 @@ class Equipment:
 
     @equipped.setter
     def equipped(self, value):
-        if value >= 0 and value < len(self.utilities) and value != self._equipped:
+        if value >= 0 and value < len(self.utilities) and \
+                value != self._equipped:
             self._equipped = value
             self.holding = self.equipped
 
@@ -124,8 +133,8 @@ class Equipment:
     def holding(self, value):
         self._holding = None
         if self.utilities[value] > 0:
-             self._holding = Equipment.UTILITY_CLASSES[value](
-                    0, 0, self.player.control)
+            self._holding = Equipment.UTILITY_CLASSES[value](
+                0, 0, self.player.control)
 
     def update(self):
         if isinstance(self.using, Batarang):
@@ -147,7 +156,7 @@ class Equipment:
         self.utilities[utility] += amount
 
     def use(self):
-        if self.using is None:
+        if self.using is None and self.holding is not None:
             self.using = self.holding
             self.holding = "Nothing"
             self.using.take_action(self.player.control.camera)

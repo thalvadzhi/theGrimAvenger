@@ -3,6 +3,7 @@ from pickle import dump, load
 
 import pygame
 
+
 class Motion:
 
     LOADED = {}
@@ -15,7 +16,7 @@ class Motion:
         self.current_motion = None
         self.paused = True
         self.action_frame = None
-        self.on_action_frame = lambda : None
+        self.on_action_frame = lambda: None
         self.speed_multiplier = 1
 
     @property
@@ -31,7 +32,7 @@ class Motion:
 #            with open(r"folder/{0}".format(motion_file),
 #                      "rb") as motion_frames:
 #                motion.frames = load(motion_frames)
-    
+
     @classmethod
     def load(cls, path):
         motion_data = {}
@@ -39,7 +40,7 @@ class Motion:
             motion_data = load(motion)
         cls.LOADED[path] = motion_data
 
-    def read_motion_data(self, data): 
+    def read_motion_data(self, data):
         self.frames = data["frames"]
         self.is_repetitive = data["is_repetitive"]
         self.action_frame = data["action_frame"]
@@ -54,11 +55,12 @@ class Motion:
 
     def save(self, path):
         motion_data = {
-                "frames": self.frames,
-                "is_repetitive": self.is_repetitive,
-                "action_frame": self.action_frame
-                }
-        with open("../Files/Motions/{0}.motion".format(path), 'wb') as motion_file:
+            "frames": self.frames,
+            "is_repetitive": self.is_repetitive,
+            "action_frame": self.action_frame
+        }
+        with open("../Files/Motions/{0}.motion".format(path),
+                  'wb') as motion_file:
             dump(motion_data, motion_file)
 
     def capture_frame(self, order, duration=1):

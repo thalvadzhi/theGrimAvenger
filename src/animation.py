@@ -21,11 +21,8 @@ class Animation:
                 fraction = 1 - bent_fraction
             bent_fraction += fraction
             for joint in self.joints:
-                self.joints[joint].bent_keeping_angles(frame[joint] * fraction * facing)
+                self.joints[joint].bent_keeping_angles(
+                    frame[joint] * fraction * facing)
             self.rotate(frame["slope"] * fraction * -facing)
             yield
         raise StopIteration
-
-
-
-    

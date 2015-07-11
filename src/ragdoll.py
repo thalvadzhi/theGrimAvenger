@@ -5,13 +5,14 @@ from pickle import load
 import pygame
 from pygame.math import Vector2 as Vector
 
-import Physics
+import physics
 from Constants import TAG_GROUND
-from Physics import PHYSICS_SETTINGS
-from Joints import RevoluteJoint
-from Motions import Motion
-from BasicShapes import SHAPES
-from VectorMath import Line
+from physics import PHYSICS_SETTINGS
+from joints import RevoluteJoint
+from motions import Motion
+from basicshapes import SHAPES
+from vectormath import Line
+
 
 class HumanRagdoll:
 
@@ -109,8 +110,8 @@ class HumanRagdoll:
 
     def hand_position(self, leftedness):
         hand = self.body_parts["{0}_hand".format(leftedness)]
-        return hand.position, hand.direction 
-        # (forearm.vertices[0] + forearm.vertices[1]) / 2 
+        return hand.position, hand.direction
+        # (forearm.vertices[0] + forearm.vertices[1]) / 2
         # bone = (forearm.vertices[0] +
         #        forearm.vertices[1]) / 2 - forearm.position
         # return forearm.position + bone + bone.normalize() * 5
@@ -143,7 +144,7 @@ class HumanRagdoll:
     def calculate_frame_difference(self, frame):
         previous_frame = self.capture_frame()
         frame = {key: frame[key] - previous_frame[key]
-                      for key in previous_frame}
+                 for key in previous_frame}
         for joint in self.joints:
             if frame[joint] > 180 or frame[joint] < -180:
                 frame[joint] -= copysign(360, frame[joint])
@@ -175,7 +176,10 @@ class HumanRagdoll:
             bent_fraction += fraction
             facing = -1 if self.facing == "left" else 1
             for joint in self.joints:
-                self.joints[joint].bent_keeping_angles(frame[joint] * fraction * facing)
+                self.joints[joint].bent_keeping_angles(
+                    frame[joint] *
+                    fraction *
+                    facing)
             self.rotate(frame["slope"] * fraction * -facing)
         raise StopIteration
 
@@ -201,15 +205,15 @@ class HumanRagdoll:
         boots = [self.body_parts["left_boot"], self.body_parts["right_boot"]]
         if self.ground is not None:
             collisions = map(self.ground.rect.check_if_collide, boots)
-            if all(collision[1].length() > PHYSICS_SETTINGS["touch_distance"] 
+            if all(collision[1].length() > PHYSICS_SETTINGS["touch_distance"]
                     for collision in collisions):
                 self.ground = None
-        
+
         if self.ground is None:
-            Physics.apply_gravity(self, time)
+            physics.apply_gravity(self, time)
         self.move(self.velocity)
 
-        for block in world.level_blocks: 
+        for block in world.level_blocks:
             max_MTV = None
             for MTV in map(block.rect.check_if_collide, boots):
                 if MTV[0]:

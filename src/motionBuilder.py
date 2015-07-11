@@ -1,12 +1,12 @@
+import sys
+import time
+
 import pygame
 
 from pygame.math import Vector2 as Vector
-from Control import Control
-from Motions import Motion
-from RagDoll import HumanRagdoll
-from BasicShapes import Rectangle
-import sys
-import time
+from motions import Motion
+from ragdoll import HumanRagdoll
+from basicshapes import Rectangle
 
 pygame.init()
 
@@ -20,7 +20,7 @@ motion = Motion(ragdoll)
 
 ground = Rectangle(1000, 70, Vector(500, 1000))
 
-#for body_part in list(ragdoll.body_parts.values())[::-1]:
+# for body_part in list(ragdoll.body_parts.values())[::-1]:
 #    control.left_button_selectable.append(body_part)
 anchor = Vector(0, 0)
 # def cursor_controll(body, anchor):
@@ -64,21 +64,21 @@ while True:
 
     # bent current joint
     if keys[pygame.K_DOWN] and current_part:
-        ragdoll.joints[current_part].bent_keeping_angles(-1)    
-        
+        ragdoll.joints[current_part].bent_keeping_angles(-1)
+
     # next frame
     if keys[pygame.K_RIGHT] and motion.frames:
         if len(motion.frames) - 1 > current_frame:
             current_frame += 1
         ragdoll.set_frame(motion.frames[current_frame])
         time.sleep(0.1)
-    
+
     # previous frame
     if keys[pygame.K_LEFT] and motion.frames:
         if current_frame > 0:
             current_frame -= 1
         ragdoll.set_frame(motion.frames[current_frame])
-        time.sleep(0.3) 
+        time.sleep(0.3)
 
     # set frame
     if keys[pygame.K_x]:

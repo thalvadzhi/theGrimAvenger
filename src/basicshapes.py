@@ -4,7 +4,7 @@ from itertools import combinations
 import pygame
 from pygame.math import Vector2 as Vector
 
-from VectorMath import Line, calculate_centroid
+from vectormath import Line, calculate_centroid
 
 
 class RigitBody:
@@ -141,7 +141,7 @@ class RigitBody:
         if camera != 0:
             centre = camera.apply([centre])[0]
         if self.image_master is None:
-            self.draw( surface)
+            self.draw(surface)
             return
         image = pygame.transform.rotate(
             self.image_master, self.direction.angle_to(Vector(1, 0)))
@@ -220,17 +220,17 @@ class Circle(RigitBody):
     def calculate_surface(self):
         return pi * pow(self.radius, 2)
 
-  #  def calculate_box(self):
-  #      return ((self.position.x - self.radius,
-  #               self.position.x + self.radius),
-  #              (self.position.y - self.radius,
-  #               self.position.y + self.radius))
+    #  def calculate_box(self):
+    #      return ((self.position.x - self.radius,
+    #               self.position.x + self.radius),
+    #              (self.position.y - self.radius,
+    #               self.position.y + self.radius))
 
-  #  def collides_triangle(self, other):
-  #      return any(map(self.is_point_in_body, other.vertices.values()))
+    #  def collides_triangle(self, other):
+    #      return any(map(self.is_point_in_body, other.vertices.values()))
 
-  #  def collides_rectangle(self, other):
-  #      return any(map(self.is_point_in_body, other.vertices))
+    #  def collides_rectangle(self, other):
+    #      return any(map(self.is_point_in_body, other.vertices))
 
     def collide_circle(self, other):
         collide = True
@@ -282,9 +282,9 @@ class Triangle(RigitBody):
 
     def calculate_surface(self):
         return ((self.vertices["A"].x - self.vertices["C"].x) *
-               (self.vertices["B"].y - self.vertices["A"].y) -
-               (self.vertices["A"].x - self.vertices["B"].x) *
-               (self.vertices["C"].y - self.vertices["A"].y)) / 2
+                (self.vertices["B"].y - self.vertices["A"].y) -
+                (self.vertices["A"].x - self.vertices["B"].x) *
+                (self.vertices["C"].y - self.vertices["A"].y)) / 2
 
     def calculate_edges(self):
         self.edge_lenghts = {"".join(sorted(pair[0] + pair[1])): (
@@ -317,35 +317,35 @@ class Triangle(RigitBody):
         p1 = self.vertices['B'] - self.vertices['A']
         p0 = self.vertices['C'] - self.vertices['A']
         u = (((p1 * p1) * (p2 * p0) - (p1 * p0) * (p2 * p1)) /
-            ((p0 * p0) * (p1 * p1) - (p0 * p1) * (p1 * p0)))
+             ((p0 * p0) * (p1 * p1) - (p0 * p1) * (p1 * p0)))
         v = (((p0 * p0) * (p2 * p1) - (p0 * p1) * (p2 * p0)) /
-            ((p0 * p0) * (p1 * p1) - (p0 * p1) * (p1 * p0)))
+             ((p0 * p0) * (p1 * p1) - (p0 * p1) * (p1 * p0)))
         return u >= 0 and v >= 0 and (u + v) <= 1
 
-  #  def calculate_box(self):
-  #      x_coordinates = [self.vertices[_].x for _ in self.vertices]
-  #      y_coordinates = [self.vertices[_].y for _ in self.vertices]
-  #      return ((min(x_coordinates), max(x_coordinates)),
-  #              (min(y_coordinates), max(y_coordinates)))
+    #  def calculate_box(self):
+    #      x_coordinates = [self.vertices[_].x for _ in self.vertices]
+    #      y_coordinates = [self.vertices[_].y for _ in self.vertices]
+    #      return ((min(x_coordinates), max(x_coordinates)),
+    #              (min(y_coordinates), max(y_coordinates)))
 
-  #  def collides_triangle(self, other):
-  #      return any(map(self.is_point_in_body, other.vertices.values()))
+    #  def collides_triangle(self, other):
+    #      return any(map(self.is_point_in_body, other.vertices.values()))
 
-  #  def collides_rectangle(self, other):
-  #      return any(map(self.is_point_in_body, other.vertices))
+    #  def collides_rectangle(self, other):
+    #      return any(map(self.is_point_in_body, other.vertices))
 
-  #  def collides_circle(self, other):
-  #      distances = [(other.position - Line(
-  #          combination[0], combination[1], True).get_closest_point(
-  #          other.position)).length() for combination in combinations(
-  #          self.vertices.values(), 2)]
-  #      return any([_ <= other.radius for _ in distances]) or\
-  #          self.is_point_in_body(other.position)
+    #  def collides_circle(self, other):
+    #      distances = [(other.position - Line(
+    #          combination[0], combination[1], True).get_closest_point(
+    #          other.position)).length() for combination in combinations(
+    #          self.vertices.values(), 2)]
+    #      return any([_ <= other.radius for _ in distances]) or\
+    #          self.is_point_in_body(other.position)
 
     def draw(self, surface, colour=(255, 0, 0)):
         self.sync_position()
-        pygame.draw.polygon(surface, colour, list((_.x, _.y)
-                            for _ in self.vertices.values()))
+        pygame.draw.polygon(surface, colour,
+                            list((_.x, _.y) for _ in self.vertices.values()))
 
     def get_SAT_axis(self):
         return [Line(combination[0], (combination[1] - combination[0]).rotate(
@@ -437,24 +437,24 @@ class Rectangle(RigitBody):
     def calculate_surface(self):
         return self.width * self.height
 
-  #  def calculate_box(self):
-  #      x_coordinates = [_.x for _ in self.vertices]
-  #      y_coordinates = [_.y for _ in self.vertices]
-  #      return ((min(x_coordinates), max(x_coordinates)),
-  #              (min(y_coordinates), max(y_coordinates)))
+    #  def calculate_box(self):
+    #      x_coordinates = [_.x for _ in self.vertices]
+    #      y_coordinates = [_.y for _ in self.vertices]
+    #      return ((min(x_coordinates), max(x_coordinates)),
+    #              (min(y_coordinates), max(y_coordinates)))
 
-  #  def collides_triangle(self, other):
-  #      return any(map(self.is_point_in_body, other.vertices.values()))
+    #  def collides_triangle(self, other):
+    #      return any(map(self.is_point_in_body, other.vertices.values()))
 
     def collides_rectangle(self, other):
         return any(map(self.is_point_in_body, other.vertices))
 
-  #  def collides_circle(self, other):
-  #      distances = [(other.position - Line(self.vertices[
-  #          index], self.vertices[(index + 1) % 4], True).get_closest_point(
-  #          other.position)).length() for index in range(0, 4)]
-  #      return any([_ <= other.radius for _ in distances]) or\
-  #          self.is_point_in_body(other.position)
+    #  def collides_circle(self, other):
+    #      distances = [(other.position - Line(self.vertices[
+    #          index], self.vertices[(index + 1) % 4], True).get_closest_point(
+    #          other.position)).length() for index in range(0, 4)]
+    #      return any([_ <= other.radius for _ in distances]) or\
+    #          self.is_point_in_body(other.position)
 
     def draw(self, surface, colour=(255, 0, 0), camera=0):
         if camera != 0:
